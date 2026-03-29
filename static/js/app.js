@@ -11,7 +11,7 @@
     const h4 = (pr, ...c) => el('h4', pr, ...c);
     const p = (pr, ...c) => el('p', pr, ...c);
     const ul = (pr, ...c) => el('ul', pr, ...c);
-    const li = (pr, ...c) => li('li', pr, ...c);
+    const li = (pr, ...c) => el('li', pr, ...c);
     const label = (pr, ...c) => el('label', pr, ...c);
     const input = (pr, ...c) => el('input', pr, ...c);
     const textarea = (pr, ...c) => el('textarea', pr, ...c);
@@ -25,7 +25,7 @@
  
     const DB_KEY = 'AICP_v70_BYOK_DB';   
     const SESS_KEY = 'AICP_v70_Session';  
-    const SYS_VERSION = 'v71.1.0 Ultimate Auto-Browsing Edition';  
+    const SYS_VERSION = 'v71.1.1 Ultimate Auto-Browsing Edition';  
  
     const AppDB = {  
       get: () => {  
