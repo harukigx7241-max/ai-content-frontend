@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>AI Content Pro - Ultimate SaaS Edition</title>
+  
+  <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+  <script crossorigin src="[https://unpkg.com/react@18/umd/react.production.min.js](https://unpkg.com/react@18/umd/react.production.min.js)"></script>
+  <script crossorigin src="[https://unpkg.com/react-dom@18/umd/react-dom.production.min.js](https://unpkg.com/react-dom@18/umd/react-dom.production.min.js)"></script>
+
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: { brand: { DEFAULT: '#0ea5e9', light: '#38bdf8', dark: '#0369a1', accent: '#f59e0b', danger: '#f43f5e', success: '#10b981' }, bg: { DEFAULT: '#020617', panel: '#0f172a', input: '#00000066' } } } }
+    };
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('keydown', e => { if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) || (e.ctrlKey && ['U','S'].includes(e.key.toUpperCase()))) e.preventDefault(); });
+  </script>
+
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="/static/js/tools.js"></script>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

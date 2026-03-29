@@ -1,0 +1,28 @@
+name: Auto Deploy to Xserver VPS
+
+# GitHubのmainブランチにコードが保存(Push)された時に発動
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            # サーバーのプロジェクトフォルダに移動
+            cd /root/ai-content-pro
+            
+            # GitHubから最新のコードを強制的に引っ張ってくる
+            git fetch origin main
+            git reset --hard origin/main
+            
+            # バックエンドサーバーを自動で再起動して変更を適用
+            sudo systemctl restart aicontent.service

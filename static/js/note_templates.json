@@ -1,0 +1,41 @@
+[
+  {
+    "title": "【Stella Note式】副業初心者向け 王道ノウハウ",
+    "data": {
+      "genre": "副業・ビジネス",
+      "age": "30代",
+      "theme": "スキルゼロから月5万円稼ぐロードマップ",
+      "target": "副業を始めたいが、何から手をつければいいか分からない会社員",
+      "free_len": "1500",
+      "paid_len": "4000",
+      "price": "1980",
+      "guarantee": true
+    }
+  },
+  {
+    "title": "【Stella Note式】SNS集客マネタイズ",
+    "data": {
+      "genre": "テクノロジー・AI",
+      "age": "20代",
+      "theme": "Instagram×AIで自動収益化する具体的なステップ",
+      "target": "フォロワーはいるが、どうやって収益に繋げるか悩んでいる発信者",
+      "free_len": "2000",
+      "paid_len": "5000",
+      "price": "2980",
+      "guarantee": false
+    }
+  },
+  {
+    "title": "【Stella Note式】メンタルハック・自己啓発",
+    "data": {
+      "genre": "自己啓発・メンタル",
+      "age": "40代",
+      "theme": "HSP気質を強みに変えてストレスフリーに働く方法",
+      "target": "職場の人間関係に疲れ、自分らしく働きたいと悩んでいる人",
+      "free_len": "1200",
+      "paid_len": "3500",
+      "price": "980",
+      "guarantee": true
+    }
+  }
+]
