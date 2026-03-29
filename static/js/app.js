@@ -25,7 +25,7 @@
  
     const DB_KEY = 'AICP_v70_BYOK_DB';   
     const SESS_KEY = 'AICP_v70_Session';  
-    const SYS_VERSION = 'v70.9.5 Ultimate Auto-Fallback Edition';  
+    const SYS_VERSION = 'v70.9.9 Ultimate Auto-Browsing Edition';  
  
     const AppDB = {  
       get: () => {  
@@ -690,18 +690,18 @@
           if (conf.isImagePrompt) return promptText;
           
           let emptyFields = [];
-          let mainThemeValue = ''; // ユーザーがテーマを入力したかを記憶
+          let mainThemeValue = ''; 
           
           let inputs = conf.fields.map(f => {
               const val = vals[f.id] || '';
               // 項目が未入力の場合
               if (!val || val.trim() === '') {
                   emptyFields.push(f.l);
-                  return `【${f.l}】\n（※Stella Note式 AIおまかせ：最新トレンドや前後の文脈から、最も効果的な内容をAI自身で考えて補完してください）`;
+                  return `【${f.l}】\n（※Stella Note式 AIおまかせ：現在の最新トレンドや市場需要を考慮し、最も効果的な内容をあなた（AI）自身で考えて補完してください）`;
               }
               
               // 項目が入力されている場合、それが「テーマ・タイトル」に関する主要項目かチェック
-              if (f.isMainMagic || f.id === 'theme' || f.id === 'topic' || f.id === 'prod' || f.id === 'kw') {
+              if (f.isMainMagic || ['theme', 'topic', 'prod', 'kw'].includes(f.id)) {
                   mainThemeValue = val;
               }
               return `【${f.l}】\n${val}`;
@@ -710,12 +710,12 @@
           // 未入力項目がある場合、強力なプロンプトインジェクションを追加
           let magicInstruction = '';
           if (emptyFields.length > 0) {
-              if (mainThemeValue) {
-                  // パターンA: テーマは入力されているが、他のターゲット等が空欄の場合
-                  magicInstruction = `\n\n【🚨 AIへの重要指示：未入力項目の自動補完】\n一部の項目（${emptyFields.join('、')}）が未入力となっていますが、メインテーマ「${mainThemeValue}」は決定しています。\n必ず「Web検索（ブラウジング機能）」を使用してこのテーマに関する最新の需要や市場のトレンドをリサーチし、読者に最も刺さるバズりやすい内容をあなた（AI）自身で推測・設定した上で、最終的な出力に反映させてください。\n`;
+              if (mainThemeValue && mainThemeValue.trim() !== '') {
+                  // パターンA: テーマは決まっているが、他が空欄
+                  magicInstruction = `\n\n【🚨 Stella Noteからの重要指示：未入力項目の自動補完】\n一部の項目（${emptyFields.join('、')}）が未入力ですが、メインテーマ「${mainThemeValue}」は決定しています。\n必ず「Web検索（ブラウジング機能）」を使用して、このテーマに関する日本国内の最新の需要や市場トレンドを詳細にリサーチし、読者に最も刺さる内容をあなた（AI）自身で推測・設定して補完し、最高品質のコンテンツを出力してください。\n`;
               } else {
-                  // パターンB: 完全白紙（テーマすら未入力）の場合の「トレンド丸投げ」
-                  magicInstruction = `\n\n【🚨 AIへの重要指示：完全おまかせ・トレンド丸投げ生成】\n重要な項目（${emptyFields.join('、')}）が未入力となっており、記事のテーマすら決まっていません。\nまずは「Web検索（ブラウジング機能）」を使用して、現在SNSや検索エンジンでバズっている最新のトレンド（副業、テクノロジー、自己啓発、エンタメなど）をリサーチしてください。そして、最も読者の反応が取れそうな「テーマ」を1つ決定し、それに合わせて全ての未入力項目を最適化して設定した上で、最高品質のコンテンツを出力してください。\n`;
+                  // パターンB: 完全白紙（テーマすら未入力）
+                  magicInstruction = `\n\n【🚨 Stella Noteからの重要指示：完全おまかせ・トレンド丸投げ生成】\n重要な項目（${emptyFields.join('、')}）が未入力で、テーマすら決まっていません。\nまずは「Web検索（ブラウジング機能）」を使用して、現在日本のSNSや検索エンジンで最もバズっている最新トレンド（副業、テクノロジー、自己啓発、エンタメ、恋愛など）をリサーチしてください。そして、最も読者の反応が取れそうな「最高のテーマ」をあなた自身で1つ選び、全ての未入力項目をそのテーマに合わせて最適化して設定した上で、コンテンツを執筆・出力してください。\n`;
               }
           }
 
@@ -947,47 +947,6 @@
                   className: 'w-full bg-gradient-to-r from-brand-accent to-red-500 text-white text-xs font-bold py-2 rounded-lg shadow-lg hover:brightness-110 transition disabled:opacity-50 mb-2' 
               }, isMagicLoading ? '魔法詠唱中...' : '💫 コンテキスト連鎖マジック (全項目を一撃で埋める)'),
               
-              // 🌟 新機能：AIおまかせ無限テンプレート生成ボタン
-              button({ 
-                  onClick: async () => {
-                      if (role !== 'admin' && uData.credits <= 0) { setError('クレジットが不足しています。'); return; }
-                      setIsMagicLoading(true); setError('');
-                      try {
-                          const promptText = tid === 'note' ? 
-                              `noteで現在バズっている、または売れやすい最新のWebトレンド（副業、AI、恋愛、メンタル、投資など）を1つランダムに選び、そのテーマで記事を書くための設定をJSONで出力してください。\nフォーマット:\n{\n "genre": "（ジャンル名。例:副業・ビジネス）",\n "age": "（ターゲット年代。例:20代）",\n "theme": "（魅力的な記事テーマ）",\n "target": "（読者の具体的な悩み）",\n "free_len": "1500",\n "paid_len": "4000",\n "price": "1980"\n}` 
-                              : 
-                              `このツール「${conf.name}」において、現在SNSやWebでトレンドになっているバズりやすいテーマをランダムに1つ考え、以下の入力項目を埋めるためのJSONを出力してください。\n項目:\n${conf.fields.map(f => `"${f.id}": "(${f.l}の具体的な内容)"`).join(',\n')}`;
-                          
-                          let currentProvider = magicAI;
-                          let ai_model = currentProvider === 'openai' ? 'chatgpt_free' : currentProvider === 'anthropic' ? 'claude_free' : 'gemini_free';
-                          const res = await fetch('/api/auto_generate', {
-                              method: 'POST', headers: {'Content-Type': 'application/json'},
-                              body: JSON.stringify({ prompt: promptText + '\n\n必ずJSONデータのみ（\`\`\`jsonなどの装飾なし）を出力してください。', user_api_key: userKeys[currentProvider], ai_model: ai_model })
-                          });
-                          const data = await res.json();
-                          if(data.status === 'success') {
-                              let jsonStr = data.result.match(/\{[\s\S]*\}/);
-                              if(jsonStr) {
-                                  const parsed = JSON.parse(jsonStr[0]);
-                                  const newVals = {...vals, ...parsed};
-                                  setVals(newVals);
-                                  if (role !== 'admin') {  
-                                      const ndb = AppDB.get(); ndb.users[user].projects[uData.curProj].data[tid] = newVals; AppDB.save(ndb);  
-                                  }
-                                  showToast(`🎲 AIおまかせ生成完了！ランダムなトレンドテーマをセットしました！`);
-                              } else {
-                                  setError("JSONの解析に失敗しました。もう一度お試しください。");
-                              }
-                          } else {
-                              setError(data.message);
-                          }
-                      } catch(e) { setError('AIおまかせ生成に失敗しました。APIキーの設定などを確認してください。'); }
-                      setIsMagicLoading(false);
-                  }, 
-                  disabled: isMagicLoading,
-                  className: 'w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold py-2 rounded-lg shadow-lg hover:brightness-110 transition disabled:opacity-50 mb-2' 
-              }, '🎲 AIおまかせ無限テンプレート生成 (ランダムトレンドで埋める)'),
-
               showAdvancedMagic && div({ className: 'space-y-3 mt-3 pt-3 border-t border-white/10 animate-in' },
                   div({},
                       label({ className: 'block text-[10px] font-bold text-slate-400 mb-1' }, '🔗 URLスクレイピング (競合を丸裸にする)'),
