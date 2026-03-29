@@ -11,7 +11,7 @@
     const h4 = (pr, ...c) => el('h4', pr, ...c);
     const p = (pr, ...c) => el('p', pr, ...c);
     const ul = (pr, ...c) => el('ul', pr, ...c);
-    const li = (pr, ...c) => el('li', pr, ...c);
+    const li = (pr, ...c) => li('li', pr, ...c);
     const label = (pr, ...c) => el('label', pr, ...c);
     const input = (pr, ...c) => el('input', pr, ...c);
     const textarea = (pr, ...c) => el('textarea', pr, ...c);
@@ -25,7 +25,7 @@
  
     const DB_KEY = 'AICP_v70_BYOK_DB';   
     const SESS_KEY = 'AICP_v70_Session';  
-    const SYS_VERSION = 'v70.9.9 Ultimate Auto-Browsing Edition';  
+    const SYS_VERSION = 'v71.1.0 Ultimate Auto-Browsing Edition';  
  
     const AppDB = {  
       get: () => {  
@@ -39,30 +39,9 @@
           };  
           localStorage.setItem(DB_KEY, JSON.stringify(db));  
         }  
-        if (!db.config.announcement) db.config.announcement = '';
-        if (!db.config.inviteCodes) db.config.inviteCodes = {};
-        if (db.config.popupMessage === undefined) db.config.popupMessage = '';
-        if (db.config.popupId === undefined) db.config.popupId = 0;
-        if (!db.errorLogs) db.errorLogs = [];
-        if (!db.sharedPrompts) db.sharedPrompts = {};
         Object.keys(db.users).forEach(u => {
             if(db.users[u].credits === undefined) db.users[u].credits = 100;
-            if(!db.users[u].lastLogin) db.users[u].lastLogin = '-';
-            if(!db.users[u].loginHistory) db.users[u].loginHistory = [];
-            if(!db.users[u].usage) db.users[u].usage = { count: 0, tools: {} };
-            if(!db.users[u].usage.tools) db.users[u].usage.tools = {};
-            if(!db.users[u].usage.apiCount) db.users[u].usage.apiCount = { openai: 0, anthropic: 0, google: 0 };
-            if(!db.users[u].settings) db.users[u].settings = { aiModel: 'chatgpt_free' };
-            if(!db.users[u].settings.keys) db.users[u].settings.keys = {openai:'', anthropic:'', google:''};
-            if(!db.users[u].settings.theme) db.users[u].settings.theme = 'blue';
-            if(!db.users[u].settings.tone) db.users[u].settings.tone = '丁寧で専門的';
-            if(db.users[u].settings.notifications === undefined) db.users[u].settings.notifications = true;
             if(!db.users[u].settings.templates) db.users[u].settings.templates = ['', '', ''];
-            if(db.users[u].settings.persona === undefined) db.users[u].settings.persona = '';
-            if(db.users[u].settings.knowledge === undefined) db.users[u].settings.knowledge = '';
-            if(db.users[u].settings.templateUrl === undefined) db.users[u].settings.templateUrl = '';
-            if(db.users[u].usedInviteCode === undefined) db.users[u].usedInviteCode = '';
-            if(db.users[u].readPopupId === undefined) db.users[u].readPopupId = 0;
         });
         return db;  
       },  
@@ -684,7 +663,7 @@
         setIsMagicLoading(false);
       };  
 
-      // 🌟 【究極進化】テーマ入力有無を自動判別し、Web検索丸投げインジェクションを切り替える
+      // 🌟 【究極進化・完全実装】テーマ入力有無を自動判別し、Web検索丸投げインジェクションを切り替える
       const getFinalPrompt = () => {
           let promptText = conf.build(vals);
           if (conf.isImagePrompt) return promptText;
@@ -694,10 +673,10 @@
           
           let inputs = conf.fields.map(f => {
               const val = vals[f.id] || '';
-              // 項目が未入力の場合
+              // 項目が未入力の場合、AIに丸投げする指示をプレースホルダーとして挿入
               if (!val || val.trim() === '') {
                   emptyFields.push(f.l);
-                  return `【${f.l}】\n（※Stella Note式 AIおまかせ：現在の最新トレンドや市場需要を考慮し、最も効果的な内容をあなた（AI）自身で考えて補完してください）`;
+                  return `【${f.l}】\n（※Stella Note式 AIおまかせ：現在の日本国内での最新トレンドや需要を考慮し、最も効果的な内容をあなた（AI）自身でリサーチ・推測して補完してください）`;
               }
               
               // 項目が入力されている場合、それが「テーマ・タイトル」に関する主要項目かチェック
@@ -715,7 +694,7 @@
                   magicInstruction = `\n\n【🚨 Stella Noteからの重要指示：未入力項目の自動補完】\n一部の項目（${emptyFields.join('、')}）が未入力ですが、メインテーマ「${mainThemeValue}」は決定しています。\n必ず「Web検索（ブラウジング機能）」を使用して、このテーマに関する日本国内の最新の需要や市場トレンドを詳細にリサーチし、読者に最も刺さる内容をあなた（AI）自身で推測・設定して補完し、最高品質のコンテンツを出力してください。\n`;
               } else {
                   // パターンB: 完全白紙（テーマすら未入力）
-                  magicInstruction = `\n\n【🚨 Stella Noteからの重要指示：完全おまかせ・トレンド丸投げ生成】\n重要な項目（${emptyFields.join('、')}）が未入力で、テーマすら決まっていません。\nまずは「Web検索（ブラウジング機能）」を使用して、現在日本のSNSや検索エンジンで最もバズっている最新トレンド（副業、テクノロジー、自己啓発、エンタメ、恋愛など）をリサーチしてください。そして、最も読者の反応が取れそうな「最高のテーマ」をあなた自身で1つ選び、全ての未入力項目をそのテーマに合わせて最適化して設定した上で、コンテンツを執筆・出力してください。\n`;
+                  magicInstruction = `\n\n【🚨 Stella Noteからの重要指示：完全おまかせ・トレンド丸投げ生成】\n重要な項目（${emptyFields.join('、')}）が未入力で、テーマすら決まっていない「完全丸投げ」の状態です。\nまずは「Web検索（ブラウジング機能）」を使用して、現在日本のSNSや検索エンジンで最もバズっている最新トレンド（副業、テクノロジー、自己啓発、エンタメ、恋愛など）をリサーチしてください。そして、最も読者の反応が取れそうな「最高のテーマ」をあなた自身で1つ選び、全ての未入力項目をそのテーマに合わせて最適化して設定した上で、コンテンツを執筆・出力してください。\n`;
               }
           }
 
@@ -1013,7 +992,6 @@
               )
           ),
 
-          // 🌟 【新規追加】AI丸投げ機能の案内UI
           div({ className: 'mb-6 p-4 bg-brand-light/10 border border-brand-light/20 rounded-xl animate-in' },
               h4({ className: 'text-xs font-bold text-brand-light mb-1 flex items-center gap-2' }, '💡 究極のAI丸投げ機能（おまかせ生成）'),
               p({ className: 'text-[10px] text-slate-300 leading-relaxed' }, '下の項目を「未入力」のまま生成またはプロンプトコピーすると、AIが「Web検索」を使って最新トレンドを調べ、そのツールに最適な内容を全自動で考えて補完してくれます。完全にAIに丸投げすることが可能です。')
@@ -1586,10 +1564,7 @@
                 db.users[nickname].loginHistory.unshift(db.users[nickname].lastLogin);
                 if(db.users[nickname].loginHistory.length > 5) db.users[nickname].loginHistory.pop();
                 AppDB.save(db);
-                
-                // 【神機能】ログイン時に自動ローカルバックアップを作成
                 localStorage.setItem('AICP_v70_BACKUP', JSON.stringify(db));
-
                 localStorage.setItem(SESS_KEY, JSON.stringify({ u: nickname, r: 'approved' }));
                 props.onLogin(nickname, 'approved');
             } else if (db.users[nickname].status === 'pending') {
@@ -1615,7 +1590,6 @@
           if (regInviteCode) {
               if (db.config.inviteCodes[regInviteCode]) {
                   initialStatus = 'approved';
-                  // 招待コードを1回で使い捨てにする
                   delete db.config.inviteCodes[regInviteCode];
               } else {
                   setErr('入力された招待コードは無効です。'); return;
@@ -1644,7 +1618,7 @@
               div({ className: 'overflow-y-auto flex-1 pr-4 hide-scrollbar text-sm text-slate-300 space-y-4 mb-6 leading-relaxed' },
                   p({}, '本システム（AI Content Pro）をご利用いただくにあたり、以下の規約に同意していただく必要があります。'),
                   ul({ className: 'list-disc pl-5 space-y-3 mt-2' },
-                      li({}, '第1条（禁止事項）：本システムのアクセスURL、アカウント情報、およびシステム自体の第三者への共有・譲渡・販売・配布を固く禁じます。'),
+                      li({}, '第1条（禁止事項）：本システムのアクセスURL、アカウント情報、およびシステム自体の第三者への共有-譲渡-販売-配布を固く禁じます。'),
                       li({}, '第2条（自作発言の禁止）：本システムが生成したコンテンツを除き、本システム自体の設計やUI、機能について、自身が作成したと虚偽の申告をすることを禁じます。'),
                       li({}, '第3条（複製の禁止）：本システムのソースコード、UIデザイン、機能構造等の無断複製、リバースエンジニアリング、および類似サービスの作成を禁じます。'),
                       li({}, '第4条（利用停止）：上記に違反した場合、または管理者が不適切と判断した場合、事前通知なくアカウントを直ちに停止・削除できるものとします。')
