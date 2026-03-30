@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 import uvicorn
@@ -16,6 +17,7 @@ import re
 
 app = FastAPI(title="AI Content Pro Backend")
 templates = Jinja2Templates(directory="templates")
+app.mount("/static", StaticFiles(directory="static"), name="static")
 CONFIG_FILE = "server_config.json"
 
 def get_admin_keys():
