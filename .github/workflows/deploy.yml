@@ -1,6 +1,5 @@
 name: Auto Deploy to Xserver VPS
 
-# GitHubのmainブランチにコードが保存(Push)された時に発動
 on:
   push:
     branches:
@@ -17,12 +16,13 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # サーバーのプロジェクトフォルダに移動
             cd /root/ai-content-pro
-            
-            # GitHubから最新のコードを強制的に引っ張ってくる
             git fetch origin main
             git reset --hard origin/main
-            
-            # バックエンドサーバーを自動で再起動して変更を適用
+
+            # ポートが8001であることを確実に保証
+            sed -i 's/--port 8000/--port 8001/g' /etc/systemd/system/aicontent.service
+            systemctl daemon-reload
+
             sudo systemctl restart aicontent.service
+            echo "✅ デプロイ完了 $(date)"
