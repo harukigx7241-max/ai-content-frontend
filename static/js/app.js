@@ -25,7 +25,7 @@
  
     const DB_KEY = 'AICP_v70_BYOK_DB';   
     const SESS_KEY = 'AICP_v70_Session';  
-    const SYS_VERSION = 'v71.2.0 Ultimate Auto-Browsing Edition';  
+    const SYS_VERSION = 'v71.2.1 Ultimate Auto-Browsing Edition';  
  
     const AppDB = {  
       get: () => {  
@@ -869,46 +869,64 @@ ${emptyFields.map(f => '　・【' + f + '】').join('\n')}
         setIsLoading(false);
       };  
 
+      // ================================================================
+      // 推敲・マルチ展開の共通アクション名定義
+      // ================================================================
+      const modifyActionNames = {
+          'x_thread': 'X(Twitter)ツリー投稿', 'short_vid': 'ショート動画台本',
+          'insta_carousel': 'Instagramカルーセル構成', 'line_msg': 'LINE配信メッセージ',
+          'voicy': '音声配信台本', 'step_mail': 'メルマガ原稿',
+          'seo_blog': 'SEOブログ記事', 'pr_release': 'PR・プレスリリース',
+          'catchy': 'キャッチーに推敲', 'simple': 'シンプルに推敲',
+          'compliance': 'コンプラ・炎上チェック', 'eyecatch_prompt': 'アイキャッチ画像プロンプト'
+      };
+
+      const buildModifyPrompt = (actionType, sourceText) => {
+          if (actionType === 'x_thread') return '以下の文章を元に、X(Twitter)でバズるツリー投稿（スレッド形式）を作成してください。\n\n' + sourceText;
+          if (actionType === 'short_vid') return '以下の文章を元に、TikTok/Shorts用のショート動画の台本を作成してください。開始1秒で惹きつけるフックを必ず入れてください。\n\n' + sourceText;
+          if (actionType === 'insta_carousel') return '以下の文章を元に、Instagramのカルーセル投稿（画像スライド7〜10枚程度）の構成を作成してください。\n\n' + sourceText;
+          if (actionType === 'line_msg') return '以下の文章を元に、LINE公式アカウントの配信メッセージを作成してください。URLクリックなどの行動を促す構成にしてください。\n\n' + sourceText;
+          if (actionType === 'voicy') return '以下の文章を元に、音声配信（Voicyやstand.fmなど）用の台本を作成してください。耳で聞いてわかりやすい「話し言葉」に特化させてください。\n\n' + sourceText;
+          if (actionType === 'step_mail') return '以下の文章を元に、メルマガ（ステップメール）の1通分の原稿を作成してください。PASONAの法則を用いて構成にしてください。\n\n' + sourceText;
+          if (actionType === 'seo_blog') return '以下の文章を元に、SEOに特化した網羅的なブログ記事の構成案と本文を作成してください。\n\n' + sourceText;
+          if (actionType === 'pr_release') return '以下の文章を元に、プレスリリースやPR用の公式な文章を作成してください。\n\n' + sourceText;
+          if (actionType === 'catchy') return '以下の文章を、もっとキャッチーで読者の感情を強く揺さぶる（バズりやすい）表現に推敲してください。\n\n' + sourceText;
+          if (actionType === 'simple') return '以下の文章を、専門用語を使わずに「小学生でも理解できる」くらいシンプルでわかりやすい表現に推敲してください。\n\n' + sourceText;
+          if (actionType === 'compliance') return '以下の文章について、炎上リスク、差別的表現、薬機法や景表法違反のリスクがないかコンプライアンスチェックを行い、問題があれば修正した安全な文章を提案してください。\n\n' + sourceText;
+          if (actionType === 'eyecatch_prompt') return '以下の文章の内容を象徴する、MidjourneyやDALL-E 3などの画像生成AI向けの「英語のプロンプト」を1つだけ作成してください。出力は英語のプロンプトテキストのみにしてください。\n\n' + sourceText;
+          return sourceText;
+      };
+
       const handleModify = async (actionType) => {
+          const builtPrompt = buildModifyPrompt(actionType, res);
+          const actionLabel = modifyActionNames[actionType] || actionType;
+
+          // ▼▼▼ プロンプトモード: APIを叩かずコピーして終了 ▼▼▼
+          if (genMode === 'prompt') {
+              const aiPrefix = getAIPrefix(promptAiModel, uData.settings);
+              copyTextToClipboard(aiPrefix + builtPrompt);
+              showToast('\uD83D\uDCCB 「' + actionLabel + '」のプロンプトをコピーしました！AIに貼り付けてください。');
+              return;
+          }
+
+          // ▼▼▼ APIモード: 従来通りAPIを呼び出す ▼▼▼
           if (role !== 'admin' && uData.credits <= 0) { setError('クレジット（生成可能回数）が不足しています。'); return; }
           setIsLoading(true); setError('');
-          let prompt = '';
-          
-          if (actionType === 'x_thread') prompt = '以下の文章を元に、X(Twitter)でバズるツリー投稿（スレッド形式）を作成してください。\n\n' + res;
-          else if (actionType === 'short_vid') prompt = '以下の文章を元に、TikTok/Shorts用のショート動画の台本を作成してください。開始1秒で惹きつけるフックを必ず入れてください。\n\n' + res;
-          else if (actionType === 'insta_carousel') prompt = '以下の文章を元に、Instagramのカルーセル投稿（画像スライド7〜10枚程度）の構成を作成してください。\n\n' + res;
-          else if (actionType === 'line_msg') prompt = '以下の文章を元に、LINE公式アカウントの配信メッセージを作成してください。URLクリックなどの行動を促す構成にしてください。\n\n' + res;
-          else if (actionType === 'voicy') prompt = '以下の文章を元に、音声配信（Voicyやstand.fmなど）用の台本を作成してください。耳で聞いてわかりやすい「話し言葉」に特化させてください。\n\n' + res;
-          else if (actionType === 'step_mail') prompt = '以下の文章を元に、メルマガ（ステップメール）の1通分の原稿を作成してください。PASONAの法則を用いて構成にしてください。\n\n' + res;
-          else if (actionType === 'seo_blog') prompt = '以下の文章を元に、SEOに特化した網羅的なブログ記事の構成案と本文を作成してください。\n\n' + res;
-          else if (actionType === 'pr_release') prompt = '以下の文章を元に、プレスリリースやPR用の公式な文章を作成してください。\n\n' + res;
-          else if (actionType === 'catchy') prompt = '以下の文章を、もっとキャッチーで読者の感情を強く揺さぶる（バズりやすい）表現に推敲してください。\n\n' + res;
-          else if (actionType === 'simple') prompt = '以下の文章を、専門用語を使わずに「小学生でも理解できる」くらいシンプルでわかりやすい表現に推敲してください。\n\n' + res;
-          else if (actionType === 'compliance') prompt = '以下の文章について、炎上リスク、差別的表現、薬機法や景表法違反のリスクがないかコンプライアンスチェックを行い、問題があれば修正した安全な文章を提案してください。\n\n' + res;
-          else if (actionType === 'eyecatch_prompt') prompt = '以下の文章の内容を象徴する、MidjourneyやDALL-E 3などの画像生成AI向けの「英語のプロンプト」を1つだけ作成してください。出力は英語のプロンプトテキストのみにしてください。\n\n' + res;
-       
+
           let currentProvider = aiModel.includes('claude') ? 'anthropic' : aiModel.includes('gemini') ? 'google' : 'openai';
-          let basePayload = { prompt: prompt, ai_model: aiModel };
+          let basePayload = { prompt: builtPrompt, ai_model: aiModel };
 
           const result = await fetchWithFallback('/api/auto_generate', basePayload, currentProvider, ['openai', 'google', 'anthropic']);
           
           if (result.success) {
-              const actionNames = {
-                  'x_thread': 'Xツリー投稿', 'short_vid': 'ショート動画台本', 'insta_carousel': 'Instaカルーセル構成',
-                  'line_msg': 'LINE配信メッセージ', 'voicy': '音声配信台本', 'step_mail': 'メルマガ原稿',
-                  'seo_blog': 'SEOブログ記事', 'pr_release': 'PR文', 'catchy': 'キャッチーに推敲',
-                  'simple': 'シンプルに推敲', 'compliance': 'コンプラチェック', 'eyecatch_prompt': 'アイキャッチ画像プロンプト'
-              };
-              const newRes = res + '\n\n---\n\n### \uD83D\uDD04 追加結果 (' + (actionNames[actionType] || actionType) + ')\n\n' + result.data.result;
-              
+              const newRes = res + '\n\n---\n\n### \uD83D\uDD04 追加結果 (' + actionLabel + ')\n\n' + result.data.result;
               const ndb = AppDB.get();
               if(!ndb.users[user].usage.apiCount) ndb.users[user].usage.apiCount = { openai: 0, anthropic: 0, google: 0 };
               ndb.users[user].usage.apiCount[result.provider] = (ndb.users[user].usage.apiCount[result.provider] || 0) + 1;
               AppDB.save(ndb);
-
               updateRes(newRes);
-              if(result.tried > 0) showToast('\uD83D\uDCA1 ' + result.provider.toUpperCase() + 'を使用して推敲が完了しました！');
-              else showToast('\u2728 ' + (actionNames[actionType] || '') + ' が完了しました！');
+              if(result.tried > 0) showToast('\uD83D\uDCA1 ' + result.provider.toUpperCase() + 'を使用して ' + actionLabel + ' が完了しました！');
+              else showToast('\u2728 ' + actionLabel + ' が完了しました！');
           } else { 
               setError(result.error); 
           }
@@ -1261,26 +1279,37 @@ ${emptyFields.map(f => '　・【' + f + '】').join('\n')}
                     conf.isImagePrompt ? res : div({ dangerouslySetInnerHTML: renderMarkdown(res) })
                 ),
                 !conf.isImagePrompt && div({ className: 'mt-6 space-y-4' },
+                    // プロンプトモード時のバナー
+                    genMode === 'prompt' && div({ className: 'p-3 bg-brand-accent/10 border border-brand-accent/30 rounded-xl flex items-center gap-2 animate-in' },
+                        span({ className: 'text-sm' }, '\uD83D\uDCCB'),
+                        p({ className: 'text-xs font-bold text-brand-accent' }, 'プロンプトモード: 以下のボタンはAIを使わず、プロンプトをクリップボードにコピーします')
+                    ),
                     div({ className: 'p-4 bg-white/5 border border-white/10 rounded-2xl' },
-                        h4({ className: 'text-xs font-bold text-brand mb-3 flex items-center gap-2' }, '\uD83E\uDDD1\u200D\uD83C\uDFEB AI自動推敲（赤ペン先生）'),
+                        h4({ className: 'text-xs font-bold text-brand mb-3 flex items-center gap-2' },
+                            '\uD83E\uDDD1\u200D\uD83C\uDFEB AI自動推敲（赤ペン先生）',
+                            genMode === 'prompt' && span({ className: 'text-[10px] bg-brand-accent/20 text-brand-accent px-2 py-0.5 rounded-full font-bold' }, 'プロンプトコピー')
+                        ),
                         div({ className: 'flex flex-wrap gap-2' },
-                            button({ onClick: () => handleModify('catchy'), disabled: isLoading, className: 'glass-panel px-3 py-1.5 rounded-xl text-xs font-bold text-slate-300 hover:text-white hover:bg-brand/20 transition disabled:opacity-50' }, '\u2728 もっとキャッチーに'),
-                            button({ onClick: () => handleModify('simple'), disabled: isLoading, className: 'glass-panel px-3 py-1.5 rounded-xl text-xs font-bold text-slate-300 hover:text-white hover:bg-brand/20 transition disabled:opacity-50' }, '\uD83D\uDC76 小学生でもわかるように'),
-                            button({ onClick: () => handleModify('compliance'), disabled: isLoading, className: 'glass-panel px-3 py-1.5 rounded-xl text-xs font-bold text-slate-300 hover:text-white hover:bg-brand/20 transition disabled:opacity-50' }, '\uD83D\uDEA8 コンプラ・炎上チェック'),
-                            button({ onClick: () => handleModify('eyecatch_prompt'), disabled: isLoading, className: 'glass-panel px-3 py-1.5 rounded-xl text-xs font-bold text-brand-accent hover:text-white hover:bg-brand-accent/20 transition disabled:opacity-50' }, '\uD83D\uDDBC\uFE0F アイキャッチ生成プロンプトを作成')
+                            button({ onClick: () => handleModify('catchy'), disabled: isLoading, className: 'glass-panel px-3 py-1.5 rounded-xl text-xs font-bold transition disabled:opacity-50 ' + (genMode === 'prompt' ? 'text-brand-accent hover:bg-brand-accent/20 border border-brand-accent/30' : 'text-slate-300 hover:text-white hover:bg-brand/20') }, (genMode === 'prompt' ? '\uD83D\uDCCB ' : '\u2728 ') + 'もっとキャッチーに'),
+                            button({ onClick: () => handleModify('simple'), disabled: isLoading, className: 'glass-panel px-3 py-1.5 rounded-xl text-xs font-bold transition disabled:opacity-50 ' + (genMode === 'prompt' ? 'text-brand-accent hover:bg-brand-accent/20 border border-brand-accent/30' : 'text-slate-300 hover:text-white hover:bg-brand/20') }, (genMode === 'prompt' ? '\uD83D\uDCCB ' : '\uD83D\uDC76 ') + '小学生でもわかるように'),
+                            button({ onClick: () => handleModify('compliance'), disabled: isLoading, className: 'glass-panel px-3 py-1.5 rounded-xl text-xs font-bold transition disabled:opacity-50 ' + (genMode === 'prompt' ? 'text-brand-accent hover:bg-brand-accent/20 border border-brand-accent/30' : 'text-slate-300 hover:text-white hover:bg-brand/20') }, (genMode === 'prompt' ? '\uD83D\uDCCB ' : '\uD83D\uDEA8 ') + 'コンプラ・炎上チェック'),
+                            button({ onClick: () => handleModify('eyecatch_prompt'), disabled: isLoading, className: 'glass-panel px-3 py-1.5 rounded-xl text-xs font-bold transition disabled:opacity-50 ' + (genMode === 'prompt' ? 'text-brand-accent hover:bg-brand-accent/20 border border-brand-accent/30' : 'text-brand-accent hover:text-white hover:bg-brand-accent/20') }, (genMode === 'prompt' ? '\uD83D\uDCCB ' : '\uD83D\uDDBC\uFE0F ') + 'アイキャッチ生成プロンプトを作成')
                         )
                     ),
                     div({ className: 'p-4 bg-white/5 border border-white/10 rounded-2xl' },
-                        h4({ className: 'text-xs font-bold text-brand-light mb-3 flex items-center gap-2' }, '\uD83D\uDD04 ワンクリック・マルチ展開'),
+                        h4({ className: 'text-xs font-bold text-brand-light mb-3 flex items-center gap-2' },
+                            '\uD83D\uDD04 ワンクリック・マルチ展開',
+                            genMode === 'prompt' && span({ className: 'text-[10px] bg-brand-accent/20 text-brand-accent px-2 py-0.5 rounded-full font-bold' }, 'プロンプトコピー')
+                        ),
                         div({ className: 'flex flex-wrap gap-2' },
-                            button({ onClick: () => handleModify('x_thread'), disabled: isLoading, className: 'glass-panel px-3 py-1.5 rounded-xl text-xs font-bold text-slate-300 hover:text-white hover:bg-brand-light/20 transition disabled:opacity-50' }, 'X(Twitter)ツリー'),
-                            button({ onClick: () => handleModify('short_vid'), disabled: isLoading, className: 'glass-panel px-3 py-1.5 rounded-xl text-xs font-bold text-slate-300 hover:text-white hover:bg-brand-light/20 transition disabled:opacity-50' }, 'ショート動画'),
-                            button({ onClick: () => handleModify('insta_carousel'), disabled: isLoading, className: 'glass-panel px-3 py-1.5 rounded-xl text-xs font-bold text-slate-300 hover:text-white hover:bg-brand-light/20 transition disabled:opacity-50' }, 'Instagramカルーセル'),
-                            button({ onClick: () => handleModify('line_msg'), disabled: isLoading, className: 'glass-panel px-3 py-1.5 rounded-xl text-xs font-bold text-slate-300 hover:text-white hover:bg-brand-light/20 transition disabled:opacity-50' }, 'LINE配信'),
-                            button({ onClick: () => handleModify('voicy'), disabled: isLoading, className: 'glass-panel px-3 py-1.5 rounded-lg text-xs font-bold text-slate-300 hover:text-white hover:bg-brand-light/20 transition disabled:opacity-50' }, '音声配信(Voicy等)'),
-                            button({ onClick: () => handleModify('step_mail'), disabled: isLoading, className: 'glass-panel px-3 py-1.5 rounded-xl text-xs font-bold text-slate-300 hover:text-white hover:bg-brand-light/20 transition disabled:opacity-50' }, 'メルマガ'),
-                            button({ onClick: () => handleModify('seo_blog'), disabled: isLoading, className: 'glass-panel px-3 py-1.5 rounded-xl text-xs font-bold text-slate-300 hover:text-white hover:bg-brand-light/20 transition disabled:opacity-50' }, 'SEOブログ'),
-                            button({ onClick: () => handleModify('pr_release'), disabled: isLoading, className: 'glass-panel px-3 py-1.5 rounded-xl text-xs font-bold text-slate-300 hover:text-white hover:bg-brand-light/20 transition disabled:opacity-50' }, 'PR・プレスリリース')
+                            button({ onClick: () => handleModify('x_thread'), disabled: isLoading, className: 'glass-panel px-3 py-1.5 rounded-xl text-xs font-bold transition disabled:opacity-50 ' + (genMode === 'prompt' ? 'text-brand-accent hover:bg-brand-accent/20 border border-brand-accent/30' : 'text-slate-300 hover:text-white hover:bg-brand-light/20') }, (genMode === 'prompt' ? '\uD83D\uDCCB ' : '') + 'X(Twitter)ツリー'),
+                            button({ onClick: () => handleModify('short_vid'), disabled: isLoading, className: 'glass-panel px-3 py-1.5 rounded-xl text-xs font-bold transition disabled:opacity-50 ' + (genMode === 'prompt' ? 'text-brand-accent hover:bg-brand-accent/20 border border-brand-accent/30' : 'text-slate-300 hover:text-white hover:bg-brand-light/20') }, (genMode === 'prompt' ? '\uD83D\uDCCB ' : '') + 'ショート動画'),
+                            button({ onClick: () => handleModify('insta_carousel'), disabled: isLoading, className: 'glass-panel px-3 py-1.5 rounded-xl text-xs font-bold transition disabled:opacity-50 ' + (genMode === 'prompt' ? 'text-brand-accent hover:bg-brand-accent/20 border border-brand-accent/30' : 'text-slate-300 hover:text-white hover:bg-brand-light/20') }, (genMode === 'prompt' ? '\uD83D\uDCCB ' : '') + 'Instagramカルーセル'),
+                            button({ onClick: () => handleModify('line_msg'), disabled: isLoading, className: 'glass-panel px-3 py-1.5 rounded-xl text-xs font-bold transition disabled:opacity-50 ' + (genMode === 'prompt' ? 'text-brand-accent hover:bg-brand-accent/20 border border-brand-accent/30' : 'text-slate-300 hover:text-white hover:bg-brand-light/20') }, (genMode === 'prompt' ? '\uD83D\uDCCB ' : '') + 'LINE配信'),
+                            button({ onClick: () => handleModify('voicy'), disabled: isLoading, className: 'glass-panel px-3 py-1.5 rounded-lg text-xs font-bold transition disabled:opacity-50 ' + (genMode === 'prompt' ? 'text-brand-accent hover:bg-brand-accent/20 border border-brand-accent/30' : 'text-slate-300 hover:text-white hover:bg-brand-light/20') }, (genMode === 'prompt' ? '\uD83D\uDCCB ' : '') + '音声配信(Voicy等)'),
+                            button({ onClick: () => handleModify('step_mail'), disabled: isLoading, className: 'glass-panel px-3 py-1.5 rounded-xl text-xs font-bold transition disabled:opacity-50 ' + (genMode === 'prompt' ? 'text-brand-accent hover:bg-brand-accent/20 border border-brand-accent/30' : 'text-slate-300 hover:text-white hover:bg-brand-light/20') }, (genMode === 'prompt' ? '\uD83D\uDCCB ' : '') + 'メルマガ'),
+                            button({ onClick: () => handleModify('seo_blog'), disabled: isLoading, className: 'glass-panel px-3 py-1.5 rounded-xl text-xs font-bold transition disabled:opacity-50 ' + (genMode === 'prompt' ? 'text-brand-accent hover:bg-brand-accent/20 border border-brand-accent/30' : 'text-slate-300 hover:text-white hover:bg-brand-light/20') }, (genMode === 'prompt' ? '\uD83D\uDCCB ' : '') + 'SEOブログ'),
+                            button({ onClick: () => handleModify('pr_release'), disabled: isLoading, className: 'glass-panel px-3 py-1.5 rounded-xl text-xs font-bold transition disabled:opacity-50 ' + (genMode === 'prompt' ? 'text-brand-accent hover:bg-brand-accent/20 border border-brand-accent/30' : 'text-slate-300 hover:text-white hover:bg-brand-light/20') }, (genMode === 'prompt' ? '\uD83D\uDCCB ' : '') + 'PR・プレスリリース')
                         )
                     )
                 )
