@@ -25,7 +25,7 @@
  
     const DB_KEY = 'AICP_v70_BYOK_DB';   
     const SESS_KEY = 'AICP_v70_Session';  
-    const SYS_VERSION = 'v71.1.3 Ultimate Auto-Browsing Edition';  
+    const SYS_VERSION = 'v71.2.0 Ultimate Auto-Browsing Edition';  
  
     const AppDB = {  
       get: () => {  
@@ -1531,7 +1531,14 @@ ${emptyFields.map(f => '　・【' + f + '】').join('\n')}
             toast && div({ className: 'fixed top-4 lg:top-8 left-1/2 transform -translate-x-1/2 bg-brand text-white px-6 py-3 rounded-full shadow-2xl z-[999] font-bold text-sm animate-in' }, toast),
             el(ActionModalWrapper),
             div({ className: 'mb-8' },
-                h1({ className: 'text-4xl font-black text-white mb-3 tracking-tight' }, '\uD83D\uDC51 管理者ダッシュボード'),
+                div({ className: 'flex flex-wrap items-center gap-3 mb-3' },
+                    h1({ className: 'text-4xl font-black text-white tracking-tight' }, '\uD83D\uDC51 管理者ダッシュボード'),
+                    span({ className: 'bg-brand/20 border border-brand/40 text-brand-light text-xs font-black px-3 py-1.5 rounded-full' }, SYS_VERSION),
+                    span({ className: 'bg-brand-success/20 border border-brand-success/40 text-brand-success text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1' },
+                        div({ className: 'w-1.5 h-1.5 rounded-full bg-brand-success animate-pulse' }),
+                        '\u2728 Auto-Browsing ON'
+                    )
+                ),
                 p({ className: 'text-slate-400 text-lg' }, 'SaaSの全データとユーザーをここで管理します。')
             ),
             div({ className: 'flex overflow-x-auto hide-scrollbar gap-2 mb-8 pb-2 border-b border-white/10' },
