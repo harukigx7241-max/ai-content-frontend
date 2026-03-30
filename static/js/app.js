@@ -25,7 +25,7 @@
  
     const DB_KEY = 'AICP_v70_BYOK_DB';   
     const SESS_KEY = 'AICP_v70_Session';  
-    const SYS_VERSION = 'v71.2.1 Ultimate Auto-Browsing Edition';  
+    const SYS_VERSION = 'v71.2.2 Ultimate Auto-Browsing Edition';  
  
     const AppDB = {  
       get: () => {  
@@ -903,8 +903,7 @@ ${emptyFields.map(f => '　・【' + f + '】').join('\n')}
 
           // ▼▼▼ プロンプトモード: APIを叩かずコピーして終了 ▼▼▼
           if (genMode === 'prompt') {
-              const aiPrefix = getAIPrefix(promptAiModel, uData.settings);
-              copyTextToClipboard(aiPrefix + builtPrompt);
+              copyTextToClipboard(builtPrompt);
               showToast('\uD83D\uDCCB 「' + actionLabel + '」のプロンプトをコピーしました！AIに貼り付けてください。');
               return;
           }
