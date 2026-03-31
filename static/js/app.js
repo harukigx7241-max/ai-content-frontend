@@ -25,7 +25,7 @@
  
     const DB_KEY = 'AICP_v70_BYOK_DB';   
     const SESS_KEY = 'AICP_v70_Session';  
-    const SYS_VERSION = 'v71.4.0 Ultimate Auto-Browsing Edition';  
+    const SYS_VERSION = 'v71.5.0 Ultimate Auto-Browsing Edition';  
  
     const AppDB = {  
       get: () => {  
@@ -510,6 +510,7 @@
       const [magicAI, setMagicAI] = useState('openai');
       
       const [trends, setTrends] = useState([]);
+      const [trendOpen, setTrendOpen] = useState(false);
       const [urlInput, setUrlInput] = useState('');
       const [keywordInput, setKeywordInput] = useState('');
       const [showAdvancedMagic, setShowAdvancedMagic] = useState(false);
@@ -1065,41 +1066,57 @@ ${emptyFields.map(f => '　・【' + f + '】').join('\n')}
               h2({ className: 'text-xl font-black text-white' }, conf.name)
           ),
 
-          // トレンドパネル（日本語カード型UI）
-          trends.length > 0 && div({ className: 'mb-6 animate-in' },
-              div({ className: 'flex items-center justify-between mb-3' },
-                  h4({ className: 'text-xs font-black text-white flex items-center gap-2' },
-                      span({ className: 'text-base' }, '\uD83D\uDD25'),
-                      '今日の急上昇トレンド',
-                      span({ className: 'text-[10px] bg-brand/20 text-brand-light px-2 py-0.5 rounded-full font-bold' }, '日本 リアルタイム')
+          // トレンドパネル（折りたたみ式・日本語カードUI）
+          trends.length > 0 && div({ className: 'mb-4 animate-in' },
+              button({
+                  onClick: () => setTrendOpen(!trendOpen),
+                  className: 'w-full flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition'
+              },
+                  div({ className: 'flex items-center gap-2' },
+                      span({}, '\uD83D\uDD25'),
+                      span({ className: 'text-xs font-black text-white' }, '\u4ECA\u65E5\u306E\u6025\u4E0A\u6607\u30C8\u30EC\u30F3\u30C9'),
+                      span({ className: 'text-[10px] bg-brand/20 text-brand-light px-1.5 py-0.5 rounded-full font-bold' }, trends.length + '\u4EF6'),
+                      span({ className: 'text-[10px] bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded-full font-bold' }, '\u65E5\u672C\u8A9E')
                   ),
-                  p({ className: 'text-[10px] text-slate-500' }, new Date().toLocaleDateString('ja-JP', {month:'short', day:'numeric'}) + ' 更新')
+                  span({ className: 'text-slate-400 text-xs' }, trendOpen ? '\u25B2 \u9589\u3058\u308B' : '\u25BC \u958B\u304F')
               ),
-              div({ className: 'grid grid-cols-2 gap-2' },
-                  trends.map((t, i) => {
-                      const cats = [
-                          { kw: ['副業','稼ぐ','収入','投資','NISA','お金','節約','資産'], icon: '\uD83D\uDCB0', color: 'from-yellow-500/20 to-amber-500/10 border-yellow-500/30', label: 'マネー' },
-                          { kw: ['AI','ChatGPT','技術','アプリ','スマホ','ガジェット'], icon: '\uD83E\uDD16', color: 'from-blue-500/20 to-cyan-500/10 border-blue-500/30', label: 'テクノロジー' },
-                          { kw: ['恋愛','婚活','デート','結婚','彼氏','彼女'], icon: '\uD83D\uDC95', color: 'from-pink-500/20 to-rose-500/10 border-pink-500/30', label: '恋愛' },
-                          { kw: ['ダイエット','美容','スキンケア','筋トレ','健康','痩せ'], icon: '\uD83D\uDCAA', color: 'from-green-500/20 to-emerald-500/10 border-green-500/30', label: '美容・健康' },
-                          { kw: ['転職','就活','仕事','キャリア','起業','フリーランス'], icon: '\uD83D\uDCBC', color: 'from-purple-500/20 to-violet-500/10 border-purple-500/30', label: 'キャリア' },
-                          { kw: ['メンタル','ストレス','自己啓発','マインド','習慣'], icon: '\uD83E\uDDE0', color: 'from-indigo-500/20 to-blue-500/10 border-indigo-500/30', label: 'メンタル' },
-                      ];
-                      const title = t.title || '';
-                      let matched = cats.find(c => c.kw.some(k => title.includes(k))) || { icon: '\uD83D\uDCC8', color: 'from-slate-500/20 to-slate-600/10 border-slate-500/30', label: 'トレンド' };
-                      return button({
-                          key: i,
-                          onClick: () => { handleMagic('all', { keyword: 'トレンドテーマ: ' + title }); },
-                          className: 'bg-gradient-to-br ' + matched.color + ' border rounded-xl p-3 text-left hover:brightness-125 transition active:scale-95 group'
-                      },
-                          div({ className: 'flex items-center gap-1.5 mb-1.5' },
-                              span({ className: 'text-base' }, matched.icon),
-                              span({ className: 'text-[10px] text-slate-400 font-bold' }, matched.label)
-                          ),
-                          p({ className: 'text-xs font-black text-white leading-tight line-clamp-2 group-hover:text-brand-light transition' }, title),
-                          p({ className: 'text-[9px] text-slate-500 mt-1' }, 'タップで神丸投げ \u2192')
-                      );
-                  })
+              trendOpen && div({ className: 'mt-2 animate-in' },
+                  div({ className: 'grid grid-cols-2 gap-2' },
+                      trends.map(function(t, i) {
+                          var cats = [
+                              { kw: ['\u526F\u696D','\u7A3C\u3050','\u53CE\u5165','\u6295\u8CC7','NISA','\u304A\u91D1','\u7BC0\u7D04','\u8CC7\u7523'], icon: '\uD83D\uDCB0', color: 'from-yellow-500/20 to-amber-500/10 border-yellow-500/30', label: '\u30DE\u30CD\u30FC' },
+                              { kw: ['AI','ChatGPT','\u6280\u8853','\u30A2\u30D7\u30EA','\u30B9\u30DE\u30DB','\u30AC\u30B8\u30A7\u30C3\u30C8'], icon: '\uD83E\uDD16', color: 'from-blue-500/20 to-cyan-500/10 border-blue-500/30', label: '\u30C6\u30AF\u30CE\u30ED\u30B8\u30FC' },
+                              { kw: ['\u6050\u6D1B','\u5A5A\u6D3B','\u30C7\u30FC\u30C8','\u7D50\u5A5A','\u5F7C\u6C0F','\u5F7C\u5973'], icon: '\uD83D\uDC95', color: 'from-pink-500/20 to-rose-500/10 border-pink-500/30', label: '\u604B\u611B' },
+                              { kw: ['\u30C0\u30A4\u30A8\u30C3\u30C8','\u7F8E\u5BB9','\u30B9\u30AD\u30F3\u30B1\u30A2','\u7B4B\u30C8\u30EC','\u5065\u5EB7','\u75E9\u305B'], icon: '\uD83D\uDCAA', color: 'from-green-500/20 to-emerald-500/10 border-green-500/30', label: '\u7F8E\u5BB9\u30FB\u5065\u5EB7' },
+                              { kw: ['\u8EE2\u8077','\u5C31\u6D3B','\u4ED5\u4E8B','\u30AD\u30E3\u30EA\u30A2','\u8D77\u696D','\u30D5\u30EA\u30FC\u30E9\u30F3\u30B9'], icon: '\uD83D\uDCBC', color: 'from-purple-500/20 to-violet-500/10 border-purple-500/30', label: '\u30AD\u30E3\u30EA\u30A2' },
+                              { kw: ['\u5360\u3044','\u30BF\u30ED\u30C3\u30C8','\u30B9\u30D4\u30EA\u30C1\u30E5\u30A2\u30EB','\u9748\u611F','\u9748\u8996','\u9054\u4EBA'], icon: '\uD83D\uDD2E', color: 'from-violet-500/20 to-purple-500/10 border-violet-500/30', label: '\u5360\u3044\u30FB\u30B9\u30D4\u30EA' },
+                              { kw: ['\u30E1\u30F3\u30BF\u30EB','\u30B9\u30C8\u30EC\u30B9','\u81EA\u5DF1\u554F\u767A','\u30DE\u30A4\u30F3\u30C9','\u7FD2\u6163'], icon: '\uD83E\uDDE0', color: 'from-indigo-500/20 to-blue-500/10 border-indigo-500/30', label: '\u30E1\u30F3\u30BF\u30EB' }
+                          ];
+                          var title = t.title || '';
+                          var matched = null;
+                          for (var ci = 0; ci < cats.length; ci++) {
+                              var cat = cats[ci];
+                              for (var ki = 0; ki < cat.kw.length; ki++) {
+                                  if (title.indexOf(cat.kw[ki]) >= 0) { matched = cat; break; }
+                              }
+                              if (matched) break;
+                          }
+                          if (!matched) matched = { icon: '\uD83D\uDCC8', color: 'from-slate-500/20 to-slate-600/10 border-slate-500/30', label: '\u30C8\u30EC\u30F3\u30C9' };
+                          return button({
+                              key: i,
+                              onClick: function() { handleMagic('all', { keyword: '\u30C8\u30EC\u30F3\u30C9\u30C6\u30FC\u30DE: ' + title }); },
+                              className: 'bg-gradient-to-br ' + matched.color + ' border rounded-xl p-3 text-left hover:brightness-125 transition active:scale-95 group'
+                          },
+                              div({ className: 'flex items-center gap-1.5 mb-1.5' },
+                                  span({ className: 'text-base' }, matched.icon),
+                                  span({ className: 'text-[10px] text-slate-400 font-bold' }, matched.label)
+                              ),
+                              p({ className: 'text-xs font-black text-white leading-tight line-clamp-2 group-hover:text-brand-light transition' }, title),
+                              p({ className: 'text-[9px] text-slate-500 mt-1' }, '\u30BF\u30C3\u30D7\u3067\u795E\u4E38\u6295\u3052 \u2192')
+                          );
+                      })
+                  ),
+                  p({ className: 'text-[9px] text-slate-600 mt-2 text-center' }, '\u203B\u30AF\u30EA\u30C3\u30AF\u3059\u308B\u3068\u3053\u306E\u30C8\u30EC\u30F3\u30C9\u306B\u4E57\u3063\u305F\u30C6\u30FC\u30DE\u3067\u5168\u9805\u76EE\u3092\u81EA\u52D5\u5165\u529B\u3057\u307E\u3059')
               )
           ),
 
