@@ -25,7 +25,7 @@
  
     const DB_KEY = 'AICP_v70_BYOK_DB';   
     const SESS_KEY = 'AICP_v70_Session';  
-    const SYS_VERSION = 'v71.2.2 Ultimate Auto-Browsing Edition';  
+    const SYS_VERSION = 'v71.3.0 Ultimate Auto-Browsing Edition';  
  
     const AppDB = {  
       get: () => {  
@@ -504,6 +504,9 @@
       const [loadCode, setLoadCode] = useState('');
       const [abTest, setAbTest] = useState(false);
       const [manualInput, setManualInput] = useState('');
+      const [previewTab, setPreviewTab] = useState('all'); // all/title/free/paid/seo
+      const [previewMode, setPreviewMode] = useState('pc'); // pc/mobile
+      const [showPasteModal, setShowPasteModal] = useState(false);
       const [magicAI, setMagicAI] = useState('openai');
       
       const [trends, setTrends] = useState([]);
@@ -726,35 +729,59 @@
           let magicBlock = '';
           
           if (isGodMode) {
-              // ===== 完全白紙（神丸投げ）モード =====
+              // ===== 完全白紙（神丸投げ）モード LEVEL 3 =====
+              const toolGenre = vals['genre'] || '';
+              const genreDeepDive = (() => {
+                  if (toolGenre.includes('副業') || toolGenre.includes('ビジネス') || toolGenre.includes('マネー') || toolGenre.includes('投資')) {
+                      return '\n【ジャンル別深掘り指示：マネー・副業系】\n・月収・作業時間・初期費用を具体的な数字で必ず明記してください\n・「初心者でも〇ヶ月でXX万円」という再現性の高いシナリオを設定してください\n・税金・法律リスクなど「落とし穴」も1箇所は記載し信頼性を高めてください\n';
+                  }
+                  if (toolGenre.includes('美容') || toolGenre.includes('ダイエット') || toolGenre.includes('健康')) {
+                      return '\n【ジャンル別深掘り指示：美容・健康系】\n・ビフォーアフターの数字（体重kg・期間・コスト）を必ず入れてください\n・「なぜ他の方法では失敗するのか」という科学的根拠を添えてください\n・実際に試した人の感想・体験談（架空でもリアリティ重視）を入れてください\n';
+                  }
+                  if (toolGenre.includes('恋愛') || toolGenre.includes('婚活')) {
+                      return '\n【ジャンル別深掘り指示：恋愛・婚活系】\n・「〇〇な女性/男性が実際にやったこと」という具体的なシチュエーションを描写してください\n・心理学・行動経済学のエビデンスを1つ以上引用してください\n・「やってはいけないNG行動」を対比させて説得力を高めてください\n';
+                  }
+                  if (toolGenre.includes('自己啓発') || toolGenre.includes('メンタル')) {
+                      return '\n【ジャンル別深掘り指示：自己啓発・メンタル系】\n・読者が「自分のことだ！」と感じる具体的な日常シーンを冒頭に描写してください\n・感情に寄り添うフレーズ（共感→気づき→行動）の流れを徹底してください\n・「今日からできる小さな一歩」という低ハードルのアクションで締めてください\n';
+                  }
+                  if (toolGenre.includes('AI') || toolGenre.includes('テクノロジー')) {
+                      return '\n【ジャンル別深掘り指示：AI・テクノロジー系】\n・専門用語は必ず「〇〇（＝XXのこと）」という形で噛み砕いて説明してください\n・「これを知らないと損する」という緊急性・希少性を演出してください\n・実際の使用例・ツール名・具体的な手順を詳細に記述してください\n';
+                  }
+                  return '\n【ジャンル別深掘り指示：汎用】\n・読者の「なぜ？」「どうやって？」に全て答える網羅的な内容にしてください\n・数字・固有名詞・具体例を豊富に使い、抽象論は避けてください\n';
+              })();
+
               magicBlock = `
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🔥【STELLA NOTE - 究極AI丸投げ SYSTEM 発動】🔥
-　　　　完全白紙「神丸投げ」モード
+🔥【STELLA NOTE - 神丸投げ LEVEL 3 SYSTEM 発動】🔥
+　　完全白紙「究極の神丸投げ」モード
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-【状況】ユーザーからの入力は一切ありません。
-　　　あなた（AI）が全てを考えて最高の出力をしてください。
+【状況】入力は0件。あなた（AI）が全てを判断・選定・執筆します。
+　　　以下の3ステップを厳守して最高品質のコンテンツを生成してください。
 
-【必須ステップ① トレンド調査（Web検索必須）】
+━━ STEP 1: 表層トレンド調査（Web検索必須）━━
 今すぐ「Web検索（ブラウジング機能）」を使って以下を調査してください：
-・${today}現在の日本のX(Twitter)、Instagram、TikTokのトレンド
-・Googleトレンドで急上昇中のキーワード（日本）
-・noteや個人ブログ界隈で今週バズっているテーマ
-・副業・マネー・美容・自己啓発カテゴリの最新需要
+・${today}現在の日本のX(Twitter)・Instagram・TikTok急上昇ワード
+・Googleトレンド（日本）で今週急上昇中のキーワード TOP5
+・noteのトップセール記事・ランキング上位テーマ
+・Yahoo!リアルタイム検索の急上昇ワード
 
-【必須ステップ② テーマ選定と宣言】
-調査結果から「今最も読者の反応が期待できる1テーマ」を選定し、
-出力の冒頭に以下の形式で宣言してください：
+━━ STEP 2: 読者心理の深掘り調査（Web検索必須）━━
+STEP 1で選んだ有力テーマについて、さらに深掘りしてください：
+・そのテーマで「本当に悩んでいる人の心の声」をX・知恵袋・Redditから分析
+・既存の競合コンテンツにない「新しい切り口・差別化ポイント」を発見
+・読者が「お金を払ってでも知りたい」と思う具体的な情報は何か
+
+━━ STEP 3: テーマ確定・宣言と執筆━━
+調査結果から最も読者反応が期待できる1テーマを選定し、
+出力の最初に必ず以下を宣言してください：
 
 ▶ 選定テーマ: 「XXXX」
-▶ 選定理由: （Web検索で確認したトレンドデータを根拠に1〜2文で説明）
-▶ ターゲット読者: （具体的な人物像）
-
-【必須ステップ③ 全項目の自動最適化と執筆】
-宣言したテーマに基づいて、このツールの全項目を最適な値に設定し、
-最高品質のコンテンツを出力してください。
-
+▶ 選定根拠: （Web検索で確認したトレンドデータ・数値を根拠に2〜3文）
+▶ ターゲット読者: （年齢・職業・具体的な悩みを持つ人物像）
+▶ 競合との差別化: （既存コンテンツにない新しい切り口）
+▶ 読者が得られる価値: （具体的な数字・成果）
+${genreDeepDive}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 `;
           } else if (isAutoMode) {
@@ -1038,17 +1065,42 @@ ${emptyFields.map(f => '　・【' + f + '】').join('\n')}
               h2({ className: 'text-xl font-black text-white' }, conf.name)
           ),
 
-          // トレンドパネル
-          trends.length > 0 && div({ className: 'mb-6 p-4 bg-brand/10 border border-brand/20 rounded-xl animate-in' },
-              h4({ className: 'text-xs font-bold text-brand mb-2 flex items-center gap-2' }, '\uD83D\uDD25 急上昇トレンド・ジャック'),
-              div({ className: 'flex flex-wrap gap-2' },
-                  trends.map((t, i) => button({ 
-                      key: i, 
-                      onClick: () => { handleMagic('all', { keyword: 'トレンド: ' + t.title }); }, 
-                      className: 'text-[10px] bg-white/10 hover:bg-brand/20 px-3 py-1.5 rounded-lg text-slate-200 transition text-left truncate max-w-full' 
-                  }, '\uD83D\uDCC8 ' + t.title))
+          // トレンドパネル（日本語カード型UI）
+          trends.length > 0 && div({ className: 'mb-6 animate-in' },
+              div({ className: 'flex items-center justify-between mb-3' },
+                  h4({ className: 'text-xs font-black text-white flex items-center gap-2' },
+                      span({ className: 'text-base' }, '\uD83D\uDD25'),
+                      '今日の急上昇トレンド',
+                      span({ className: 'text-[10px] bg-brand/20 text-brand-light px-2 py-0.5 rounded-full font-bold' }, '日本 リアルタイム')
+                  ),
+                  p({ className: 'text-[10px] text-slate-500' }, new Date().toLocaleDateString('ja-JP', {month:'short', day:'numeric'}) + ' 更新')
               ),
-              p({ className: 'text-[9px] text-slate-500 mt-2' }, '※クリックするとこのトレンドに乗ったテーマで全項目を自動入力します。')
+              div({ className: 'grid grid-cols-2 gap-2' },
+                  trends.map((t, i) => {
+                      const cats = [
+                          { kw: ['副業','稼ぐ','収入','投資','NISA','お金','節約','資産'], icon: '\uD83D\uDCB0', color: 'from-yellow-500/20 to-amber-500/10 border-yellow-500/30', label: 'マネー' },
+                          { kw: ['AI','ChatGPT','技術','アプリ','スマホ','ガジェット'], icon: '\uD83E\uDD16', color: 'from-blue-500/20 to-cyan-500/10 border-blue-500/30', label: 'テクノロジー' },
+                          { kw: ['恋愛','婚活','デート','結婚','彼氏','彼女'], icon: '\uD83D\uDC95', color: 'from-pink-500/20 to-rose-500/10 border-pink-500/30', label: '恋愛' },
+                          { kw: ['ダイエット','美容','スキンケア','筋トレ','健康','痩せ'], icon: '\uD83D\uDCAA', color: 'from-green-500/20 to-emerald-500/10 border-green-500/30', label: '美容・健康' },
+                          { kw: ['転職','就活','仕事','キャリア','起業','フリーランス'], icon: '\uD83D\uDCBC', color: 'from-purple-500/20 to-violet-500/10 border-purple-500/30', label: 'キャリア' },
+                          { kw: ['メンタル','ストレス','自己啓発','マインド','習慣'], icon: '\uD83E\uDDE0', color: 'from-indigo-500/20 to-blue-500/10 border-indigo-500/30', label: 'メンタル' },
+                      ];
+                      const title = t.title || '';
+                      let matched = cats.find(c => c.kw.some(k => title.includes(k))) || { icon: '\uD83D\uDCC8', color: 'from-slate-500/20 to-slate-600/10 border-slate-500/30', label: 'トレンド' };
+                      return button({
+                          key: i,
+                          onClick: () => { handleMagic('all', { keyword: 'トレンドテーマ: ' + title }); },
+                          className: 'bg-gradient-to-br ' + matched.color + ' border rounded-xl p-3 text-left hover:brightness-125 transition active:scale-95 group'
+                      },
+                          div({ className: 'flex items-center gap-1.5 mb-1.5' },
+                              span({ className: 'text-base' }, matched.icon),
+                              span({ className: 'text-[10px] text-slate-400 font-bold' }, matched.label)
+                          ),
+                          p({ className: 'text-xs font-black text-white leading-tight line-clamp-2 group-hover:text-brand-light transition' }, title),
+                          p({ className: 'text-[9px] text-slate-500 mt-1' }, 'タップで神丸投げ \u2192')
+                      );
+                  })
+              )
           ),
 
           // マジックツールパネル
@@ -1242,88 +1294,242 @@ ${emptyFields.map(f => '　・【' + f + '】').join('\n')}
           error && div({ className: 'mt-4' }, el(ErrorAlert, { msg: error }))
         ),
 
-        // 右パネル（プレビュー）
-        div({ id: 'tool-right-panel', className: 'flex-1 bg-black p-6 md:p-10 min-h-[500px] lg:min-h-0 lg:h-full lg:overflow-y-auto hide-scrollbar' },
-            res ? div({ className: 'animate-in flex flex-col h-full' },
-                div({ className: 'flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4' },
-                    h3({ className: 'text-sm font-black text-slate-400 uppercase tracking-wider' }, '\uD83D\uDC40 プレビュー (生成結果)'),
-                    div({ className: 'flex gap-2' },
-                        button({ onClick: () => copy(res, 'raw'), className: 'glass-panel px-4 py-2 rounded-lg text-xs font-bold transition ' + (copied.raw ? 'text-brand-success' : 'text-slate-300') }, copied.raw ? '\u2713' : '\uD83D\uDCCB Rawコピー'),
-                        !conf.isImagePrompt && button({ onClick: () => {
-                            const elNode = document.getElementById('preview-content');
-                            if(elNode) {
-                                const range = document.createRange(); range.selectNodeContents(elNode);
-                                const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
-                                try { document.execCommand('copy'); copy('', 'rich'); } catch(e){}
-                                sel.removeAllRanges(); 
-                            }
-                        }, className: 'btn-gradient px-4 py-2 rounded-lg text-xs font-bold transition ' + (copied.rich ? 'border-brand-success' : '') }, copied.rich ? '\u2713 コピー済' : '\uD83D\uDCCB 装飾コピー')
-                    )
-                ),
-                
-                (tid === 'note' && res) && div({ className: 'flex flex-wrap gap-2 mb-4 p-3 bg-brand/10 border border-brand/20 rounded-xl animate-in items-center' },
-                    span({ className: 'text-xs font-bold text-brand mr-1' }, '\u2702\uFE0F note個別コピー:'),
-                    button({ onClick: () => handlePartialCopy('title'), className: 'glass-panel px-3 py-1.5 rounded-lg text-xs font-bold transition ' + (copied.title ? 'bg-brand-success/20 text-brand-success border-brand-success' : 'text-white hover:bg-white/10') }, copied.title ? '\u2713 コピー済' : 'タイトル案'),
-                    button({ onClick: () => handlePartialCopy('free'), className: 'glass-panel px-3 py-1.5 rounded-lg text-xs font-bold transition ' + (copied.free ? 'bg-brand-success/20 text-brand-success border-brand-success' : 'text-white hover:bg-white/10') }, copied.free ? '\u2713 コピー済' : '無料エリア'),
-                    button({ onClick: () => handlePartialCopy('paid'), className: 'glass-panel px-3 py-1.5 rounded-lg text-xs font-bold transition ' + (copied.paid ? 'bg-brand-success/20 text-brand-success border-brand-success' : 'text-white hover:bg-white/10') }, copied.paid ? '\u2713 コピー済' : '有料エリア'),
-                    button({ onClick: () => handlePartialCopy('seo'), className: 'glass-panel px-3 py-1.5 rounded-lg text-xs font-bold transition ' + (copied.seo ? 'bg-brand-success/20 text-brand-success border-brand-success' : 'text-white hover:bg-white/10') }, copied.seo ? '\u2713 コピー済' : 'SEO・タグ')
-                ),
+        // ================================================================
+        // 右パネル - タブ式プレビュー（リニューアル版）
+        // ================================================================
+        div({ id: 'tool-right-panel', className: 'flex-1 bg-black min-h-[500px] lg:min-h-0 lg:h-full lg:overflow-y-auto hide-scrollbar flex flex-col' },
 
-                score && div({ className: 'flex flex-wrap gap-3 mb-4 animate-in' },
-                    div({ className: 'bg-white/5 px-3 py-1.5 rounded-lg border border-white/10 flex items-center gap-2' }, span({ className: 'text-xs text-slate-400' }, '文字数:'), span({ className: 'text-sm font-bold text-white' }, score.len)),
-                    div({ className: 'bg-white/5 px-3 py-1.5 rounded-lg border border-white/10 flex items-center gap-2' }, span({ className: 'text-xs text-slate-400' }, '読了目安:'), span({ className: 'text-sm font-bold text-white' }, '約' + score.time + '分')),
-                    div({ className: 'bg-white/5 px-3 py-1.5 rounded-lg border border-white/10 flex items-center gap-2' }, span({ className: 'text-xs text-slate-400' }, '読みやすさ:'), span({ className: 'text-sm font-bold ' + (score.readScore >= 80 ? 'text-brand-success' : score.readScore >= 50 ? 'text-brand-accent' : 'text-brand-danger') }, score.readScore + '点'))
+            // ▼ 手動貼り付けモーダル
+            showPasteModal && div({ className: 'fixed inset-0 z-[300] bg-black/90 flex flex-col p-4 md:p-8 animate-in' },
+                div({ className: 'flex items-center justify-between mb-4' },
+                    h3({ className: 'text-lg font-black text-white flex items-center gap-2' }, '\uD83D\uDCDD AIで生成したテキストを貼り付け'),
+                    button({ onClick: () => setShowPasteModal(false), className: 'text-slate-400 hover:text-white text-2xl font-bold' }, '\u2715')
                 ),
-                div({ id: 'preview-content', className: 'bg-white p-6 md:p-8 rounded-2xl shadow-inner flex-1 overflow-x-auto ' + (conf.isImagePrompt ? 'font-mono text-sm text-black whitespace-pre-wrap bg-gray-100' : 'preview-content text-black') }, 
-                    conf.isImagePrompt ? res : div({ dangerouslySetInnerHTML: renderMarkdown(res) })
-                ),
-                !conf.isImagePrompt && div({ className: 'mt-6 space-y-4' },
-                    // プロンプトモード時のバナー
-                    genMode === 'prompt' && div({ className: 'p-3 bg-brand-accent/10 border border-brand-accent/30 rounded-xl flex items-center gap-2 animate-in' },
-                        span({ className: 'text-sm' }, '\uD83D\uDCCB'),
-                        p({ className: 'text-xs font-bold text-brand-accent' }, 'プロンプトモード: 以下のボタンはAIを使わず、プロンプトをクリップボードにコピーします')
-                    ),
-                    div({ className: 'p-4 bg-white/5 border border-white/10 rounded-2xl' },
-                        h4({ className: 'text-xs font-bold text-brand mb-3 flex items-center gap-2' },
-                            '\uD83E\uDDD1\u200D\uD83C\uDFEB AI自動推敲（赤ペン先生）',
-                            genMode === 'prompt' && span({ className: 'text-[10px] bg-brand-accent/20 text-brand-accent px-2 py-0.5 rounded-full font-bold' }, 'プロンプトコピー')
+                textarea({ 
+                    className: 'input-base flex-1 text-sm leading-relaxed resize-none mb-4', 
+                    style: { minHeight: '60vh', fontSize: '15px' },
+                    placeholder: 'ChatGPT・Claude・Gemini等で生成したテキストをここに貼り付けてください...\n\nnote記事の場合は、タイトル案・無料エリア・有料エリア・SEOタグを含む全文を貼り付けるとタブで分割表示されます。', 
+                    value: manualInput, 
+                    onChange: e => setManualInput(e.target.value),
+                    autoFocus: true
+                }),
+                div({ className: 'flex gap-3' },
+                    button({ onClick: () => setShowPasteModal(false), className: 'flex-1 glass-panel py-3 rounded-xl font-bold text-white hover:bg-white/10' }, 'キャンセル'),
+                    button({ 
+                        onClick: () => { 
+                            if(manualInput.trim()) { 
+                                updateRes(manualInput); 
+                                setManualInput(''); 
+                                setPreviewTab('all');
+                                setShowPasteModal(false); 
+                            } 
+                        }, 
+                        disabled: !manualInput.trim(),
+                        className: 'flex-1 btn-gradient py-3 rounded-xl font-black shadow-xl disabled:opacity-50' 
+                    }, '\u2728 プレビューに反映して保存')
+                )
+            ),
+
+            res ? div({ className: 'animate-in flex flex-col h-full' },
+
+                // ── ヘッダー（コピー + PC/スマホ切替）──
+                div({ className: 'flex flex-col gap-3 p-4 md:p-6 border-b border-white/10 bg-black/40 shrink-0' },
+                    div({ className: 'flex items-center justify-between gap-2' },
+                        h3({ className: 'text-sm font-black text-slate-300 flex items-center gap-2' },
+                            span({}, '\uD83D\uDC40'),
+                            'プレビュー',
+                            score && span({ className: 'text-[10px] font-bold text-slate-500' }, score.len + '文字')
                         ),
-                        div({ className: 'flex flex-wrap gap-2' },
-                            button({ onClick: () => handleModify('catchy'), disabled: isLoading, className: 'glass-panel px-3 py-1.5 rounded-xl text-xs font-bold transition disabled:opacity-50 ' + (genMode === 'prompt' ? 'text-brand-accent hover:bg-brand-accent/20 border border-brand-accent/30' : 'text-slate-300 hover:text-white hover:bg-brand/20') }, (genMode === 'prompt' ? '\uD83D\uDCCB ' : '\u2728 ') + 'もっとキャッチーに'),
-                            button({ onClick: () => handleModify('simple'), disabled: isLoading, className: 'glass-panel px-3 py-1.5 rounded-xl text-xs font-bold transition disabled:opacity-50 ' + (genMode === 'prompt' ? 'text-brand-accent hover:bg-brand-accent/20 border border-brand-accent/30' : 'text-slate-300 hover:text-white hover:bg-brand/20') }, (genMode === 'prompt' ? '\uD83D\uDCCB ' : '\uD83D\uDC76 ') + '小学生でもわかるように'),
-                            button({ onClick: () => handleModify('compliance'), disabled: isLoading, className: 'glass-panel px-3 py-1.5 rounded-xl text-xs font-bold transition disabled:opacity-50 ' + (genMode === 'prompt' ? 'text-brand-accent hover:bg-brand-accent/20 border border-brand-accent/30' : 'text-slate-300 hover:text-white hover:bg-brand/20') }, (genMode === 'prompt' ? '\uD83D\uDCCB ' : '\uD83D\uDEA8 ') + 'コンプラ・炎上チェック'),
-                            button({ onClick: () => handleModify('eyecatch_prompt'), disabled: isLoading, className: 'glass-panel px-3 py-1.5 rounded-xl text-xs font-bold transition disabled:opacity-50 ' + (genMode === 'prompt' ? 'text-brand-accent hover:bg-brand-accent/20 border border-brand-accent/30' : 'text-brand-accent hover:text-white hover:bg-brand-accent/20') }, (genMode === 'prompt' ? '\uD83D\uDCCB ' : '\uD83D\uDDBC\uFE0F ') + 'アイキャッチ生成プロンプトを作成')
+                        div({ className: 'flex items-center gap-2' },
+                            // PC/スマホ切替
+                            div({ className: 'flex bg-white/5 rounded-lg p-0.5 border border-white/10' },
+                                button({ onClick: () => setPreviewMode('pc'), className: 'px-2 py-1 rounded text-xs font-bold transition ' + (previewMode === 'pc' ? 'bg-brand text-white' : 'text-slate-400 hover:text-white') }, '\uD83D\uDCBB PC'),
+                                button({ onClick: () => setPreviewMode('mobile'), className: 'px-2 py-1 rounded text-xs font-bold transition ' + (previewMode === 'mobile' ? 'bg-brand text-white' : 'text-slate-400 hover:text-white') }, '\uD83D\uDCF1 スマホ')
+                            ),
+                            button({ onClick: () => copy(res, 'raw'), className: 'glass-panel px-3 py-1.5 rounded-lg text-xs font-bold transition ' + (copied.raw ? 'text-brand-success' : 'text-slate-300') }, copied.raw ? '\u2713' : '\uD83D\uDCCB Raw'),
+                            !conf.isImagePrompt && button({ onClick: () => {
+                                const elNode = document.getElementById('preview-tab-content');
+                                if(elNode) {
+                                    const range = document.createRange(); range.selectNodeContents(elNode);
+                                    const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
+                                    try { document.execCommand('copy'); copy('', 'rich'); } catch(e){}
+                                    sel.removeAllRanges(); 
+                                }
+                            }, className: 'btn-gradient px-3 py-1.5 rounded-lg text-xs font-bold transition ' + (copied.rich ? 'opacity-50' : '') }, copied.rich ? '\u2713' : '\uD83C\uDFA8 装飾')
                         )
                     ),
-                    div({ className: 'p-4 bg-white/5 border border-white/10 rounded-2xl' },
-                        h4({ className: 'text-xs font-bold text-brand-light mb-3 flex items-center gap-2' },
-                            '\uD83D\uDD04 ワンクリック・マルチ展開',
-                            genMode === 'prompt' && span({ className: 'text-[10px] bg-brand-accent/20 text-brand-accent px-2 py-0.5 rounded-full font-bold' }, 'プロンプトコピー')
+
+                    // ── タブ（note記事は分割表示、その他はallのみ）──
+                    tid === 'note' && res ? div({ className: 'flex gap-1 overflow-x-auto hide-scrollbar' },
+                        [
+                            { id: 'all',   icon: '\uD83D\uDCCB', label: '全体' },
+                            { id: 'title', icon: '\uD83C\uDFF7\uFE0F', label: 'タイトル' },
+                            { id: 'free',  icon: '\uD83C\uDD93', label: '無料エリア' },
+                            { id: 'paid',  icon: '\uD83D\uDC8E', label: '有料エリア' },
+                            { id: 'seo',   icon: '\uD83D\uDD0D', label: 'SEO・タグ' },
+                        ].map(tab => {
+                            // 各タブの文字数をカウント
+                            let charCount = '';
+                            try {
+                                if (tab.id === 'title') charCount = (res.split('---\u300010b0\u7121\u6599\u30A8\u30EA\u30A2\u3011---')[0].replace(/---\u3010\u30BF\u30A4\u30C8\u30EB\u6848\u3011---/g,'').trim().length || '') + '字';
+                                else if (tab.id === 'free') { const t = res.split('---\u300010b0\u7121\u6599\u30A8\u30EA\u30A2\u3011---')[1]; charCount = t ? (t.split('---\u300010b0\u6709\u6599\u30A8\u30EA\u30A2\u3011---')[0].trim().length + '字') : ''; }
+                                else if (tab.id === 'paid') { const t = res.split('---\u300010b0\u6709\u6599\u30A8\u30EA\u30A2\u3011---')[1]; charCount = t ? (t.split('---\u300010b0SEO\u30FB\u30CF\u30C3\u30B7\u30E5\u30BF\u30B0\u3011---')[0].trim().length + '字') : ''; }
+                            } catch(e) {}
+                            return button({ 
+                                key: tab.id,
+                                onClick: () => setPreviewTab(tab.id),
+                                className: 'flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition ' + (previewTab === tab.id ? 'bg-brand text-white shadow-lg' : 'glass-panel text-slate-400 hover:text-white hover:bg-white/10')
+                            }, span({}, tab.icon), tab.label, charCount && span({ className: 'text-[10px] opacity-60' }, ' ' + charCount));
+                        })
+                    ) : null,
+
+                    // スコア表示
+                    score && div({ className: 'flex flex-wrap gap-2' },
+                        div({ className: 'bg-white/5 px-2.5 py-1 rounded-lg border border-white/10 flex items-center gap-1.5' }, span({ className: 'text-[10px] text-slate-400' }, '\uD83D\uDCDD'), span({ className: 'text-xs font-bold text-white' }, score.len + '字')),
+                        div({ className: 'bg-white/5 px-2.5 py-1 rounded-lg border border-white/10 flex items-center gap-1.5' }, span({ className: 'text-[10px] text-slate-400' }, '\u23F1'), span({ className: 'text-xs font-bold text-white' }, '約' + score.time + '分')),
+                        div({ className: 'bg-white/5 px-2.5 py-1 rounded-lg border border-white/10 flex items-center gap-1.5' }, span({ className: 'text-[10px] text-slate-400' }, '\uD83D\uDCCA'), span({ className: 'text-xs font-bold ' + (score.readScore >= 80 ? 'text-brand-success' : score.readScore >= 50 ? 'text-brand-accent' : 'text-brand-danger') }, score.readScore + '点'))
+                    )
+                ),
+
+                // ── タブコンテンツ ──
+                div({ className: 'flex-1 overflow-y-auto hide-scrollbar p-4 md:p-6' },
+                    div({ 
+                        className: 'mx-auto transition-all duration-300 ' + (previewMode === 'mobile' ? 'max-w-[390px]' : 'max-w-full'),
+                    },
+                        conf.isImagePrompt 
+                            ? div({ className: 'bg-gray-100 p-6 rounded-2xl font-mono text-sm text-black whitespace-pre-wrap' }, res)
+                            : div({},
+                                // note記事の場合: タブ別に分割表示
+                                tid === 'note' ? (() => {
+                                    const extractPart = (part) => {
+                                        try {
+                                            if (part === 'title') return res.split('---\u300010b0\u7121\u6599\u30A8\u30EA\u30A2\u3011---')[0].replace(/---\u3010\u30BF\u30A4\u30C8\u30EB\u6848\u3011---/g,'').trim();
+                                            if (part === 'free') { const t = res.split('---\u300010b0\u7121\u6599\u30A8\u30EA\u30A2\u3011---')[1]; return t ? t.split('---\u300010b0\u6709\u6599\u30A8\u30EA\u30A2\u3011---')[0].trim() : res; }
+                                            if (part === 'paid') { const t = res.split('---\u300010b0\u6709\u6599\u30A8\u30EA\u30A2\u3011---')[1]; return t ? t.split('---\u300010b0SEO\u30FB\u30CF\u30C3\u30B7\u30E5\u30BF\u30B0\u3011---')[0].trim() : res; }
+                                            if (part === 'seo') { const t = res.split('---\u300010b0SEO\u30FB\u30CF\u30C3\u30B7\u30E5\u30BF\u30B0\u3011---')[1]; return t ? t.trim() : res; }
+                                            return res;
+                                        } catch(e) { return res; }
+                                    };
+
+                                    if (previewTab === 'all') {
+                                        return div({ id: 'preview-tab-content', className: 'bg-white p-5 md:p-8 rounded-2xl shadow-inner preview-content text-black ' + (previewMode === 'mobile' ? 'text-base leading-relaxed' : '') },
+                                            div({ dangerouslySetInnerHTML: renderMarkdown(res) })
+                                        );
+                                    }
+                                    if (previewTab === 'title') {
+                                        const titleText = extractPart('title');
+                                        const titles = titleText.split('\n').filter(l => l.trim());
+                                        return div({ id: 'preview-tab-content', className: 'space-y-3' },
+                                            div({ className: 'flex items-center justify-between mb-4' },
+                                                h4({ className: 'text-sm font-black text-white flex items-center gap-2' }, '\uD83C\uDFF7\uFE0F タイトル案（クリックでコピー）'),
+                                                button({ onClick: () => { copyTextToClipboard(titleText); setCopied(Object.assign({}, copied, {title: true})); setTimeout(()=>setCopied(p=>Object.assign({},p,{title:false})),2000); showToast('\uD83D\uDCCB タイトル案をコピーしました！'); }, className: 'text-xs btn-gradient px-3 py-1.5 rounded-lg font-bold ' + (copied.title ? 'opacity-50' : '') }, copied.title ? '\u2713' : '\uD83D\uDCCB 全コピー')
+                                            ),
+                                            titles.map((t, i) => div({ key: i, onClick: () => { copyTextToClipboard(t.replace(/^[\-\*\d\.\s]+/, '')); showToast('\uD83D\uDCCB コピーしました！'); }, className: 'bg-white p-4 rounded-xl cursor-pointer hover:bg-brand/5 border-2 border-transparent hover:border-brand/30 transition group' },
+                                                div({ className: 'flex items-start gap-3' },
+                                                    span({ className: 'text-brand font-black text-lg shrink-0' }, (i + 1) + '.'),
+                                                    p({ className: 'text-gray-800 font-bold text-base leading-relaxed group-hover:text-brand transition' }, t.replace(/^[\-\*\d\.\s]+/, ''))
+                                                )
+                                            ))
+                                        );
+                                    }
+                                    if (previewTab === 'free') {
+                                        return div({ id: 'preview-tab-content' },
+                                            div({ className: 'flex items-center justify-between mb-4' },
+                                                div({ className: 'flex items-center gap-2' },
+                                                    span({ className: 'bg-brand-success/20 text-brand-success text-xs font-black px-3 py-1 rounded-full' }, '\uD83C\uDD93 無料エリア'),
+                                                    span({ className: 'text-[10px] text-slate-500' }, extractPart('free').length + '字')
+                                                ),
+                                                button({ onClick: () => handlePartialCopy('free'), className: 'text-xs btn-gradient px-3 py-1.5 rounded-lg font-bold ' + (copied.free ? 'opacity-50' : '') }, copied.free ? '\u2713' : '\uD83D\uDCCB noteにコピー')
+                                            ),
+                                            div({ className: 'bg-white p-5 md:p-8 rounded-2xl shadow-inner preview-content text-black ' + (previewMode === 'mobile' ? 'text-base leading-relaxed' : '') },
+                                                div({ dangerouslySetInnerHTML: renderMarkdown(extractPart('free')) })
+                                            )
+                                        );
+                                    }
+                                    if (previewTab === 'paid') {
+                                        return div({ id: 'preview-tab-content' },
+                                            div({ className: 'flex items-center justify-between mb-4' },
+                                                div({ className: 'flex items-center gap-2' },
+                                                    span({ className: 'bg-brand-accent/20 text-brand-accent text-xs font-black px-3 py-1 rounded-full' }, '\uD83D\uDC8E 有料エリア'),
+                                                    span({ className: 'text-[10px] text-slate-500' }, extractPart('paid').length + '字')
+                                                ),
+                                                button({ onClick: () => handlePartialCopy('paid'), className: 'text-xs btn-gradient px-3 py-1.5 rounded-lg font-bold ' + (copied.paid ? 'opacity-50' : '') }, copied.paid ? '\u2713' : '\uD83D\uDCCB noteにコピー')
+                                            ),
+                                            div({ className: 'bg-white p-5 md:p-8 rounded-2xl shadow-inner preview-content text-black ' + (previewMode === 'mobile' ? 'text-base leading-relaxed' : '') },
+                                                div({ dangerouslySetInnerHTML: renderMarkdown(extractPart('paid')) })
+                                            )
+                                        );
+                                    }
+                                    if (previewTab === 'seo') {
+                                        const seoText = extractPart('seo');
+                                        const hashtags = seoText.match(/#[^\s#]+/g) || [];
+                                        return div({ id: 'preview-tab-content', className: 'space-y-4' },
+                                            div({ className: 'flex items-center justify-between mb-2' },
+                                                span({ className: 'bg-brand/20 text-brand text-xs font-black px-3 py-1 rounded-full' }, '\uD83D\uDD0D SEO・ハッシュタグ'),
+                                                button({ onClick: () => handlePartialCopy('seo'), className: 'text-xs btn-gradient px-3 py-1.5 rounded-lg font-bold ' + (copied.seo ? 'opacity-50' : '') }, copied.seo ? '\u2713' : '\uD83D\uDCCB コピー')
+                                            ),
+                                            hashtags.length > 0 && div({ className: 'flex flex-wrap gap-2 mb-4' },
+                                                hashtags.map((tag, i) => span({ key: i, className: 'bg-brand/10 text-brand text-sm font-bold px-3 py-1.5 rounded-full border border-brand/20' }, tag))
+                                            ),
+                                            div({ className: 'bg-white p-5 rounded-2xl text-black text-sm leading-relaxed' }, seoText)
+                                        );
+                                    }
+                                    return null;
+                                })()
+                                : div({ id: 'preview-tab-content', className: 'bg-white p-5 md:p-8 rounded-2xl shadow-inner preview-content text-black ' + (previewMode === 'mobile' ? 'text-base leading-relaxed' : '') },
+                                    div({ dangerouslySetInnerHTML: renderMarkdown(res) })
+                                )
+                            )
+                    )
+                ),
+
+                // ── 推敲・マルチ展開パネル ──
+                !conf.isImagePrompt && div({ className: 'p-4 md:p-6 border-t border-white/10 space-y-3 shrink-0 bg-black/20' },
+                    genMode === 'prompt' && div({ className: 'p-2.5 bg-brand-accent/10 border border-brand-accent/30 rounded-xl flex items-center gap-2' },
+                        span({ className: 'text-sm' }, '\uD83D\uDCCB'),
+                        p({ className: 'text-xs font-bold text-brand-accent' }, 'プロンプトモード: ボタンでプロンプトをコピーします')
+                    ),
+                    div({ className: 'p-3 bg-white/5 border border-white/10 rounded-xl' },
+                        h4({ className: 'text-[10px] font-black text-brand mb-2 flex items-center gap-1.5' },
+                            '\uD83E\uDDD1\u200D\uD83C\uDFEB AI自動推敲',
+                            genMode === 'prompt' && span({ className: 'text-[9px] bg-brand-accent/20 text-brand-accent px-1.5 py-0.5 rounded font-bold' }, 'コピーモード')
                         ),
-                        div({ className: 'flex flex-wrap gap-2' },
-                            button({ onClick: () => handleModify('x_thread'), disabled: isLoading, className: 'glass-panel px-3 py-1.5 rounded-xl text-xs font-bold transition disabled:opacity-50 ' + (genMode === 'prompt' ? 'text-brand-accent hover:bg-brand-accent/20 border border-brand-accent/30' : 'text-slate-300 hover:text-white hover:bg-brand-light/20') }, (genMode === 'prompt' ? '\uD83D\uDCCB ' : '') + 'X(Twitter)ツリー'),
-                            button({ onClick: () => handleModify('short_vid'), disabled: isLoading, className: 'glass-panel px-3 py-1.5 rounded-xl text-xs font-bold transition disabled:opacity-50 ' + (genMode === 'prompt' ? 'text-brand-accent hover:bg-brand-accent/20 border border-brand-accent/30' : 'text-slate-300 hover:text-white hover:bg-brand-light/20') }, (genMode === 'prompt' ? '\uD83D\uDCCB ' : '') + 'ショート動画'),
-                            button({ onClick: () => handleModify('insta_carousel'), disabled: isLoading, className: 'glass-panel px-3 py-1.5 rounded-xl text-xs font-bold transition disabled:opacity-50 ' + (genMode === 'prompt' ? 'text-brand-accent hover:bg-brand-accent/20 border border-brand-accent/30' : 'text-slate-300 hover:text-white hover:bg-brand-light/20') }, (genMode === 'prompt' ? '\uD83D\uDCCB ' : '') + 'Instagramカルーセル'),
-                            button({ onClick: () => handleModify('line_msg'), disabled: isLoading, className: 'glass-panel px-3 py-1.5 rounded-xl text-xs font-bold transition disabled:opacity-50 ' + (genMode === 'prompt' ? 'text-brand-accent hover:bg-brand-accent/20 border border-brand-accent/30' : 'text-slate-300 hover:text-white hover:bg-brand-light/20') }, (genMode === 'prompt' ? '\uD83D\uDCCB ' : '') + 'LINE配信'),
-                            button({ onClick: () => handleModify('voicy'), disabled: isLoading, className: 'glass-panel px-3 py-1.5 rounded-lg text-xs font-bold transition disabled:opacity-50 ' + (genMode === 'prompt' ? 'text-brand-accent hover:bg-brand-accent/20 border border-brand-accent/30' : 'text-slate-300 hover:text-white hover:bg-brand-light/20') }, (genMode === 'prompt' ? '\uD83D\uDCCB ' : '') + '音声配信(Voicy等)'),
-                            button({ onClick: () => handleModify('step_mail'), disabled: isLoading, className: 'glass-panel px-3 py-1.5 rounded-xl text-xs font-bold transition disabled:opacity-50 ' + (genMode === 'prompt' ? 'text-brand-accent hover:bg-brand-accent/20 border border-brand-accent/30' : 'text-slate-300 hover:text-white hover:bg-brand-light/20') }, (genMode === 'prompt' ? '\uD83D\uDCCB ' : '') + 'メルマガ'),
-                            button({ onClick: () => handleModify('seo_blog'), disabled: isLoading, className: 'glass-panel px-3 py-1.5 rounded-xl text-xs font-bold transition disabled:opacity-50 ' + (genMode === 'prompt' ? 'text-brand-accent hover:bg-brand-accent/20 border border-brand-accent/30' : 'text-slate-300 hover:text-white hover:bg-brand-light/20') }, (genMode === 'prompt' ? '\uD83D\uDCCB ' : '') + 'SEOブログ'),
-                            button({ onClick: () => handleModify('pr_release'), disabled: isLoading, className: 'glass-panel px-3 py-1.5 rounded-xl text-xs font-bold transition disabled:opacity-50 ' + (genMode === 'prompt' ? 'text-brand-accent hover:bg-brand-accent/20 border border-brand-accent/30' : 'text-slate-300 hover:text-white hover:bg-brand-light/20') }, (genMode === 'prompt' ? '\uD83D\uDCCB ' : '') + 'PR・プレスリリース')
+                        div({ className: 'flex flex-wrap gap-1.5' },
+                            button({ onClick: () => handleModify('catchy'), disabled: isLoading, className: 'glass-panel px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition disabled:opacity-50 ' + (genMode === 'prompt' ? 'text-brand-accent hover:bg-brand-accent/20 border border-brand-accent/30' : 'text-slate-300 hover:text-white hover:bg-brand/20') }, (genMode === 'prompt' ? '\uD83D\uDCCB ' : '\u2728 ') + 'キャッチーに'),
+                            button({ onClick: () => handleModify('simple'), disabled: isLoading, className: 'glass-panel px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition disabled:opacity-50 ' + (genMode === 'prompt' ? 'text-brand-accent hover:bg-brand-accent/20 border border-brand-accent/30' : 'text-slate-300 hover:text-white hover:bg-brand/20') }, (genMode === 'prompt' ? '\uD83D\uDCCB ' : '\uD83D\uDC76 ') + 'シンプルに'),
+                            button({ onClick: () => handleModify('compliance'), disabled: isLoading, className: 'glass-panel px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition disabled:opacity-50 ' + (genMode === 'prompt' ? 'text-brand-accent hover:bg-brand-accent/20 border border-brand-accent/30' : 'text-slate-300 hover:text-white hover:bg-brand/20') }, (genMode === 'prompt' ? '\uD83D\uDCCB ' : '\uD83D\uDEA8 ') + 'コンプラチェック'),
+                            button({ onClick: () => handleModify('eyecatch_prompt'), disabled: isLoading, className: 'glass-panel px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition disabled:opacity-50 ' + (genMode === 'prompt' ? 'text-brand-accent hover:bg-brand-accent/20 border border-brand-accent/30' : 'text-brand-accent hover:text-white hover:bg-brand-accent/20') }, (genMode === 'prompt' ? '\uD83D\uDCCB ' : '\uD83D\uDDBC\uFE0F ') + 'アイキャッチ')
+                        )
+                    ),
+                    div({ className: 'p-3 bg-white/5 border border-white/10 rounded-xl' },
+                        h4({ className: 'text-[10px] font-black text-brand-light mb-2 flex items-center gap-1.5' },
+                            '\uD83D\uDD04 マルチ展開',
+                            genMode === 'prompt' && span({ className: 'text-[9px] bg-brand-accent/20 text-brand-accent px-1.5 py-0.5 rounded font-bold' }, 'コピーモード')
+                        ),
+                        div({ className: 'flex flex-wrap gap-1.5' },
+                            ['x_thread','short_vid','insta_carousel','line_msg','voicy','step_mail','seo_blog','pr_release'].map(a => {
+                                const labels = { x_thread:'Xツリー', short_vid:'ショート動画', insta_carousel:'Instaカルーセル', line_msg:'LINE配信', voicy:'音声配信', step_mail:'メルマガ', seo_blog:'SEOブログ', pr_release:'PR文' };
+                                return button({ key: a, onClick: () => handleModify(a), disabled: isLoading, className: 'glass-panel px-2.5 py-1.5 rounded-lg text-[11px] font-bold transition disabled:opacity-50 ' + (genMode === 'prompt' ? 'text-brand-accent hover:bg-brand-accent/20 border border-brand-accent/30' : 'text-slate-300 hover:text-white hover:bg-brand-light/20') }, (genMode === 'prompt' ? '\uD83D\uDCCB ' : '') + labels[a]);
+                            })
                         )
                     )
                 )
-            ) : div({ className: 'flex flex-col h-full' },
-                div({ className: 'flex-1 flex flex-col items-center justify-center text-center p-10' },
-                    div({ className: 'text-slate-600 mb-8' },
-                        div({ className: 'text-6xl mb-4' }, conf.icon),
-                        div({ className: 'font-bold' }, '左側のフォームを入力して'),
-                        div({ className: 'font-bold' }, '「全自動生成」または「プロンプトコピー」を選択してください')
-                    ),
-                    div({ className: 'w-full max-w-2xl bg-white/5 p-6 rounded-2xl border border-white/10 animate-in' },
-                        h4({ className: 'text-sm font-bold text-white mb-3 flex items-center gap-2 justify-center' }, '\uD83D\uDCDD Web版AIで生成したテキストを貼り付けて反映'),
-                        textarea({ className: 'input-base min-h-[150px] text-xs mb-3', placeholder: 'Web版AIなどで手動生成した結果をここに貼り付けてください...', value: manualInput, onChange: e => setManualInput(e.target.value) }),
-                        button({ onClick: () => { if(manualInput.trim()) { updateRes(manualInput); setManualInput(''); } }, className: 'w-full btn-gradient py-3 rounded-xl text-sm font-bold shadow-lg' }, '結果をプレビューに反映して保存')
-                    )
+
+            ) : div({ className: 'flex-1 flex flex-col items-center justify-center text-center p-8' },
+                div({ className: 'text-slate-600 mb-8' },
+                    div({ className: 'text-6xl mb-4' }, conf.icon),
+                    p({ className: 'font-bold text-slate-400 mb-1' }, '左側のフォームを入力して'),
+                    p({ className: 'font-bold text-slate-400' }, '「全自動生成」または「プロンプトコピー」を選択')
+                ),
+                // ── 手動貼り付けボタン（大きく目立つ）──
+                button({ 
+                    onClick: () => setShowPasteModal(true),
+                    className: 'w-full max-w-md bg-gradient-to-r from-brand/20 to-brand-light/10 border-2 border-brand/30 hover:border-brand/60 rounded-2xl p-6 transition group'
+                },
+                    div({ className: 'text-4xl mb-3 group-hover:scale-110 transition' }, '\uD83D\uDCDD'),
+                    h4({ className: 'text-base font-black text-white mb-2' }, 'Web版AIの結果を貼り付ける'),
+                    p({ className: 'text-xs text-slate-400 leading-relaxed' }, 'ChatGPT・Claude・Geminiなどで生成したテキストを\n貼り付けてプレビュー＆コピーできます'),
+                    div({ className: 'mt-3 inline-block bg-brand/20 text-brand-light text-xs font-bold px-4 py-1.5 rounded-full' }, 'タップして貼り付け \u2192')
                 )
             )
         )
