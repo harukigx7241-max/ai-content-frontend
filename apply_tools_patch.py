@@ -24,7 +24,7 @@ def main():
     with open(filepath, 'r', encoding='utf-8') as f:
         content = f.read()
 
-    print("\n🔧 tools.js パッチ適用開始 (仕様書の中優先度機能実装)\n")
+    print("\n🔧 tools.js パッチ適用開始 (仕様書の中優先度 ＋ SNS自動投稿機能)\n")
 
     # 1. 副業投稿カレンダー（特化版）の実装
     old_sns_cal = r"""  sns_cal: { cat: 'omega', icon: '📅', name: '30日間SNSカレンダー', desc: 'キャラ×ジャンル特化で1ヶ月分の投稿計画を自動生成',
@@ -158,6 +158,24 @@ def main():
     new_review_reply = r"""  review_reply: { cat: 'fun', icon: '⭐', name: '口コミ・レビュー返信文ジェネレーター', desc: 'ポジティブ～ネガティブまで完璧に返信',
     help: '高評価〜低評価まで、レビューの種類に応じた最適な返信文を3パターン生成。ココナラ・Google・SNS等のプラットフォームに対応。',"""
     content = apply_patch(content, old_review_reply, new_review_reply, "レビュー返信ツールの重複マニュアル修正")
+
+    # 6. SNS自動投稿・予約機能のUI追加
+    old_sns_auto = r"    // --- ファン化 ＆ セールス自動化 ---"
+    new_sns_auto = r"""    sns_auto_post: { cat: 'sns', icon: '🚀', name: 'SNS自動投稿・予約マネージャー', desc: '外部SNSへの直接投稿と予約スケジュールを管理',
+    help: '【新規実装】生成したコンテンツを各種プラットフォーム（X/Twitter, Instagram, Threads等）へ直接連携して投稿、または指定日時に予約投稿します。※API連携の実行テスト用UIです。',
+    fields: [
+      { id: 'platform', t: 'select', l: '📱 投稿先プラットフォーム', opts: ['X(Twitter)', 'Instagram', 'Threads', 'note'] },
+      { id: 'post_type', t: 'select', l: '⏰ 投稿タイプ', opts: ['今すぐ直接投稿', '📅 指定日時に予約投稿'] },
+      { id: 'schedule_time', t: 'text', l: '📅 予約日時（※予約時のみ）', ph: '例: 2026-05-01 19:00' },
+      { id: 'content', t: 'area', l: '📝 投稿テキスト', ph: 'ここに生成済みの文章やプロンプトを入力してください', isMainMagic: true }
+    ],
+    build: function(v) {
+      return '# SNS直接連携・予約投稿データの準備\n以下のテキストを「' + (v.platform || 'X(Twitter)') + '」向けに最終整形してください。投稿スケジュール: ' + (v.post_type === '📅 指定日時に予約投稿' ? (v.schedule_time || '未指定') : '即時投稿') + '\n\n【投稿内容】\n' + (v.content || '');
+    }
+  },
+
+    // --- ファン化 ＆ セールス自動化 ---"""
+    content = apply_patch(content, old_sns_auto, new_sns_auto, "SNS自動投稿・予約ツールの新規追加")
 
     with open(filepath, 'w', encoding='utf-8') as f:
         f.write(content)

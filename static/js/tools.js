@@ -535,6 +535,19 @@ const TOOLS = {
       }
     },
 
+    sns_auto_post: { cat: 'sns', icon: '🚀', name: 'SNS自動投稿・予約マネージャー', desc: '外部SNSへの直接投稿と予約スケジュールを管理',
+    help: '【新規実装】生成したコンテンツを各種プラットフォーム（X/Twitter, Instagram, Threads等）へ直接連携して投稿、または指定日時に予約投稿します。※API連携の実行テスト用UIです。',
+    fields: [
+      { id: 'platform', t: 'select', l: '📱 投稿先プラットフォーム', opts: ['X(Twitter)', 'Instagram', 'Threads', 'note'] },
+      { id: 'post_type', t: 'select', l: '⏰ 投稿タイプ', opts: ['今すぐ直接投稿', '📅 指定日時に予約投稿'] },
+      { id: 'schedule_time', t: 'text', l: '📅 予約日時（※予約時のみ）', ph: '例: 2026-05-01 19:00' },
+      { id: 'content', t: 'area', l: '📝 投稿テキスト', ph: 'ここに生成済みの文章やプロンプトを入力してください', isMainMagic: true }
+    ],
+    build: function(v) {
+      return '# SNS直接連携・予約投稿データの準備\n以下のテキストを「' + (v.platform || 'X(Twitter)') + '」向けに最終整形してください。投稿スケジュール: ' + (v.post_type === '📅 指定日時に予約投稿' ? (v.schedule_time || '未指定') : '即時投稿') + '\n\n【投稿内容】\n' + (v.content || '');
+    }
+  },
+
     // --- ファン化 ＆ セールス自動化 ---
     freebie: { cat: 'fun', icon: '🎁', name: '無料プレゼント量産', desc: 'LINE登録を促す魅力的なリードマグネット作成。',
       fields: [{ id: 'target', t: 'text', l: 'ターゲット層', ph: '例: ブログ初心者', isMainMagic: true }],
