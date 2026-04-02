@@ -1,19 +1,26 @@
+"""
+AI Content Pro (AICP Pro) - FastAPI Backend
+Version: v71.6.0 Ultimate Auto-Browsing Edition
+Server: Xserver VPS (Ubuntu 24) / Port: 8001
+"""
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Optional, List, Dict, Any
 import uvicorn
 from duckduckgo_search import DDGS
-from openai import OpenAI
-import anthropic
+from openai import AsyncOpenAI
+from anthropic import AsyncAnthropic
 import google.generativeai as genai
+import httpx
+import asyncio
 import os
 import json
 import random
-import urllib.request
 import re
+import base64
 
 app = FastAPI(title="AI Content Pro Backend", version="71.6.0")
 templates = Jinja2Templates(directory="templates")
@@ -22,7 +29,7 @@ CONFIG_FILE = "server_config.json"
 
 def get_admin_keys():
     if os.path.exists(CONFIG_FILE):
-        with open(CONFIG_FILE, "r") as f:
+        with open(CONFIG_FILE, "r", encoding="utf-8") as f:
             try:
                 data = json.load(f)
                 return {
@@ -58,11 +65,15 @@ class MagicGenerateRequest(BaseModel):
     url: Optional[str] = None
     keyword: Optional[str] = None
 
-async def generate_with_openai(prompt: str, api_key: str, json_mode: bool = False, image_base64: str = None):
+async def generate_with_openai(prompt: str, api_key: str, ai_model: str = "chatgpt_free", json_mode: bool = False, image_base64: str = None):
     try:
-        client = OpenAI(api_key=api_key)
+        client = AsyncOpenAI(api_key=api_key)
         response_format = { "type": "json_object" } if json_mode else None
         
+        # 有料版と無料版の動的切り替え
+        model_name = "gpt-4o" if "paid" in ai_model else "gpt-4o-mini"
+        
+        messages = []
         if image_base64:
             messages = [{"role": "user", "content": [
                 {"type": "text", "text": prompt},
@@ -71,8 +82,8 @@ async def generate_with_openai(prompt: str, api_key: str, json_mode: bool = Fals
         else:
             messages = [{"role": "user", "content": prompt}]
 
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
+        response = await client.chat.completions.create(
+            model=model_name,
             messages=messages,
             temperature=0.8,
             response_format=response_format
@@ -81,13 +92,18 @@ async def generate_with_openai(prompt: str, api_key: str, json_mode: bool = Fals
     except Exception as e:
         raise Exception(f"OpenAIエラー: {str(e)}")
 
-async def generate_with_anthropic(prompt: str, api_key: str, json_mode: bool = False, image_base64: str = None):
+async def generate_with_anthropic(prompt: str, api_key: str, ai_model: str = "claude_free", json_mode: bool = False, image_base64: str = None):
     try:
         final_prompt = prompt
         if json_mode:
             final_prompt += "\n\nIMPORTANT: Output strictly in JSON format only."
-        client = anthropic.Anthropic(api_key=api_key)
+            
+        client = AsyncAnthropic(api_key=api_key)
         
+        # 有料版と無料版の動的切り替え（Claude 3.7を適用）
+        model_name = "claude-3-7-sonnet-20250219" if "paid" in ai_model else "claude-3-5-haiku-20241022"
+        
+        messages = []
         if image_base64:
             messages = [{"role": "user", "content": [
                 {"type": "image", "source": {"type": "base64", "media_type": "image/jpeg", "data": image_base64}},
@@ -96,8 +112,8 @@ async def generate_with_anthropic(prompt: str, api_key: str, json_mode: bool = F
         else:
             messages = [{"role": "user", "content": final_prompt}]
 
-        response = client.messages.create(
-            model="claude-3-7-sonnet-20250219",
+        response = await client.messages.create(
+            model=model_name,
             max_tokens=4000,
             temperature=0.8,
             messages=messages
@@ -106,20 +122,25 @@ async def generate_with_anthropic(prompt: str, api_key: str, json_mode: bool = F
     except Exception as e:
         raise Exception(f"Anthropicエラー: {str(e)}")
 
-async def generate_with_google(prompt: str, api_key: str, json_mode: bool = False, image_base64: str = None):
+async def generate_with_google(prompt: str, api_key: str, ai_model: str = "gemini_free", json_mode: bool = False, image_base64: str = None):
     try:
         genai.configure(api_key=api_key)
-        # 修正箇所: 最新のGemini 2.0モデルに変更
-        model = genai.GenerativeModel('gemini-2.0-flash')
+        
+        # 有料版と無料版の動的切り替え（Gemini 2.0を適用）
+        model_name = 'gemini-1.5-pro' if "paid" in ai_model else 'gemini-2.0-flash'
+        model = genai.GenerativeModel(model_name)
+        
         final_prompt = prompt
         if json_mode:
             final_prompt += "\n\nIMPORTANT: Output strictly in JSON format only."
             
         contents = [final_prompt]
         if image_base64:
-            contents.append({"mime_type": "image/jpeg", "data": image_base64})
+            # Geminiはバイナリデータを要求するためデコードする
+            image_data = base64.b64decode(image_base64)
+            contents.append({"mime_type": "image/jpeg", "data": image_data})
 
-        response = model.generate_content(contents)
+        response = await model.generate_content_async(contents)
         text = response.text
         if json_mode and "```json" in text:
             text = text.split("```json")[1].split("```")[0].strip()
@@ -136,37 +157,62 @@ async def serve_frontend(request: Request):
 @app.get("/api/trends")
 async def get_trends():
     try:
-        with DDGS() as ddgs:
-            results = list(ddgs.text("急上昇 トレンド 日本 ニュース", region="jp-jp", safesearch="moderate", max_results=5))
-        return {"status": "success", "data": results}
+        # トレンドの文字化け・英語排除フィルタを完全復旧
+        def fetch_trends():
+            with DDGS() as ddgs:
+                results = list(ddgs.news(
+                    keywords="日本 ニュース トレンド",
+                    region="jp-jp",
+                    safesearch="moderate",
+                    timelimit="d",
+                    max_results=30
+                ))
+            
+            filtered = []
+            for r in results:
+                title = r.get("title", "")
+                if not title: continue
+                has_japanese = bool(re.search(r'[ぁ-んァ-ン一-龯]', title))
+                has_long_english = bool(re.search(r'[a-zA-Z]{8,}', title))
+                has_mojibake = bool(re.search(r'[ãäåæçèéêëìíîïðñòóôõö]', title))
+
+                if has_japanese and not has_long_english and not has_mojibake:
+                    filtered.append({
+                        "title": title,
+                        "url": r.get("url", ""),
+                        "body": r.get("body", "")[:100]
+                    })
+            return filtered[:10]
+
+        # 非同期で実行してサーバーのフリーズを防ぐ
+        filtered_results = await asyncio.to_thread(fetch_trends)
+        return JSONResponse({"status": "success", "data": filtered_results, "total": len(filtered_results)})
     except Exception as e:
-        return {"status": "error", "message": str(e)}
+        return JSONResponse({"status": "error", "message": f"トレンド取得エラー: {str(e)}"})
 
 @app.post("/api/admin/update_keys")
 async def update_keys(data: ConfigUpdate):
     config_data = {}
     if os.path.exists(CONFIG_FILE):
-        with open(CONFIG_FILE, "r") as f:
+        with open(CONFIG_FILE, "r", encoding="utf-8") as f:
             try: config_data = json.load(f)
             except: pass
     config_data["openai_api_key"] = data.openai_api_key
     config_data["anthropic_api_key"] = data.anthropic_api_key
     config_data["google_api_key"] = data.google_api_key
-    with open(CONFIG_FILE, "w") as f:
+    with open(CONFIG_FILE, "w", encoding="utf-8") as f:
         json.dump(config_data, f)
     print("🔑 管理画面から各種APIキーが保存されました")
-    return {"status": "success", "message": "各種APIキーを安全に保存しました"}
+    return JSONResponse({"status": "success", "message": "各種APIキーを安全に保存しました"})
 
 @app.post("/api/inquiry")
 async def receive_inquiry(data: InquiryData):
     print(f"\n📩 お問い合わせ受信: {data.nickname}様より\n{data.content}\n")
-    return {"status": "success", "message": "Pythonサーバーで完璧に受け取りました！"}
+    return JSONResponse({"status": "success", "message": "Pythonサーバーで完璧に受け取りました！"})
 
 @app.post("/api/magic_generate")
 async def magic_generate(req: MagicGenerateRequest):
     is_image_prompt_gen = req.tool_id in ['image', 'eye_catch', 'slide_gen']
-    
-    # フロントエンドからの指定（またはデフォルトのopenai）を適用
     ai_provider = req.prompt_instruction if req.prompt_instruction else "openai"
     admin_keys = get_admin_keys()
     
@@ -175,7 +221,7 @@ async def magic_generate(req: MagicGenerateRequest):
         active_key = admin_keys.get(ai_provider)
         
     if not active_key:
-        return {"status": "error", "message": f"{ai_provider.upper()} のAPIキーが設定されていません。右上の「⚙️ 設定」から登録してください。"}
+        return JSONResponse({"status": "error", "message": f"{ai_provider.upper()} のAPIキーが設定されていません。"})
     
     try:
         if is_image_prompt_gen:
@@ -187,25 +233,25 @@ async def magic_generate(req: MagicGenerateRequest):
 
             【重要ルール】
             1. 出力は「Markdownの見出し(#)」や「AIとしての解説、前置き」などは一切含めず、** Midjourney等にコピペしてそのまま使える英語のプロンプトテキストのみ **を直接出力すること。
-            2. 被写体、背景、ライティング（cinematic lighting, volcanic lightingなど）、カメラ（8k, unreal engine 5, extreme detailedなど）、スタイル（anime style, photo-realisticなど）を豊富に盛り込み、プロレベルの高画質な画像が生成されるようにすること。
+            2. 被写体、背景、ライティング、カメラ、スタイルを豊富に盛り込み、プロレベルの高画質な画像が生成されるようにすること。
 
             【ユーザーのリクエスト情報】
             {vals_desc}
             """
-            generated_text = ""
+            
+            model_tier = f"{ai_provider}_free"
             if ai_provider == 'openai':
-                generated_text = await generate_with_openai(prompt, active_key, json_mode=False)
+                generated_text = await generate_with_openai(prompt, active_key, ai_model=model_tier, json_mode=False)
             elif ai_provider == 'anthropic':
-                generated_text = await generate_with_anthropic(prompt, active_key, json_mode=False)
+                generated_text = await generate_with_anthropic(prompt, active_key, ai_model=model_tier, json_mode=False)
             elif ai_provider == 'google':
-                generated_text = await generate_with_google(prompt, active_key, json_mode=False)
-            print("✅ 画像プロンプト生成完了！")
-            return {"status": "success", "data": generated_text} 
+                generated_text = await generate_with_google(prompt, active_key, ai_model=model_tier, json_mode=False)
+                
+            return JSONResponse({"status": "success", "data": generated_text})
 
         else:
             print(f"✨ 魔法の杖（動的自動入力）発動中... (使用AI: {ai_provider.upper()})")
             
-            # --- 動的検索クエリの構築 ---
             dynamic_keywords = []
             for f in req.fields:
                 val = f.get('val', '')
@@ -221,23 +267,25 @@ async def magic_generate(req: MagicGenerateRequest):
                 random_topics = ["副業 ビジネス", "SNS マーケティング", "AI テクノロジー", "投資 マネー", "美容 ダイエット", "恋愛 心理学", "ライフスタイル"]
                 query = f"{random.choice(random_topics)} 最新トレンド 日本"
 
-            print(f"🔍 検索クエリ: {query}")
-
-            try:
+            # 検索も非同期化してサーバーフリーズを防止
+            def search_trends(q):
                 with DDGS() as ddgs:
-                    search_results = list(ddgs.text(query, region="jp-jp", safesearch="moderate", max_results=3))
+                    return list(ddgs.text(q, region="jp-jp", safesearch="moderate", max_results=3))
+                    
+            try:
+                search_results = await asyncio.to_thread(search_trends, query)
                 trend_info = "\n".join([f"・{r['title']}: {r['body']}" for r in search_results]) if search_results else "特に検索結果なし。"
             except Exception as e:
-                print("検索エラー(スキップ):", e)
+                print("検索エラー:", e)
                 trend_info = "Web検索がタイムアウトしました。あなたの持つ知識から、日本の最新トレンドを予測して考慮してください。"
 
-            # --- URLスクレイピング ---
+            # URLスクレイピングの非同期化（フリーズ防止）
             url_info = ""
             if req.url:
                 try:
-                    req_obj = urllib.request.Request(req.url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
-                    with urllib.request.urlopen(req_obj, timeout=5) as response:
-                        html = response.read().decode('utf-8', errors='ignore')
+                    async with httpx.AsyncClient(timeout=10.0) as client:
+                        response = await client.get(req.url, headers={'User-Agent': 'Mozilla/5.0'})
+                        html = response.text
                         text = re.sub(r'<[^>]+>', ' ', html) 
                         text = re.sub(r'\s+', ' ', text)
                         url_info = f"【参考URLの抽出内容】\n{text[:2000]}\n\n"
@@ -246,12 +294,7 @@ async def magic_generate(req: MagicGenerateRequest):
                     print("URLスクレイピングエラー:", e)
                     url_info = f"【参考URLの抽出内容】\n(URLの読み取りに失敗しました。この情報は無視してください)\n\n"
 
-            # --- ターゲットフィールドの設定 ---
-            if req.target_fid and req.target_fid != 'all':
-                target_fields = [f for f in req.fields if f.get('id') == req.target_fid]
-            else:
-                target_fields = req.fields 
-                
+            target_fields = [f for f in req.fields if f.get('id') == req.target_fid] if req.target_fid and req.target_fid != 'all' else req.fields 
             fields_json_str = json.dumps(target_fields, ensure_ascii=False)
 
             prompt = f"""
@@ -279,13 +322,14 @@ async def magic_generate(req: MagicGenerateRequest):
             例: {{"prod": "AIブログ自動化ツール", "target": "毎日残業で忙しい30代の会社員"}}
             """
             
+            model_tier = f"{ai_provider}_free"
             result_json_str = ""
             if ai_provider == 'openai':
-                result_json_str = await generate_with_openai(prompt, active_key, json_mode=True)
+                result_json_str = await generate_with_openai(prompt, active_key, ai_model=model_tier, json_mode=True)
             elif ai_provider == 'anthropic':
-                result_json_str = await generate_with_anthropic(prompt, active_key, json_mode=True)
+                result_json_str = await generate_with_anthropic(prompt, active_key, ai_model=model_tier, json_mode=True)
             elif ai_provider == 'google':
-                result_json_str = await generate_with_google(prompt, active_key, json_mode=True)
+                result_json_str = await generate_with_google(prompt, active_key, ai_model=model_tier, json_mode=True)
             
             if "```json" in result_json_str:
                 result_json_str = result_json_str.split("```json")[1].split("```")[0].strip()
@@ -294,11 +338,11 @@ async def magic_generate(req: MagicGenerateRequest):
                 
             result_json = json.loads(result_json_str)
             print("✅ 魔法の杖によるデータ生成完了！")
-            return {"status": "success", "data": result_json} 
+            return JSONResponse({"status": "success", "data": result_json})
 
     except Exception as e:
         print("❌ 生成エラー:", e)
-        return {"status": "error", "message": str(e)}
+        return JSONResponse({"status": "error", "message": str(e)})
 
 @app.post("/api/auto_generate")
 async def auto_generate(req: AutoGenerateRequest):
@@ -309,35 +353,29 @@ async def auto_generate(req: AutoGenerateRequest):
         if "claude" in req.ai_model.lower():
             active_key = req.user_api_key if req.user_api_key else admin_keys.get('anthropic')
             if not active_key:
-                 return {"status": "error", "message": "ANTHROPIC のAPIキーが設定されていません。右上の「⚙️ 設定」から登録してください。"}
-            generated_text = await generate_with_anthropic(req.prompt, active_key, json_mode=False, image_base64=req.image_base64)
+                 return JSONResponse({"status": "error", "message": "ANTHROPIC のAPIキーが設定されていません。"})
+            generated_text = await generate_with_anthropic(req.prompt, active_key, ai_model=req.ai_model, json_mode=False, image_base64=req.image_base64)
         elif "gemini" in req.ai_model.lower():
             active_key = req.user_api_key if req.user_api_key else admin_keys.get('google')
             if not active_key:
-                 return {"status": "error", "message": "GOOGLE のAPIキーが設定されていません。右上の「⚙️ 設定」から登録してください。"}
-            generated_text = await generate_with_google(req.prompt, active_key, json_mode=False, image_base64=req.image_base64)
+                 return JSONResponse({"status": "error", "message": "GOOGLE のAPIキーが設定されていません。"})
+            generated_text = await generate_with_google(req.prompt, active_key, ai_model=req.ai_model, json_mode=False, image_base64=req.image_base64)
         else:
             active_key = req.user_api_key if req.user_api_key else admin_keys.get('openai')
             if not active_key:
-                 return {"status": "error", "message": "OPENAI のAPIキーが設定されていません。右上の「⚙️ 設定」から登録してください。"}
-            generated_text = await generate_with_openai(req.prompt, active_key, json_mode=False, image_base64=req.image_base64)
+                 return JSONResponse({"status": "error", "message": "OPENAI のAPIキーが設定されていません。"})
+            generated_text = await generate_with_openai(req.prompt, active_key, ai_model=req.ai_model, json_mode=False, image_base64=req.image_base64)
             
         print("✅ AI自動生成完了！")
-        return {"status": "success", "result": generated_text}
+        return JSONResponse({"status": "success", "result": generated_text})
 
     except Exception as e:
         print("❌ AI生成エラー:", e)
-        return {"status": "error", "message": f"APIエラー: {str(e)}"}
-
-@app.post("/api/save_data")
-async def save_data(data: dict):
-    print("フロントエンドから受信したデータ:", data)
-    return {"status": "success", "message": "データがPythonに届きました"}
+        return JSONResponse({"status": "error", "message": f"APIエラー: {str(e)}"})
 
 @app.get("/api/health")
 async def health():
-    return {"status": "ok", "version": "v71.6.0"}
+    return JSONResponse({"status": "ok", "version": "v71.6.0"})
 
 if __name__ == "__main__":
-    # 修正箇所: ポートを8001に指定
     uvicorn.run("main:app", host="0.0.0.0", port=8001, reload=True)
