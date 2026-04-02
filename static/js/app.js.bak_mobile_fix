@@ -507,7 +507,7 @@
       const [abTest, setAbTest] = useState(false);
       const [manualInput, setManualInput] = useState('');
       const [previewTab, setPreviewTab] = useState('all'); // all/title/free/paid/seo
-      const [previewMode, setPreviewMode] = useState('pc'); // pc/mobile
+      const [previewMode, setPreviewMode] = useState(window.innerWidth < 768 ? 'mobile' : 'pc'); // pc/mobile
       const [showPasteModal, setShowPasteModal] = useState(false);
       const [magicAI, setMagicAI] = useState('openai');
       
@@ -1330,7 +1330,7 @@ ${emptyFields.map(f => '　・【' + f + '】').join('\n')}
               )
           ),
           
-          div({ className: 'mt-6 p-4 bg-white/5 rounded-xl border border-white/10 text-sm animate-in' },
+          div({ className: 'mt-4 p-3 md:p-4 bg-white/5 rounded-xl border border-white/10 text-sm animate-in' },
               h4({ className: 'text-xs font-bold text-slate-400 mb-3 flex items-center gap-2' }, '\uD83E\uDD1D 合言葉で設定を共有・復元'),
               div({ className: 'flex flex-col gap-3' },
                   div({ className: 'flex gap-2' },
@@ -1349,7 +1349,7 @@ ${emptyFields.map(f => '　・【' + f + '】').join('\n')}
         // ================================================================
         // 右パネル - タブ式プレビュー（リニューアル版）
         // ================================================================
-        div({ id: 'tool-right-panel', className: 'flex-1 bg-black min-h-[500px] lg:min-h-0 lg:h-full lg:overflow-y-auto hide-scrollbar flex flex-col' },
+        div({ id: 'tool-right-panel', className: 'flex-1 bg-black min-h-[350px] lg:min-h-0 lg:h-full lg:overflow-y-auto hide-scrollbar flex flex-col' },
 
             // ▼ 手動貼り付けモーダル
             showPasteModal && div({ className: 'fixed inset-0 z-[300] bg-black/90 flex flex-col p-4 md:p-8 animate-in' },
@@ -1386,7 +1386,7 @@ ${emptyFields.map(f => '　・【' + f + '】').join('\n')}
 
                 // ── ヘッダー（コピー + PC/スマホ切替）──
                 div({ className: 'flex flex-col gap-3 p-4 md:p-6 border-b border-white/10 bg-black/40 shrink-0' },
-                    div({ className: 'flex items-center justify-between gap-2' },
+                    div({ className: 'flex flex-wrap items-center justify-between gap-2' },
                         h3({ className: 'text-sm font-black text-slate-300 flex items-center gap-2' },
                             span({}, '\uD83D\uDC40'),
                             'プレビュー',
@@ -1395,10 +1395,10 @@ ${emptyFields.map(f => '　・【' + f + '】').join('\n')}
                         div({ className: 'flex items-center gap-2' },
                             // PC/スマホ切替
                             div({ className: 'flex bg-white/5 rounded-lg p-0.5 border border-white/10' },
-                                button({ onClick: () => setPreviewMode('pc'), className: 'px-2 py-1 rounded text-xs font-bold transition ' + (previewMode === 'pc' ? 'bg-brand text-white' : 'text-slate-400 hover:text-white') }, '\uD83D\uDCBB PC'),
-                                button({ onClick: () => setPreviewMode('mobile'), className: 'px-2 py-1 rounded text-xs font-bold transition ' + (previewMode === 'mobile' ? 'bg-brand text-white' : 'text-slate-400 hover:text-white') }, '\uD83D\uDCF1 スマホ')
+                                button({ onClick: () => setPreviewMode('pc'), className: 'px-1.5 py-1 rounded text-[10px] font-bold transition ' + (previewMode === 'pc' ? 'bg-brand text-white' : 'text-slate-400 hover:text-white') }, '\uD83D\uDCBB PC'),
+                                button({ onClick: () => setPreviewMode('mobile'), className: 'px-1.5 py-1 rounded text-[10px] font-bold transition ' + (previewMode === 'mobile' ? 'bg-brand text-white' : 'text-slate-400 hover:text-white') }, '\uD83D\uDCF1 スマホ')
                             ),
-                            button({ onClick: () => copy(res, 'raw'), className: 'glass-panel px-3 py-1.5 rounded-lg text-xs font-bold transition ' + (copied.raw ? 'text-brand-success' : 'text-slate-300') }, copied.raw ? '\u2713' : '\uD83D\uDCCB Raw'),
+                            button({ onClick: () => copy(res, 'raw'), className: 'glass-panel px-2 py-1 rounded-lg text-[10px] font-bold transition ' + (copied.raw ? 'text-brand-success' : 'text-slate-300') }, copied.raw ? '\u2713' : '\uD83D\uDCCB Raw'),
                             !conf.isImagePrompt && button({ onClick: () => {
                                 const elNode = document.getElementById('preview-tab-content');
                                 if(elNode) {
@@ -1407,7 +1407,7 @@ ${emptyFields.map(f => '　・【' + f + '】').join('\n')}
                                     try { document.execCommand('copy'); copy('', 'rich'); } catch(e){}
                                     sel.removeAllRanges(); 
                                 }
-                            }, className: 'btn-gradient px-3 py-1.5 rounded-lg text-xs font-bold transition ' + (copied.rich ? 'opacity-50' : '') }, copied.rich ? '\u2713' : '\uD83C\uDFA8 装飾')
+                            }, className: 'btn-gradient px-2 py-1 rounded-lg text-[10px] font-bold transition ' + (copied.rich ? 'opacity-50' : '') }, copied.rich ? '\u2713' : '\uD83C\uDFA8 装飾')
                         )
                     ),
 
@@ -1449,7 +1449,7 @@ ${emptyFields.map(f => '　・【' + f + '】').join('\n')}
                     ) : null,
 
                     // スコア表示
-                    score && div({ className: 'flex flex-wrap gap-2' },
+                    score && div({ className: 'flex flex-wrap gap-1.5' },
                         div({ className: 'bg-white/5 px-2.5 py-1 rounded-lg border border-white/10 flex items-center gap-1.5' }, span({ className: 'text-[10px] text-slate-400' }, '\uD83D\uDCDD'), span({ className: 'text-xs font-bold text-white' }, score.len + '字')),
                         div({ className: 'bg-white/5 px-2.5 py-1 rounded-lg border border-white/10 flex items-center gap-1.5' }, span({ className: 'text-[10px] text-slate-400' }, '\u23F1'), span({ className: 'text-xs font-bold text-white' }, '約' + score.time + '分')),
                         div({ className: 'bg-white/5 px-2.5 py-1 rounded-lg border border-white/10 flex items-center gap-1.5' }, span({ className: 'text-[10px] text-slate-400' }, '\uD83D\uDCCA'), span({ className: 'text-xs font-bold ' + (score.readScore >= 80 ? 'text-brand-success' : score.readScore >= 50 ? 'text-brand-accent' : 'text-brand-danger') }, score.readScore + '点'))
@@ -1561,7 +1561,7 @@ ${emptyFields.map(f => '　・【' + f + '】').join('\n')}
                 ),
 
                 // ── 推敲・マルチ展開パネル ──
-                !conf.isImagePrompt && div({ className: 'p-4 md:p-6 border-t border-white/10 space-y-3 shrink-0 bg-black/20' },
+                !conf.isImagePrompt && div({ className: 'p-3 md:p-6 border-t border-white/10 space-y-2 shrink-0 bg-black/20' },
                     genMode === 'prompt' && div({ className: 'p-2.5 bg-brand-accent/10 border border-brand-accent/30 rounded-xl flex items-center gap-2' },
                         span({ className: 'text-sm' }, '\uD83D\uDCCB'),
                         p({ className: 'text-xs font-bold text-brand-accent' }, 'プロンプトモード: ボタンでプロンプトをコピーします')
