@@ -1938,6 +1938,7 @@ ${emptyFields.map(f => '　・【' + f + '】').join('\n')}
       const [screen, setScreen] = useState('home');  
       const [activeCat, setActiveCat] = useState('omega');
       const [showSettings, setShowSettings] = useState(false);
+        const [showManual, setShowManual] = useState(false);
       const [showManual, setShowManual] = useState(false);
       const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
       const [showPopup, setShowPopup] = useState(false);
