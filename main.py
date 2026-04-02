@@ -15,7 +15,7 @@ import random
 import urllib.request
 import re
 
-app = FastAPI(title="AI Content Pro Backend")
+app = FastAPI(title="AI Content Pro Backend", version="71.6.0")
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 CONFIG_FILE = "server_config.json"
@@ -333,6 +333,10 @@ async def auto_generate(req: AutoGenerateRequest):
 async def save_data(data: dict):
     print("フロントエンドから受信したデータ:", data)
     return {"status": "success", "message": "データがPythonに届きました"}
+
+@app.get("/api/health")
+async def health():
+    return {"status": "ok", "version": "v71.6.0"}
 
 if __name__ == "__main__":
     # 修正箇所: ポートを8001に指定
