@@ -1,10 +1,8 @@
 name: Auto Deploy to Xserver VPS
-
 on:
   push:
     branches:
       - main
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -19,10 +17,8 @@ jobs:
             cd /root/ai-content-pro
             git fetch origin main
             git reset --hard origin/main
-
             # ポートが8001であることを確実に保証
             sed -i 's/--port 8000/--port 8001/g' /etc/systemd/system/aicontent.service
             systemctl daemon-reload
-
             sudo systemctl restart aicontent.service
-            echo "✅ デプロイ完了 $(date)"
+            echo "デプロイ完了 $(date)"
