@@ -1618,16 +1618,16 @@ ${emptyFields.map(f => '　・【' + f + '】').join('\n')}
     // ================================================================
     const ManualModal = ({ onClose }) => {
         const [activeTab, setActiveTab] = useState('basic');
-        return div({ className: 'fixed inset-0 z-[200] flex items-center justify-center bg-black/80 p-4 animate-in' },
-            div({ className: 'glass-panel rounded-3xl max-w-4xl w-full p-6 md:p-8 relative flex flex-col max-h-[90vh]' },
-                button({ onClick: onClose, className: 'absolute top-5 right-5 text-slate-400 hover:text-white text-xl font-bold transition' }, '\u2715'),
+        return div({ className: 'fixed inset-0 z-[200] flex items-center justify-center bg-black/80 p-4 animate-in backdrop-blur-sm' },
+            div({ className: 'glass-panel rounded-3xl max-w-5xl w-full p-6 md:p-8 relative flex flex-col max-h-[90vh]' },
+                button({ onClick: onClose, className: 'absolute top-5 right-5 text-slate-400 hover:text-white text-xl font-bold transition z-10' }, '\u2715'),
                 h3({ className: 'text-2xl font-black text-white mb-6 pb-4 border-b border-white/10 flex items-center gap-2' }, '📖 AICP Pro 総合マニュアル'),
-                div({ className: 'flex gap-2 mb-6 border-b border-white/10 pb-2 overflow-x-auto hide-scrollbar' },
+                div({ className: 'flex gap-2 mb-6 border-b border-white/10 pb-2 overflow-x-auto hide-scrollbar shrink-0' },
                     [{id:'basic', l:'🔰 基本の使い方'}, {id:'magic', l:'✨ 神丸投げ・自動補完'}, {id:'persona', l:'🎭 マイキャラ設定'}, {id:'tools', l:'🛠 各ツールの解説'}].map(t => 
                         button({ key: t.id, onClick: () => setActiveTab(t.id), className: 'px-4 py-2 rounded-full text-xs font-bold transition whitespace-nowrap ' + (activeTab === t.id ? 'bg-brand text-white' : 'text-slate-400 hover:bg-white/10') }, t.l)
                     )
                 ),
-                div({ className: 'overflow-y-auto flex-1 pr-4 hide-scrollbar text-slate-300 space-y-6 leading-relaxed text-sm' },
+                div({ className: 'overflow-y-auto flex-1 pr-4 hide-scrollbar text-slate-300 space-y-6 leading-relaxed text-sm relative' },
                     activeTab === 'basic' && div({ className: 'animate-in space-y-6' },
                         h4({ className: 'text-lg font-bold text-brand-light border-l-4 border-brand-light pl-2' }, '1. コンテンツの生成方法'),
                         p({}, '左側のフォームに必要な情報を入力し、画面下部の生成ボタンを押します。実行モードには以下の2種類があります。'),
@@ -1660,32 +1660,31 @@ ${emptyFields.map(f => '　・【' + f + '】').join('\n')}
                         p({}, '特定の用途に向けたキャラクター（例：熱血コンサルタント、優しい占い師など）を最大5体まで保存できます。'),
                         p({}, '保存したキャラは、SNS投稿ツールや動画台本ツールの「🎭 なりきりキャラクター」のプルダウンから簡単に呼び出すことができます。')
                     ),
-                    activeTab === 'tools' && div({ className: 'animate-in space-y-6' },
-                        h4({ className: 'text-lg font-bold text-brand-light border-l-4 border-brand-light pl-2' }, '🛠 カテゴリ別 ツール解説'),
-                        div({ className: 'grid grid-cols-1 md:grid-cols-2 gap-4' },
-                            div({ className: 'p-4 bg-white/5 rounded-xl border border-white/10 hover:border-brand-light/50 transition' }, 
-                                h5({ className: 'font-black text-white mb-2 flex items-center gap-2' }, '🔥 オメガ特級ツール'), 
-                                p({ className: 'text-xs text-slate-400 leading-relaxed' }, 'ローンチ設計、VSL台本、30日間SNSカレンダーなど、大規模なマーケティング施策を一撃で構築する最強のツール群です。')),
-                            div({ className: 'p-4 bg-white/5 rounded-xl border border-white/10 hover:border-brand-light/50 transition' }, 
-                                h5({ className: 'font-black text-white mb-2 flex items-center gap-2' }, '📝 コンテンツ作成 ＆ 販売'), 
-                                p({ className: 'text-xs text-slate-400 leading-relaxed' }, '売れるnote有料記事の全自動執筆、高単価商品のLP作成、バックエンド商品の企画など、直接的な収益化に直結します。')),
-                            div({ className: 'p-4 bg-white/5 rounded-xl border border-white/10 hover:border-brand-light/50 transition' }, 
-                                h5({ className: 'font-black text-white mb-2 flex items-center gap-2' }, '💼 クラウドワークス・仕事完遂'), 
-                                p({ className: 'text-xs text-slate-400 leading-relaxed' }, '案件の獲得率を上げる提案文作成や、角を立てない単価交渉メッセージなど、フリーランスの営業・納品活動をサポートします。')),
-                            div({ className: 'p-4 bg-white/5 rounded-xl border border-white/10 hover:border-brand-light/50 transition' }, 
-                                h5({ className: 'font-black text-white mb-2 flex items-center gap-2' }, '🚀 集客 ＆ SNSアナリティクス'), 
-                                p({ className: 'text-xs text-slate-400 leading-relaxed' }, 'X(Twitter)やInstagram等のバズるアカウント設計、ショート動画台本、SNSアナリティクスの画像解析による改善提案を行います。')),
-                            div({ className: 'p-4 bg-white/5 rounded-xl border border-white/10 hover:border-brand-light/50 transition' }, 
-                                h5({ className: 'font-black text-white mb-2 flex items-center gap-2' }, '💬 ファン化 ＆ セールス自動化'), 
-                                p({ className: 'text-xs text-slate-400 leading-relaxed' }, 'LINE登録を促す無料プレゼント企画、ステップ配信シナリオ、顧客からのクレームに対する神返信などを作成します。'))
-                        )
+                    activeTab === 'tools' && div({ className: 'animate-in space-y-8' },
+                        h4({ className: 'text-lg font-bold text-brand-light border-l-4 border-brand-light pl-2' }, '🛠 収録ツール一覧と使い方'),
+                        CATEGORIES.map(c => {
+                            const catTools = Object.keys(TOOLS).filter(k => TOOLS[k].cat === c.id);
+                            if (catTools.length === 0) return null;
+                            return div({ key: c.id, className: 'space-y-4' },
+                                h5({ className: 'font-black text-white text-base mb-3 border-b border-white/10 pb-2' }, c.name),
+                                div({ className: 'grid grid-cols-1 lg:grid-cols-2 gap-4' },
+                                    catTools.map(tId => {
+                                        const t = TOOLS[tId];
+                                        return div({ key: tId, className: 'p-5 bg-white/5 rounded-xl border border-white/10 hover:border-brand/50 transition flex flex-col h-full group' },
+                                            h6({ className: 'font-black text-white text-sm mb-2 flex items-center gap-2' }, span({className: 'text-2xl group-hover:scale-125 transition-transform'}, t.icon), t.name),
+                                            p({ className: 'text-xs text-slate-300 font-bold mb-4 flex-1' }, t.desc),
+                                            t.help && p({ className: 'text-[11px] text-slate-400 leading-relaxed bg-black/40 p-3 rounded-lg mt-auto border border-white/5' }, '\uD83D\uDCA1 ', t.help)
+                                        );
+                                    })
+                                )
+                            );
+                        })
                     )
                 ),
-                button({ onClick: onClose, className: 'w-full btn-gradient py-4 rounded-xl font-black mt-6 shadow-xl' }, 'マニュアルを閉じる')
+                button({ onClick: onClose, className: 'w-full btn-gradient py-4 rounded-xl font-black mt-6 shadow-xl shrink-0' }, 'マニュアルを閉じる')
             )
         );
     };
-
     const AdminDashboard = ({ user }) => {
         const [db, setDb] = useState(AppDB.get());
         const [toast, setToast] = useState('');

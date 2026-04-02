@@ -1,16 +1,25 @@
-import re
 import sys
+import os
 
 filepath = '/root/ai-content-pro/static/js/app.js'
-try:
-    with open(filepath, 'r', encoding='utf-8') as f:
-        content = f.read()
-except FileNotFoundError:
+if not os.path.exists(filepath):
     print(f"❌ {filepath} が見つかりません。")
     sys.exit(1)
 
-# マニュアルモーダル全体を正規表現で書き換える（動的リスト生成対応版）
-new_manual_modal = r"""    const ManualModal = ({ onClose }) => {
+with open(filepath, 'r', encoding='utf-8') as f:
+    content = f.read()
+
+start_str = "    const ManualModal = ({ onClose }) => {"
+end_str = "    const AdminDashboard = ({ user }) => {"
+
+start_idx = content.find(start_str)
+end_idx = content.find(end_str)
+
+if start_idx == -1 or end_idx == -1:
+    print("❌ マニュアルの箇所が見つかりません。")
+    sys.exit(1)
+
+new_modal = r"""    const ManualModal = ({ onClose }) => {
         const [activeTab, setActiveTab] = useState('basic');
         return div({ className: 'fixed inset-0 z-[200] flex items-center justify-center bg-black/80 p-4 animate-in backdrop-blur-sm' },
             div({ className: 'glass-panel rounded-3xl max-w-5xl w-full p-6 md:p-8 relative flex flex-col max-h-[90vh]' },
@@ -21,7 +30,7 @@ new_manual_modal = r"""    const ManualModal = ({ onClose }) => {
                         button({ key: t.id, onClick: () => setActiveTab(t.id), className: 'px-4 py-2 rounded-full text-xs font-bold transition whitespace-nowrap ' + (activeTab === t.id ? 'bg-brand text-white' : 'text-slate-400 hover:bg-white/10') }, t.l)
                     )
                 ),
-                div({ className: 'overflow-y-auto flex-1 pr-4 custom-scrollbar text-slate-300 space-y-6 leading-relaxed text-sm relative' },
+                div({ className: 'overflow-y-auto flex-1 pr-4 hide-scrollbar text-slate-300 space-y-6 leading-relaxed text-sm relative' },
                     activeTab === 'basic' && div({ className: 'animate-in space-y-6' },
                         h4({ className: 'text-lg font-bold text-brand-light border-l-4 border-brand-light pl-2' }, '1. コンテンツの生成方法'),
                         p({}, '左側のフォームに必要な情報を入力し、画面下部の生成ボタンを押します。実行モードには以下の2種類があります。'),
@@ -59,15 +68,15 @@ new_manual_modal = r"""    const ManualModal = ({ onClose }) => {
                         CATEGORIES.map(c => {
                             const catTools = Object.keys(TOOLS).filter(k => TOOLS[k].cat === c.id);
                             if (catTools.length === 0) return null;
-                            return div({ key: c.id, className: 'space-y-3' },
+                            return div({ key: c.id, className: 'space-y-4' },
                                 h5({ className: 'font-black text-white text-base mb-3 border-b border-white/10 pb-2' }, c.name),
-                                div({ className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
+                                div({ className: 'grid grid-cols-1 lg:grid-cols-2 gap-4' },
                                     catTools.map(tId => {
                                         const t = TOOLS[tId];
-                                        return div({ key: tId, className: 'p-4 bg-white/5 rounded-xl border border-white/10 hover:border-brand/30 transition flex flex-col h-full group' },
-                                            h6({ className: 'font-bold text-white text-sm mb-2 flex items-center gap-2' }, span({className: 'text-lg group-hover:scale-125 transition-transform'}, t.icon), t.name),
-                                            p({ className: 'text-[11px] text-slate-300 font-bold mb-3 flex-1' }, t.desc),
-                                            t.help && p({ className: 'text-[10px] text-slate-400 leading-relaxed bg-black/30 p-2 rounded-lg mt-auto border border-white/5' }, '💡 ', t.help)
+                                        return div({ key: tId, className: 'p-5 bg-white/5 rounded-xl border border-white/10 hover:border-brand/50 transition flex flex-col h-full group' },
+                                            h6({ className: 'font-black text-white text-sm mb-2 flex items-center gap-2' }, span({className: 'text-2xl group-hover:scale-125 transition-transform'}, t.icon), t.name),
+                                            p({ className: 'text-xs text-slate-300 font-bold mb-4 flex-1' }, t.desc),
+                                            t.help && p({ className: 'text-[11px] text-slate-400 leading-relaxed bg-black/40 p-3 rounded-lg mt-auto border border-white/5' }, '\uD83D\uDCA1 ', t.help)
                                         );
                                     })
                                 )
@@ -78,15 +87,17 @@ new_manual_modal = r"""    const ManualModal = ({ onClose }) => {
                 button({ onClick: onClose, className: 'w-full btn-gradient py-4 rounded-xl font-black mt-6 shadow-xl shrink-0' }, 'マニュアルを閉じる')
             )
         );
-    };"""
+    };
+"""
 
-content = re.sub(
-    r"const ManualModal = \(\{ onClose \}\) => \{.*?(?=const AdminDashboard = \(\{ user \}\) => \{)",
-    new_manual_modal_code + "\n\n    ",
-    content,
-    flags=re.DOTALL
+new_content = content[:start_idx] + new_modal + content[end_idx:]
+
+new_content = new_content.replace(
+    "const SYS_VERSION = 'v71.6.0 Ultimate Auto-Browsing Edition';",
+    "const SYS_VERSION = 'v71.7.2 Ultimate Master Edition';"
 )
 
 with open(filepath, 'w', encoding='utf-8') as f:
-    f.write(content)
-print("✅ app.js のマニュアルモーダルを超絶アップデートしました！")
+    f.write(new_content)
+
+print("✅ app.js のマニュアルモーダルを正常に修復・アップデートしました！")
