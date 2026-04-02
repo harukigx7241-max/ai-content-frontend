@@ -25,7 +25,7 @@
  
     const DB_KEY = 'AICP_v70_BYOK_DB';   
     const SESS_KEY = 'AICP_v70_Session';  
-    const SYS_VERSION = 'v71.6.0 Ultimate Auto-Browsing Edition';  
+    const SYS_VERSION = 'v71.5.0 Ultimate Auto-Browsing Edition';  
  
     const AppDB = {  
       get: () => {  
@@ -42,7 +42,6 @@
         Object.keys(db.users).forEach(u => {
             if(db.users[u].credits === undefined) db.users[u].credits = 100;
             if(!db.users[u].settings.templates) db.users[u].settings.templates = ['', '', ''];
-            if(!db.users[u].settings.myCharas) db.users[u].settings.myCharas = [];
         });
         return db;  
       },  
@@ -176,7 +175,6 @@
         const [templateUrl, setTemplateUrl] = useState(uData.settings.templateUrl || '');
         const [notif, setNotif] = useState(uData.settings.notifications);
         const [templates, setTemplates] = useState(uData.settings.templates);
-        const [myCharas, setMyCharas] = useState(uData.settings.myCharas || []);
         
         const [reqNickname, setReqNickname] = useState(uData.changeRequest ? uData.changeRequest.nickname : uData.nickname);
         const [reqSns, setReqSns] = useState(uData.changeRequest ? uData.changeRequest.sns : (uData.sns || ''));
@@ -196,7 +194,7 @@
 
         const save = () => {
             const ndb = AppDB.get();
-            ndb.users[user].settings = Object.assign({}, ndb.users[user].settings, { keys, aiModel, theme, tone, persona, knowledge, templateUrl, notifications: notif, templates, myCharas });
+            ndb.users[user].settings = Object.assign({}, ndb.users[user].settings, { keys, aiModel, theme, tone, persona, knowledge, templateUrl, notifications: notif, templates });
             AppDB.save(ndb);
             onClose();
             window.location.reload(); 
@@ -517,8 +515,6 @@
       const [keywordInput, setKeywordInput] = useState('');
       const [showAdvancedMagic, setShowAdvancedMagic] = useState(false);
       const [brainstormIdeas, setBrainstormIdeas] = useState([]);
-          // ツールヘルプ（折りたたみ）
-          const [showHelp, setShowHelp] = useState(false);
       
       // ▼▼▼ Web同期テンプレート: ローカルJSONファイルへのフォールバックを廃止 ▼▼▼
       const [webTemplates, setWebTemplates] = useState([]);
@@ -910,8 +906,7 @@ ${emptyFields.map(f => '　・【' + f + '】').join('\n')}
           'voicy': '音声配信台本', 'step_mail': 'メルマガ原稿',
           'seo_blog': 'SEOブログ記事', 'pr_release': 'PR・プレスリリース',
           'catchy': 'キャッチーに推敲', 'simple': 'シンプルに推敲',
-          'compliance': 'コンプラ・炎上チェック', 'eyecatch_prompt': 'アイキャッチ画像プロンプト',
-          'line_cta': 'LINE誘導文を追加'
+          'compliance': 'コンプラ・炎上チェック', 'eyecatch_prompt': 'アイキャッチ画像プロンプト'
       };
 
       const buildModifyPrompt = (actionType, sourceText) => {
@@ -927,7 +922,6 @@ ${emptyFields.map(f => '　・【' + f + '】').join('\n')}
           if (actionType === 'simple') return '以下の文章を、専門用語を使わずに「小学生でも理解できる」くらいシンプルでわかりやすい表現に推敲してください。\n\n' + sourceText;
           if (actionType === 'compliance') return '以下の文章について、炎上リスク、差別的表現、薬機法や景表法違反のリスクがないかコンプライアンスチェックを行い、問題があれば修正した安全な文章を提案してください。\n\n' + sourceText;
           if (actionType === 'eyecatch_prompt') return '以下の文章の内容を象徴する、MidjourneyやDALL-E 3などの画像生成AI向けの「英語のプロンプト」を1つだけ作成してください。出力は英語のプロンプトテキストのみにしてください。\n\n' + sourceText;
-          if (actionType === 'line_cta') return '以下の文章の末尾に、LINE公式アカウントへの登録を自然に促す誘導文（CTA）を3パターン追加してください。\n・「詳しくはプロフのLINEで💌」系の軽いもの\n・「LINE登録者限定で○○をプレゼント🎁」系の特典訴求\n・「今だけ無料で○○を配布中」系の緊急性訴求\n\n元の文章はそのまま残し、末尾にCTAを追加する形にしてください。\n\n' + sourceText;
           return sourceText;
       };
 
@@ -1069,19 +1063,9 @@ ${emptyFields.map(f => '　・【' + f + '】').join('\n')}
         div({ id: 'tool-left-panel', className: 'w-full lg:w-[400px] border-b lg:border-b-0 lg:border-r border-white/10 p-6 md:p-8 shrink-0 flex flex-col lg:h-full lg:overflow-y-auto hide-scrollbar' },
           div({ className: 'flex items-center gap-3 mb-8' },
               button({ onClick: onBack, className: 'glass-panel px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-white/10' }, '\u2190'),
-              h2({ className: 'text-xl font-black text-white' }, conf.name),
-              conf.help && button({ onClick: () => setShowHelp(!showHelp), className: 'text-[10px] glass-panel px-2 py-1 rounded-lg text-slate-400 hover:text-white transition shrink-0' }, showHelp ? '✕ 閉じる' : '❓ 使い方')
+              h2({ className: 'text-xl font-black text-white' }, conf.name)
           ),
 
-
-          // ツールマニュアル表示
-          showHelp && conf.help && div({ className: 'mb-6 p-4 bg-brand/10 border border-brand/20 rounded-xl animate-in' },
-              div({ className: 'flex items-center gap-2 mb-2' },
-                  span({ className: 'text-sm' }, '\u2753'),
-                  span({ className: 'text-xs font-black text-brand-light' }, conf.name + ' の使い方')
-              ),
-              p({ className: 'text-xs text-slate-300 leading-relaxed' }, conf.help)
-          ),
           // トレンドパネル（折りたたみ式・日本語カードUI）
           trends.length > 0 && div({ className: 'mb-4 animate-in' },
               button({
@@ -1262,25 +1246,6 @@ ${emptyFields.map(f => '　・【' + f + '】').join('\n')}
               )
           ),
 
-
-          // プロンプトモード3ステップワークフロー
-          genMode === 'prompt' && !conf.isImagePrompt && div({ className: 'mb-6 p-4 bg-gradient-to-r from-brand-accent/10 to-orange-500/5 border border-brand-accent/20 rounded-xl animate-in' },
-              h4({ className: 'text-xs font-black text-brand-accent mb-3 flex items-center gap-2' }, '\uD83D\uDCCB プロンプトモード 3ステップ'),
-              div({ className: 'flex gap-3' },
-                  div({ className: 'flex-1 text-center p-2.5 rounded-lg ' + (res ? 'bg-brand-success/20 border border-brand-success/30' : 'bg-brand-accent/20 border border-brand-accent/30') },
-                      div({ className: 'text-lg mb-1' }, '\u2776'),
-                      p({ className: 'text-[10px] font-bold ' + (res ? 'text-brand-success' : 'text-brand-accent') }, res ? '\u2713 コピー済み' : 'プロンプトをコピー')
-                  ),
-                  div({ className: 'flex-1 text-center p-2.5 rounded-lg bg-white/5 border border-white/10' },
-                      div({ className: 'text-lg mb-1' }, '\u2777'),
-                      p({ className: 'text-[10px] font-bold text-slate-400' }, 'ChatGPT等に貼り付けて生成')
-                  ),
-                  div({ className: 'flex-1 text-center p-2.5 rounded-lg bg-white/5 border border-white/10' },
-                      div({ className: 'text-lg mb-1' }, '\u2778'),
-                      p({ className: 'text-[10px] font-bold text-slate-400' }, '結果を貼り付けてプレビュー')
-                  )
-              )
-          ),
           // フォーム入力エリア
           div({ className: 'space-y-6 flex-1' }, 
               conf.fields.map(f => el(FormInput, { 
@@ -1411,19 +1376,6 @@ ${emptyFields.map(f => '　・【' + f + '】').join('\n')}
                         )
                     ),
 
-
-                    // ── 汎用セクション自動判別タブ（note以外のツール）──
-                    tid !== 'note' && res && (() => {
-                        const sectionMarkers = res.match(/---【[^】]+】---/g);
-                        if (sectionMarkers && sectionMarkers.length >= 2) {
-                            const sectionNames = sectionMarkers.map(m => m.replace(/---【|】---/g, ''));
-                            return div({ className: 'flex gap-1 overflow-x-auto hide-scrollbar' },
-                                button({ onClick: () => setPreviewTab('all'), className: 'px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition ' + (previewTab === 'all' ? 'bg-brand text-white shadow-lg' : 'glass-panel text-slate-400 hover:text-white') }, '\uD83D\uDCCB 全体'),
-                                sectionNames.map((name, i) => button({ key: i, onClick: () => setPreviewTab('sec_' + i), className: 'px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition ' + (previewTab === 'sec_' + i ? 'bg-brand text-white shadow-lg' : 'glass-panel text-slate-400 hover:text-white') }, name))
-                            );
-                        }
-                        return null;
-                    })(),
                     // ── タブ（note記事は分割表示、その他はallのみ）──
                     tid === 'note' && res ? div({ className: 'flex gap-1 overflow-x-auto hide-scrollbar' },
                         [
@@ -1541,21 +1493,9 @@ ${emptyFields.map(f => '　・【' + f + '】').join('\n')}
                                     }
                                     return null;
                                 })()
-                
-                                // 汎用セクション別表示
-                                : (() => {
-                                    if (previewTab.startsWith('sec_')) {
-                                        const secIdx = parseInt(previewTab.replace('sec_', ''));
-                                        const sections = res.split(/---【[^】]+】---/).filter(s => s.trim());
-                                        const sectionContent = sections[secIdx] || res;
-                                        return div({ id: 'preview-tab-content', className: 'bg-white p-5 md:p-8 rounded-2xl shadow-inner preview-content text-black ' + (previewMode === 'mobile' ? 'text-base leading-relaxed' : '') },
-                                            div({ dangerouslySetInnerHTML: renderMarkdown(sectionContent.trim()) })
-                                        );
-                                    }
-                                    return div({ id: 'preview-tab-content', className: 'bg-white p-5 md:p-8 rounded-2xl shadow-inner preview-content text-black ' + (previewMode === 'mobile' ? 'text-base leading-relaxed' : '') },
-                                        div({ dangerouslySetInnerHTML: renderMarkdown(res) })
-                                    );
-                                })()
+                                : div({ id: 'preview-tab-content', className: 'bg-white p-5 md:p-8 rounded-2xl shadow-inner preview-content text-black ' + (previewMode === 'mobile' ? 'text-base leading-relaxed' : '') },
+                                    div({ dangerouslySetInnerHTML: renderMarkdown(res) })
+                                )
                             )
                     )
                 ),
