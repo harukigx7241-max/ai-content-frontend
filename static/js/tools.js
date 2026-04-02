@@ -233,40 +233,58 @@ const CATEGORIES = [
 const TOOLS = {
     // --- 🔥 オメガ特級ツール ---
     secret_god: { cat: 'omega', icon: '🧿', name: '【神限定】万能・神の眼', desc: 'あらゆる入力から最適なアウトプットを導き出します。', reqLevel: 50,
+      help: '全ての機能を超越する万能AIです。入力された指示（プロンプト）に対して、AIが持つ最高の能力で回答します。複雑な要求や、他のツールに当てはまらない独自の作業を依頼する際に使用してください。',
       fields: [{ id: 'req', t: 'area', l: '神の要求', ph: '例: この商材を売るためのすべてを教えて' }],
       build: function(v) { return '# 神の要求\n以下の要求に対して、考えうる最高のクオリティで包括的な回答を生成してください。\n要求: ' + (v.req || ''); } },
     funnel: { cat: 'omega', icon: '🌪️', name: '全自動ファネル構築', desc: '集客から販売までの最強の導線を設計します。',
+      help: '「何を・誰に」売るかを入力するだけで、集客（SNS）→ 教育（LINE/メルマガ）→ 販売（LP/VSL）に至るまでの全体設計（ファネル）を自動で構築します。ビジネスの全体像を作りたい時に最適です。',
       fields: [{ id: 'prod', t: 'text', l: '販売商品', ph: '例: AI副業マスター講座', isMainMagic: true }, { id: 'target', t: 'text', l: 'ターゲット層', ph: '例: 副業初心者' }],
       build: function(v) { return '# ファネル構築指示\n商品「' + (v.prod || '') + '」を「' + (v.target || '') + '」に販売するための、集客・教育・販売の全自動ファネル導線を設計してください。'; } },
     vsl: { cat: 'omega', icon: '🎬', name: 'VSL台本', desc: '動画セールスレター用の心を動かす台本を生成。',
+      help: '商品やサービスを動画で販売する際（Video Sales Letter）の台本を作成します。視聴者の興味を惹きつける冒頭から、共感、解決策の提示、そして購入への誘導（オファー）まで、成約率を高める構成で出力します。',
       fields: [{ id: 'prod', t: 'text', l: '販売商品', ph: '例: ダイエットプログラム', isMainMagic: true }],
       build: function(v) { return '# VSL台本作成指示\n商品「' + (v.prod || '') + '」を販売するための動画セールスレター(VSL)の台本を作成してください。冒頭のフックからオファーまで含めてください。'; } },
-    sns_cal: { cat: 'omega', icon: '📅', name: '30日間SNSカレンダー', desc: 'キャラ×ジャンル特化で1ヶ月分のSNS発信内容を自動構築。',
+    sns_cal: { cat: 'omega', icon: '📅', name: '30日間SNSカレンダー（特化版）', desc: '占い/副業/通常モード対応の1ヶ月分の投稿計画を自動生成',
+      help: 'キャラクター×ジャンル×投稿モードで差別化された30日分のSNS投稿計画を自動生成します。訴求ゴールに基づいた投稿内容・ハッシュタグ・最適投稿時間付きのカレンダーを出力します。',
       fields: [
-        { id: 'theme',    t: 'text',   l: '発信テーマ', ph: '例: 投資・資産運用', isMainMagic: true },
+        { id: 'theme',    t: 'text',   l: '発信テーマ（通常モード時）', ph: '例: 投資・資産運用', isMainMagic: true },
+        { id: 'mode',         t: 'select', l: '🔮 投稿モード', opts: ['通常投稿モード','🔮 占い・スピリチュアルモード','💼 副業全般モード'] },
+        { id: 'uranai_type',  t: 'select', l: '🔮 占い系投稿タイプ（占いモード時）', opts: URANAI_POST_OPTS },
+        { id: 'fukugyo_type', t: 'select', l: '💼 副業系投稿タイプ（副業モード時）', opts: FUKUGYO_POST_OPTS },
+        { id: 'goal',         t: 'select', l: '🎯 訴求ゴール', opts: GOAL_OPTS },
         { id: 'persona',  t: 'select', l: '🎭 キャラクター', opts: PERSONA_OPTS },
-        { id: 'p_custom', t: 'text',   l: 'カスタムキャラ（「✏️ カスタム」選択時）', ph: '例: 30代元OL、サバサバしているが面倒見が良い' },
-        { id: 'genre',    t: 'select', l: '🏷️ 特化ジャンル', opts: GENRE_OPTS }
+        { id: 'p_custom', t: 'text',   l: 'カスタムキャラ（「🔧 カスタム」選択時）', ph: '例: 30代元看護師の占い師' },
+        { id: 'genre',    t: 'select', l: '🏷 特化ジャンル', opts: GENRE_OPTS }
       ],
       build: function(v) {
         var persona = getPersonaInstruction(v.persona, v.p_custom);
         var genre = getGenreInstruction(v.genre);
-        return '# SNSカレンダー作成指示' + persona + genre + '\nテーマ「' + (v.theme || '') + '」についてのSNS投稿内容を、30日間のカレンダー形式（表）で作成してください。\n上記のキャラクターとジャンル特化の指示を全投稿に反映してください。各投稿に曜日・テーマ・投稿文の要点を記載してください。';
+        var goal = getGoalInstruction(v.goal);
+        var mode = v.mode || '通常投稿モード';
+        var modeInst = '';
+        if (mode.indexOf('占い') >= 0) modeInst = getUranaiPostInstruction(v.uranai_type || '');
+        else if (mode.indexOf('副業全般') >= 0) modeInst = getFukugyoPostInstruction(v.fukugyo_type || '');
+        return '# 30日間SNSカレンダー作成指示' + persona + genre + goal + modeInst + '\n\nテーマ「' + (v.theme||'') + '」について、指定された投稿モード・訴求ゴールに特化した30日間分のSNS投稿カレンダーを作成してください。各日の投稿内容の要点・ハッシュタグ・最適な投稿時間を含め、表形式で出力してください。';
       }
     },
     ai_meeting: { cat: 'omega', icon: '🧠', name: 'AIエージェント会議', desc: '複数のAIペルソナによる多角的なアイデア出し。',
+      help: '入力したテーマについて、AIが「CEO」「マーケター」「エンジニア」など複数の役割（ペルソナ）に分かれて議論を行います。一人では思いつかない多角的な視点からアイデアを出したい時に使います。',
       fields: [{ id: 'topic', t: 'area', l: '議論テーマ', ph: '例: 新しいSaaSのマーケティング戦略' }],
       build: function(v) { return '# AIエージェント会議指示\nテーマ「' + (v.topic || '') + '」について、CEO、マーケター、エンジニアの3つの視点から議論し、多角的なアイデアと結論を出してください。'; } },
     affiliate: { cat: 'omega', icon: '🤝', name: 'アフィリエイトセンター', desc: 'アフィリエイター向けの紹介文や特典設計。',
+      help: '自分の商品を他人に紹介（アフィリエイト）してもらうための仕組みを構築します。紹介用テンプレート文や、紹介を促す特典アイデアを自動生成します。',
       fields: [{ id: 'prod', t: 'text', l: '商品詳細', ph: '例: 英語学習アプリ', isMainMagic: true }],
       build: function(v) { return '# アフィリエイト設計指示\n商品「' + (v.prod || '') + '」をアフィリエイターに紹介してもらうための、紹介用テンプレートと特典アイデアを提案してください。'; } },
     launch: { cat: 'omega', icon: '🚀', name: 'プロダクトローンチ生成', desc: '売上を最大化するローンチシナリオを設計。',
+      help: '新商品を爆発的に売るためのシナリオを設計します。事前の予告（プレローンチ）から、教育期間、販売開始から終了までのステップを提案します。',
       fields: [{ id: 'prod', t: 'text', l: '商品名', ph: '例: 動画編集スクール' }],
       build: function(v) { return '# ローンチシナリオ作成\n商品「' + (v.prod || '') + '」を爆発的に売るための、プレローンチから販売開始までのプロダクトローンチシナリオを設計してください。'; } },
     slide_gen: { cat: 'omega', icon: '📊', name: 'ウェビナースライド構成', desc: '成約率を高めるウェビナーの構成とスライド用画像プロンプトを作成。', isImagePrompt: true,
+      help: 'オンラインセミナー（ウェビナー）で商品を販売するための、成約率が高いスライド構成案と、スライド挿絵用の画像生成AIプロンプトを出力します。',
       fields: [{ id: 'topic', t: 'text', l: 'ウェビナーのテーマ', ph: '例: AIを使った業務効率化' }],
       build: function(v) { return v.topic || ''; } },
     rule: { cat: 'omega', icon: '⚖️', name: 'コンテンツ盗用防止＆規約', desc: 'デジタルコンテンツの利用規約や警告文を作成。',
+      help: '作成したnote記事やPDFが、無断で転載・盗用・再販売されるのを防ぐための「利用規約」と「警告文」を作成します。',
       fields: [{ id: 'prod', t: 'text', l: 'コンテンツ名', ph: '例: 稼ぐためのプロンプト集' }],
       build: function(v) { return '# 規約作成指示\nコンテンツ「' + (v.prod || '') + '」の無断転載・盗用を防止するための厳格な利用規約と、冒頭に記載する警告文を作成してください。'; } },
 
@@ -274,6 +292,7 @@ const TOOLS = {
     // note記事 究極生成
     // ================================================================
     note: { cat: 'mon', icon: '📝', name: 'note記事 究極生成', desc: '売れるnote有料記事を、最高品質のプロ構成で全自動執筆。',
+      help: '入力内容に基づいて、読者の悩みを解決し購買意欲を高める「有料note記事」を全自動で生成します。タイトル案から、惹きつける無料エリア、価値を提供する有料エリア、SEOハッシュタグまで一気に書き上げます。',
       fields: [
         { id: 'genre',     t: 'select', l: 'noteのジャンル', opts: ['副業・ビジネス', '恋愛・婚活', '美容・ダイエット', '投資・マネー', '自己啓発・メンタル', 'テクノロジー・AI', 'エンタメ・趣味', 'スキル・資格', '子育て・家族', '健康・医療'] },
         { id: 'age',       t: 'select', l: 'ターゲット年代', opts: ['10代', '20代', '25〜35歳', '30代', '35〜45歳', '40代', '50代', '60代以上'] },
@@ -298,38 +317,48 @@ const TOOLS = {
 
     // --- コンテンツ作成 ＆ 販売 ---
     lp: { cat: 'mon', icon: '📄', name: '爆売れLP作成', desc: '高単価商品を一撃で成約させるセールスコピー。',
+      help: '商品やサービスを販売するためのランディングページ（LP）の文章を生成します。ターゲットの悩みをえぐり、商品が唯一の解決策であることを提示して購入へ導きます。',
       fields: [
         { id: 'prod', t: 'text', l: '商品名・価格', ph: '例: AIコンサル (10万円)', isMainMagic: true },
         { id: 'bene', t: 'area', l: '最強のベネフィット', ph: '例: 会社に依存せず自由な収入と時間を手に入れる' }
       ],
       build: function(v) { return '# LP作成指示\n商品「' + (v.prod || '') + '」を販売するためのLPを作成してください。\nベネフィット「' + (v.bene || '') + '」を強調し、読者の痛みに共感し、この商品こそが唯一の解決策であると確信させる構成にしてください。'; } },
     backend: { cat: 'mon', icon: '💎', name: '高単価バックエンド企画', desc: '利益を最大化するバックエンド商品を企画。',
+      help: '低価格な商品（フロント商品）を購入した人に対し、さらに高単価な商品（バックエンド商品）を販売するためのコンセプトや内容を企画・提案します。',
       fields: [{ id: 'front', t: 'text', l: 'フロント商品', ph: '例: 無料のPDFレポート', isMainMagic: true }],
       build: function(v) { return '# バックエンド企画\nフロント商品「' + (v.front || '') + '」を購入した顧客に対して、LTVを最大化するための高単価バックエンド商品（30万〜100万円）のコンセプトと内容を企画してください。'; } },
     closing: { cat: 'mon', icon: '🎯', name: '心理的クロージング', desc: '最後の迷いを断切る強力なクロージング文章。',
+      help: '商品を買おうか迷っている見込み客の背中を押し、購入を決断させる（クロージング）ためのメッセージを作成します。反論や不安を先回りして解消します。',
       fields: [{ id: 'objection', t: 'area', l: '顧客の反論・不安', ph: '例: お金がない、時間がない' }],
       build: function(v) { return '# クロージング指示\n顧客の抱える不安「' + (v.objection || '') + '」を解消し、今すぐ購入しなければならない理由を提示する、強力なクロージングコピーを作成してください。'; } },
     research: { cat: 'mon', icon: '🔍', name: '競合リサーチ解剖', desc: '競合の強みと弱みを丸裸にする分析プロンプト。',
+      help: '競合他社やライバル商品の強み・弱みを分析し、自社がどう戦うべきかの戦略を提案します。',
       fields: [{ id: 'competitor', t: 'text', l: '競合の名前や特徴', ph: '例: 業界最大手のA社' }],
       build: function(v) { return '# 競合分析指示\n競合「' + (v.competitor || '') + '」について、4P分析・SWOT分析を行い、我々が勝つための隙（弱み）と戦略を提案してください。'; } },
     site_analyze: { cat: 'mon', icon: '🌐', name: '競合サイト完全解剖', desc: 'URLから（想定）サイト構造と改善点を導き出す。',
+      help: '入力されたURLのウェブサイトを分析（または想定）し、デザイン、使いやすさ、SEO、成約率などの観点から改善点や自社に取り入れるべきポイントを列挙します。',
       fields: [{ id: 'url', t: 'text', l: 'ターゲットURL/サイト名', ph: '例: https://example.com' }],
       build: function(v) { return '# サイト分析\n対象「' + (v.url || '') + '」のWebサイト構成を想定し、UI/UX、SEO、コンバージョンの観点から改善点と、自社サイトに活かせる要素を列挙してください。'; } },
 
     // --- クラウドワークス・仕事完遂 ---
     cw_prop: { cat: 'cw', icon: '✍️', name: 'CW案件獲得 提案文', desc: 'クラウドソーシングで採用される最強の提案文。',
+      help: 'クラウドワークスやランサーズ等で、クライアントに採用されやすい提案文（応募文）を自動生成します。相手の要望を的確に汲み取り、信頼感を与えます。',
       fields: [{ id: 'job', t: 'area', l: '案件の内容', ph: '例: YouTubeの動画編集 1本5000円', isMainMagic: true }],
       build: function(v) { return '# 提案文作成\n以下の案件に対して、クライアントの信頼を勝ち取り、確実に発注される魅力的な提案文を作成してください。\n案件: ' + (v.job || ''); } },
     seo: { cat: 'cw', icon: '📈', name: 'SEO特化ライティング', desc: '検索上位を狙うためのSEO最適化記事を作成。',
+      help: 'Googleなどで上位表示されることを目指したブログ記事の構成と本文を執筆します。キーワードを自然に盛り込み、検索意図を網羅します。',
       fields: [{ id: 'kw', t: 'text', l: '対策キーワード', ph: '例: AI ツール おすすめ' }],
       build: function(v) { return '# SEO記事作成\nキーワード「' + (v.kw || '') + '」で検索上位を獲得するための、網羅的で読者の検索意図を満たすSEO記事（構成案と本文）を作成してください。'; } },
     high_ticket: { cat: 'cw', icon: '🦅', name: '高単価案件ハンター', desc: '低単価から抜け出すためのスキル掛け合わせ提案。',
+      help: '現在の自分のスキルに「別の付加価値」を掛け合わせて、受注単価を3〜5倍に引き上げるための具体的な提案アイデアを作成します。',
       fields: [{ id: 'skill', t: 'text', l: 'あなたのスキル', ph: '例: ライティング、簡単な画像作成' }],
       build: function(v) { return '# 高単価提案\nスキル「' + (v.skill || '') + '」を活かして、単価を3倍〜5倍に引き上げるための付加価値の付け方と、クライアントへの具体的な提案フレーズを作成してください。'; } },
     nego: { cat: 'cw', icon: '💬', name: '報酬・単価交渉AI', desc: '角を立てずに単価アップを交渉するメッセージ。',
+      help: '既存のクライアントに対して、不快感を与えずに報酬アップをお願いするための丁寧な交渉メッセージを作成します。',
       fields: [{ id: 'reason', t: 'area', l: '単価交渉の理由', ph: '例: 継続して半年経過、作業範囲が広がった' }],
       build: function(v) { return '# 交渉メッセージ作成\n理由「' + (v.reason || '') + '」をもとに、既存クライアントに対して不快感を与えずに単価アップを承諾させる丁寧な交渉メッセージを作成してください。'; } },
     trans: { cat: 'cw', icon: '🌍', name: '多言語翻訳・納品', desc: 'ニュアンスを保ったプロレベルの翻訳。',
+      help: '直訳ではなく、現地の人が読んでも自然でプロフェッショナルなニュアンスを保った翻訳を行います。',
       fields: [{ id: 'text', t: 'area', l: '翻訳するテキスト', ph: '例: このツールは世界を変える' }, { id: 'lang', t: 'select', l: '翻訳先言語', opts: ['英語', '中国語', '韓国語'] }],
       build: function(v) { return '# 翻訳指示\n以下のテキストを、ネイティブが自然に感じるプロフェッショナルな' + (v.lang || '英語') + 'に翻訳してください。\n\n' + (v.text || ''); } },
 
@@ -337,6 +366,7 @@ const TOOLS = {
     // 🚀 集客 ＆ SNSアナリティクス
     // ================================================================
     sns_analyze: { cat: 'sns', icon: '👁️', name: 'SNS視覚アナリティクス', desc: 'グラフ画像を解析し、目標達成のための戦略をコンサル。',
+      help: 'InstagramのインサイトやTwitterのアナリティクスのスクリーンショット（画像）をアップロードすると、AIが数値を解析し、目標達成に向けた具体的な改善アクションを提案します。',
       fields: [
         { id: 'goal',  t: 'area',  l: '現在の状況と1ヶ月後の目標', ph: '例: 現在フォロワー500人。1ヶ月後に1000人にしたい。' },
         { id: 'image', t: 'image', l: 'SNSアナリティクスのスクショ (必須)' }
@@ -344,6 +374,7 @@ const TOOLS = {
       build: function(v) { return '# SNS分析コンサルティング依頼\n目標・現状：「' + (v.goal || '') + '」\n添付したスクリーンショット（SNSのアナリティクスデータやグラフ）を視覚的に詳細に解析し、現状の課題と、目標達成に向けた来週の具体的なアクションプラン（投稿カレンダー含む）を提案してください。'; } },
 
     acc_design: { cat: 'sns', icon: '🏗️', name: 'バズるアカウント設計', desc: 'キャラ×ジャンルで差別化したSNSコンセプトを完全設計。',
+      help: 'これからSNSを始める、または運用を見直したい方へ。指定したジャンルとキャラクターに基づき、アカウント名、プロフィール文、発信の軸などを網羅した「SNSアカウントの設計図」を構築します。',
       fields: [
         { id: 'genre',     t: 'text',   l: '発信ジャンル', ph: '例: 美容・ダイエット', isMainMagic: true },
         { id: 'persona',   t: 'select', l: '🎭 なりきりキャラクター', opts: PERSONA_OPTS },
@@ -361,6 +392,7 @@ const TOOLS = {
     },
 
     sns: { cat: 'sns', icon: '📱', name: 'SNS無限集客ポスト', desc: 'キャラ×ジャンル×副業特化投稿タイプで最強の集客投稿を生成。',
+      help: '日々のSNS投稿（X, Threads, Instagram等）を自動生成します。「占い特化」「副業特化」などのモードや、文字数、訴求ゴールを指定して、バズりやすい投稿を3パターン出力します。',
       fields: [
         { id: 'platform',     t: 'select', l: '📱 投稿先SNS', opts: ['X(Twitter)', 'Threads', 'Instagram'] },
         { id: 'x_char_limit', t: 'select', l: '📝 X文字数プラン（X選択時のみ有効）', opts: X_CHAR_LIMIT_OPTS },
@@ -401,53 +433,55 @@ const TOOLS = {
       }
     },
 
-    short_vid: { cat: 'sns', icon: '🎞️', name: 'ショート動画台本', desc: 'キャラ×ジャンルで視聴者の指が止まる台本を生成。',
+    short_vid: { cat: 'sns', icon: '🎬', name: 'ショート動画台本', desc: 'キャラ×ジャンルで視聴者の指を止める動画台本',
+      help: 'TikTok・Instagram Reels・YouTube Shorts向けの「短い動画用の台本」を生成します。視聴者がスクロールする手を止めるような強烈なフックから始まり、テンポよく展開する台本を作成します。',
       fields: [
-        { id: 'topic',     t: 'text',   l: '動画のテーマ', ph: '例: iPhoneの隠し機能', isMainMagic: true },
-        { id: 'persona',   t: 'select', l: '🎭 なりきりキャラクター', opts: PERSONA_OPTS },
-        { id: 'p_custom',  t: 'text',   l: 'カスタムキャラ（「✏️ カスタム」選択時）', ph: '例: 30代元OL、サバサバしているが面倒見が良い' },
-        { id: 'sns_genre', t: 'select', l: '🏷️ 特化ジャンル', opts: GENRE_OPTS },
-        { id: 'platform',  t: 'select', l: '対象プラットフォーム', opts: ['TikTok', 'Instagram Reels', 'YouTube Shorts'] },
-        { id: 'duration',  t: 'select', l: '動画の長さ', opts: ['15秒', '30秒', '60秒', '90秒'] }
+        { id: 'topic',    t: 'text',   l: '動画のテーマ', ph: '例: iPhoneの隠し機能', isMainMagic: true },
+        { id: 'goal',     t: 'select', l: '🎯 訴求ゴール', opts: GOAL_OPTS },
+        { id: 'persona',  t: 'select', l: '🎭 なりきりキャラクター', opts: PERSONA_OPTS },
+        { id: 'p_custom', t: 'text',   l: 'カスタムキャラ（「✏️ カスタム」選択時）', ph: '例: 30代元看護師の占い師' },
+        { id: 'sns_genre',t: 'select', l: '🏷 特化ジャンル', opts: GENRE_OPTS },
+        { id: 'platform', t: 'select', l: '対象プラットフォーム', opts: ['TikTok','Instagram Reels','YouTube Shorts'] },
+        { id: 'duration', t: 'select', l: '動画の長さ', opts: ['15秒','30秒','60秒','90秒'] }
       ],
       build: function(v) {
         var persona = getPersonaInstruction(v.persona, v.p_custom);
         var genre = getGenreInstruction(v.sns_genre);
-        return '# ショート動画台本作成' + persona + genre +
-          '\nテーマ: 「' + (v.topic || '') + '」\nプラットフォーム: ' + (v.platform || 'TikTok') + '\n目標尺: ' + (v.duration || '60秒') +
-          '\n\n以下の形式で台本を作成してください：\n\n【フック（0〜3秒）】\n視聴者の指を止め「続きが見たい」と思わせる最初のセリフと画面の動き\n\n【本編（4秒〜終盤）】\nテンポよく情報を届けるセリフと画面演出（テロップ案も含める）\n\n【CTA・締め（最後3秒）】\nフォロー・いいね・コメントを促す自然な締め\n\n【概要欄・ハッシュタグ】\nSEOを意識したキャプションとハッシュタグ案\n\nキャラクターの口調でセリフを書いてください。テンポとリズムを重視してください。';
+        var goal = getGoalInstruction(v.goal);
+        return '# ショート動画台本作成' + persona + genre + goal + '\nテーマ: 「'+(v.topic||'')+'」\nプラットフォーム: '+(v.platform||'TikTok')+'\n長さ: '+(v.duration||'60秒')+'\n\nフック→本編→CTA の構成で台本を作成してください。';
       }
     },
 
-    yt_script: { cat: 'sns', icon: '▶️', name: 'YouTube対話シナリオ', desc: 'キャラ×ジャンルで飽きさせない長尺台本を生成。',
+    yt_script: { cat: 'sns', icon: '▶', name: 'YouTube対話シナリオ', desc: 'キャラ×ジャンルで飽きない長尺動画シナリオ',
+      help: '通常のYouTube動画（横長動画）用の台本を生成します。視聴者を飽きさせないように「メインMC」と「初心者」の対話形式などを交え、チャプター（目次）構成付きで書き上げます。',
       fields: [
-        { id: 'topic',     t: 'text',   l: '動画のテーマ', ph: '例: NISAの始め方', isMainMagic: true },
-        { id: 'persona',   t: 'select', l: '🎭 なりきりキャラクター（メインMC）', opts: PERSONA_OPTS },
-        { id: 'p_custom',  t: 'text',   l: 'カスタムキャラ（「✏️ カスタム」選択時）', ph: '例: 30代元OL、サバサバしているが面倒見が良い' },
-        { id: 'sns_genre', t: 'select', l: '🏷️ 特化ジャンル', opts: GENRE_OPTS },
-        { id: 'duration',  t: 'select', l: '目標時間', opts: ['5〜8分', '10〜15分', '20〜30分'] }
+        { id: 'topic',    t: 'text',   l: '動画のテーマ', ph: '例: NISAの始め方', isMainMagic: true },
+        { id: 'goal',     t: 'select', l: '🎯 訴求ゴール', opts: GOAL_OPTS },
+        { id: 'persona',  t: 'select', l: '🎭 なりきりキャラクター（メインMC）', opts: PERSONA_OPTS },
+        { id: 'p_custom', t: 'text',   l: 'カスタムキャラ（「✏️ カスタム」選択時）', ph: '例: 30代元看護師の占い師' },
+        { id: 'sns_genre',t: 'select', l: '🏷 特化ジャンル', opts: GENRE_OPTS },
+        { id: 'duration', t: 'select', l: '目標時間', opts: ['5～8分','10～15分','20～30分'] }
       ],
       build: function(v) {
         var persona = getPersonaInstruction(v.persona, v.p_custom);
         var genre = getGenreInstruction(v.sns_genre);
-        return '# YouTube長尺動画シナリオ' + persona + genre +
-          '\nテーマ: 「' + (v.topic || '') + '」\n目標時間: ' + (v.duration || '10〜15分') +
-          '\n\nメインMCのキャラクターと初心者役（視聴者代表）の対話形式で台本を作成してください。\n\n① オープニング（30秒）: サムネと一致する掴みのセリフ\n② 自己紹介・信頼構築（1分）\n③ メインコンテンツ（時間の70%）: Q&A対話形式で\n④ まとめ・行動促進（2分）: 視聴者が今日できる1アクション\n⑤ エンディング（30秒）: チャンネル登録・次回予告\n\n各セクションにセリフと画面演出（テロップ・Bロール案）を記載してください。';
+        var goal = getGoalInstruction(v.goal);
+        return '# YouTube長尺動画シナリオ' + persona + genre + goal + '\nテーマ: 「'+(v.topic||'')+'」\n目標時間: '+(v.duration||'10～15分')+'\n\nオープニング→本編（チャプター構成）→エンディング の台本を作成してください。';
       }
     },
 
     image: { cat: 'sns', icon: '🎨', name: '画像生成AIプロンプト', desc: 'Midjourney等向けの英語の「呪文」を作成。', isImagePrompt: true,
+      help: '入力した日本語の説明から、MidjourneyやStable Diffusionなどの画像生成AIで「超高画質な画像」を作り出すための専門的な英語プロンプト（呪文）を作成します。',
       fields: [{ id: 'desc', t: 'text', l: '描きたい内容', ph: '例: サイバーパンクな未来の東京' }],
       build: function(v) { return v.desc || ''; }
     },
     eye_catch: { cat: 'sns', icon: '🖼️', name: 'アイキャッチ構成デザイン', desc: '目を引くサムネイル画像用のプロンプト生成。', isImagePrompt: true,
+      help: 'YouTubeのサムネイルやブログのアイキャッチ画像など、ユーザーの目を惹きつける画像を作るためのデザイン構成案と、画像生成AI用のプロンプトを作成します。',
       fields: [{ id: 'title', t: 'text', l: 'コンテンツのタイトル', ph: '例: AIで月10万稼ぐ方法' }],
       build: function(v) { return 'A YouTube thumbnail image for a video titled "' + (v.title || '') + '", high impact, bold typography style, eye-catching, vibrant colors'; } },
 
-    // ================================================================
-    // SNS新機能ツール
-    // ================================================================
     sns_buzz_check: { cat: 'sns', icon: '📊', name: 'バズ診断＆改善AI', desc: '投稿文のバズ予測スコアを診断して自動改善。',
+      help: '自分が作成したSNSの投稿文を貼り付けると、AIが「フックの強さ」「読みやすさ」「共感度」などを100点満点で採点し、さらにバズりやすくなるように自動でリライトした文章を提案します。',
       fields: [
         { id: 'post',      t: 'area',   l: '診断したい投稿文', ph: '診断・改善したいSNS投稿をここに入れてください', isMainMagic: true },
         { id: 'platform',  t: 'select', l: '投稿先SNS', opts: ['X(Twitter)', 'Instagram', 'Threads', 'TikTok'] },
@@ -464,6 +498,7 @@ const TOOLS = {
     },
 
     sns_comment: { cat: 'sns', icon: '💬', name: 'コメント返信AI', desc: 'キャラを保ったまま褒め・質問・批判に完璧返信。',
+      help: 'SNSで届いたコメント（賞賛、質問、アンチコメントなど）に対して、自分が設定したキャラクター（ペルソナ）の口調を崩さずに、完璧な返信文を自動で作成します。',
       fields: [
         { id: 'comment',      t: 'area',   l: '届いたコメント', ph: '例: 「本当に効果ありましたか？信じていいですか？」', isMainMagic: true },
         { id: 'context',      t: 'text',   l: '元の投稿内容（任意）', ph: '例: 副業で月5万稼いだ方法を投稿した' },
@@ -489,6 +524,7 @@ const TOOLS = {
     },
 
     sns_remix: { cat: 'sns', icon: '🔄', name: '投稿リミックス', desc: '1つの投稿を別キャラ・別媒体に自動変換。',
+      help: 'すでにあるSNSの投稿を、別のプラットフォーム向けに変換したり、別のキャラクターの口調に書き換えたりします。コンテンツの再利用（リパーパス）に最適です。',
       fields: [
         { id: 'original',      t: 'area',   l: 'リミックス元の投稿', ph: '変換したい元の投稿文を貼り付けてください', isMainMagic: true },
         { id: 'from_persona',  t: 'select', l: '元のキャラクター', opts: PERSONA_OPTS },
@@ -518,6 +554,7 @@ const TOOLS = {
     },
 
     sns_giveaway: { cat: 'sns', icon: '🎁', name: 'プレゼント企画テンプレ', desc: 'フォロワー爆増プレゼント企画の投稿文を自動生成。',
+      help: 'SNSでフォロワーを一気に増やすための「プレゼント企画」の投稿を作成します。メインの告知文から、応募条件の詳細、当選者へのDMメッセージまでセットで出力します。',
       fields: [
         { id: 'prize',     t: 'text',   l: 'プレゼント内容', ph: '例: 副業で月5万稼ぐ完全ロードマップPDF', isMainMagic: true },
         { id: 'count',     t: 'select', l: '当選人数', opts: ['1名様', '3名様', '5名様', '10名様'] },
@@ -534,52 +571,65 @@ const TOOLS = {
           '\n\n以下を生成してください：\n\n## メイン投稿文（キャラクター反映）\nプレゼントの魅力・希少性・締め切りの緊急性を盛り込み、シェアしたくなる文体で。\n\n## 固定投稿用の詳細版\n応募方法・注意事項・当選発表方法を含む完全版。\n\n## 当選者へのDM文\n温かみがありキャラクターらしい当選連絡メッセージ。\n\n## 結果発表用の投稿文\n落選者にも感謝を伝え、次回企画への期待を高める投稿。';
       }
     },
-
+    
     sns_auto_post: { cat: 'sns', icon: '🚀', name: 'SNS自動投稿・予約マネージャー', desc: '外部SNSへの直接投稿と予約スケジュールを管理',
-    help: '【新規実装】生成したコンテンツを各種プラットフォーム（X/Twitter, Instagram, Threads等）へ直接連携して投稿、または指定日時に予約投稿します。※API連携の実行テスト用UIです。',
-    fields: [
-      { id: 'platform', t: 'select', l: '📱 投稿先プラットフォーム', opts: ['X(Twitter)', 'Instagram', 'Threads', 'note'] },
-      { id: 'post_type', t: 'select', l: '⏰ 投稿タイプ', opts: ['今すぐ直接投稿', '📅 指定日時に予約投稿'] },
-      { id: 'schedule_time', t: 'text', l: '📅 予約日時（※予約時のみ）', ph: '例: 2026-05-01 19:00' },
-      { id: 'content', t: 'area', l: '📝 投稿テキスト', ph: 'ここに生成済みの文章やプロンプトを入力してください', isMainMagic: true }
-    ],
-    build: function(v) {
-      return '# SNS直接連携・予約投稿データの準備\n以下のテキストを「' + (v.platform || 'X(Twitter)') + '」向けに最終整形してください。投稿スケジュール: ' + (v.post_type === '📅 指定日時に予約投稿' ? (v.schedule_time || '未指定') : '即時投稿') + '\n\n【投稿内容】\n' + (v.content || '');
-    }
-  },
+      help: '【新規実装】生成したコンテンツを各種プラットフォーム（X/Twitter, Instagram, Threads等）へ直接連携して投稿、または指定日時に予約投稿します。※API連携の実行テスト用UIです。',
+      fields: [
+        { id: 'platform', t: 'select', l: '📱 投稿先プラットフォーム', opts: ['X(Twitter)', 'Instagram', 'Threads', 'note'] },
+        { id: 'post_type', t: 'select', l: '⏰ 投稿タイプ', opts: ['今すぐ直接投稿', '📅 指定日時に予約投稿'] },
+        { id: 'schedule_time', t: 'text', l: '📅 予約日時（※予約時のみ）', ph: '例: 2026-05-01 19:00' },
+        { id: 'content', t: 'area', l: '📝 投稿テキスト', ph: 'ここに生成済みの文章やプロンプトを入力してください', isMainMagic: true }
+      ],
+      build: function(v) {
+        return '# SNS直接連携・予約投稿データの準備\n以下のテキストを「' + (v.platform || 'X(Twitter)') + '」向けに最終整形してください。投稿スケジュール: ' + (v.post_type === '📅 指定日時に予約投稿' ? (v.schedule_time || '未指定') : '即時投稿') + '\n\n【投稿内容】\n' + (v.content || '');
+      }
+    },
 
     // --- ファン化 ＆ セールス自動化 ---
     freebie: { cat: 'fun', icon: '🎁', name: '無料プレゼント量産', desc: 'LINE登録を促す魅力的なリードマグネット作成。',
+      help: 'LINEやメルマガに登録してもらうための「無料特典（リードマグネット）」のアイデアと、その内容の目次を自動生成します。見込み客が喉から手が出るほど欲しい特典を作ります。',
       fields: [{ id: 'target', t: 'text', l: 'ターゲット層', ph: '例: ブログ初心者', isMainMagic: true }],
       build: function(v) { return '# リードマグネット企画\n「' + (v.target || '') + '」が思わずLINE登録したくなるような、喉から手が出るほど欲しい無料プレゼント（PDFや動画講座）のアイデアを3つ提案し、そのうち1つの目次構成を作成してください。'; } },
     line: { cat: 'fun', icon: '💌', name: 'LINE教育ステップ', desc: '5日間でファン化して販売する自動導線。',
+      help: 'LINEに登録してくれた読者に対して、1日目〜5日目まで自動で送る「ステップ配信」のメッセージを作成します。読者との信頼関係を築き、最終日に商品を販売する強力なシナリオです。',
       fields: [
         { id: 'prod',  t: 'text', l: '販売商品', ph: '例: 動画編集教材' },
         { id: 'story', t: 'area', l: 'どん底からの成功ストーリー', ph: '例: 手取り15万から独立して月商100万' }
       ],
       build: function(v) { return '# LINE教育ステップ作成指示\n商品「' + (v.prod || '') + '」を販売するために、公式LINE登録者を5日間教育しファン化するシナリオを作成してください。\nユーザーのストーリー「' + (v.story || '') + '」を織り込み、信頼構築からオファーまで繋げてください。'; } },
     funnel_diag: { cat: 'fun', icon: '🩺', name: 'ファネル診断コンサル', desc: '現状の導線のボトルネックを特定し改善提案。',
+      help: '「集客はできているのに売れない」といった現状のビジネスの悩みを入力すると、AIがコンサルタントとして問題点を見つけ出し、改善策を提示します。',
       fields: [{ id: 'current', t: 'area', l: '現状の導線と悩み', ph: '例: Twitter集客→LINE登録はされるが、商品が売れない' }],
       build: function(v) { return '# ファネル診断\n現状の導線「' + (v.current || '') + '」におけるボトルネック（離脱ポイント）を分析し、成約率を改善するための具体的な打ち手と新しい導線設計を提案してください。'; } },
-    reply: { cat: 'fun', icon: '📨', name: 'LINE/DM 神返信', desc: '顧客からの質問やクレームに対する完璧な返信。',
-      fields: [{ id: 'msg', t: 'area', l: '相手からのメッセージ', ph: '例: 高くて買えません。安くなりませんか？' }],
-      build: function(v) { return '# 神返信作成\n以下のメッセージに対して、相手の感情に寄り添い、信頼関係を築きつつ、適切な対応をする返信文を2パターン作成してください。\nメッセージ: ' + (v.msg || ''); } },
+    reply: { cat: 'fun', icon: '💬', name: 'LINE/DM 神返信', desc: '顧客からの質問やクレームに対する最適な返信',
+      help: '顧客からのLINEやDMへの返信を自動生成します。クレーム対応から価格交渉まで、信頼を損なわないプロフェッショナルな返信を3パターン提案します。',
+      fields: [{ id: 'msg', t: 'area', l: '相手からのメッセージ', ph: '例: 高くて買えません。安くなりませんか？', isMainMagic: true }],
+      build: function(v) { return '# 神返信作成\n以下のメッセージに対して、相手の感情に寄り添い、信頼関係を構築しながら成約に近づけるプロフェッショナルな返信を3パターン作成してください。\n\n' + (v.msg||''); } },
+    review_reply: { cat: 'fun', icon: '⭐', name: '口コミ・レビュー返信文ジェネレーター', desc: 'ポジティブ～ネガティブまで完璧に返信',
+      help: '高評価〜低評価まで、レビューの種類に応じた最適な返信文を3パターン生成。ココナラ・Google・SNS等のプラットフォームに対応します。',
+      fields: [{ id: 'review', t: 'area', l: '届いたレビュー', ph: '例: 迅速な対応ありがとうございました。', isMainMagic: true }],
+      build: function(v) { return '# レビュー返信作成\n以下のレビューに対して、感謝と信頼を伝える返信文を作成してください。\n\n' + (v.review||''); }
+    },
     interview: { cat: 'fun', icon: '🎤', name: 'AIインタビュー', desc: 'あなたの頭の中にあるアイデアをAIが引き出す。',
+      help: '頭の中にあるモヤモヤしたアイデアを入力すると、AIが記者としてあなたに鋭い質問を投げかけてくれます。壁打ち相手として使うことで、考えを明確に言語化することができます。',
       fields: [{ id: 'topic', t: 'text', l: '壁打ちしたいテーマ', ph: '例: 新しいオンラインサロンの構想' }],
       build: function(v) { return '# AIインタビュー\nテーマ「' + (v.topic || '') + '」について、私に3つほど鋭い質問を投げかけてください。私の考えを深掘りし、言語化するのを手伝ってください。'; } },
     journey: { cat: 'fun', icon: '🗺️', name: 'カスタマージャーニー', desc: '顧客が認知から購入・熱狂に至る心理マップ。',
+      help: '見込み客が商品を知ってから購入し、リピーターになるまでの行動と感情の動き（カスタマージャーニー）を分析して表にします。マーケティングの全体像を把握するのに役立ちます。',
       fields: [{ id: 'prod', t: 'text', l: '商品名', ph: '例: 高級パーソナルジム' }],
       build: function(v) { return '# カスタマージャーニーマップ作成\n商品「' + (v.prod || '') + '」のターゲット顧客が、認知→興味→比較・検討→購入→リピート・口コミに至るまでの各フェーズにおける「思考」「感情」「行動」を表形式で整理してください。'; } },
     webdev: { cat: 'fun', icon: '💻', name: 'Webアプリ開発支援', desc: 'アイデアからプロトタイプのコードを生成。',
+      help: '「こんなツールを作りたい」というアイデアを入力すると、要件定義を行い、実際に動くHTML/JavaScriptのプロトタイプ（試作品）コードを生成します。簡単なツールならコピペで完成します。',
       fields: [{ id: 'idea', t: 'area', l: '作りたいツール案', ph: '例: 食材からレシピを提案するAIアプリ' }],
       build: function(v) { return '# Webアプリ開発指示\nアイデア「' + (v.idea || '') + '」を実現するための、要件定義と1枚のHTML（JavaScript, CSS含む）で動くプロトタイプコードの構造を設計してください。'; } },
 
-    // --- 無限プロンプト集 ---
     stella_blog_prompt: { cat: 'prompt_only', icon: '🌟', name: 'Stella Note式 ブログ構成', desc: '【Stella Note 監修】高品質なブログ構成案を作成するためのプロンプトです。',
+      help: 'Stella Noteの独自ノウハウを用いたブログ構成作成用のプロンプト（指示文）を出力します。',
       fields: [{ id: 'kw', t: 'text', l: '狙いたいキーワード', ph: '例: AI ツール おすすめ' }],
       build: function(v) { return '【Stella Note オリジナルプロンプト】\n以下のキーワードで検索上位を狙うブログ記事の構成案（H2, H3見出し）を作成してください。\nキーワード: ' + (v.kw || '') + '\n\n※検索意図を満たし、読者の悩みを解決する構成にしてください。'; }
     },
     stella_sns_prompt: { cat: 'prompt_only', icon: '💫', name: 'Stella Note式 SNS投稿', desc: '【Stella Note 監修】キャラ×ジャンル×副業特化でバズるSNS投稿を生成。',
+      help: 'Stella Noteの独自ノウハウを用いたSNS投稿作成用のプロンプト（指示文）を出力します。',
       fields: [
         { id: 'topic',     t: 'area',   l: '伝えたいテーマ', ph: '例: 継続の大切さ' },
         { id: 'persona',   t: 'select', l: '🎭 キャラクター', opts: PERSONA_OPTS },
