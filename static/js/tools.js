@@ -244,27 +244,18 @@ const TOOLS = {
       help: '商品やサービスを動画で販売する際（Video Sales Letter）の台本を作成します。視聴者の興味を惹きつける冒頭から、共感、解決策の提示、そして購入への誘導（オファー）まで、成約率を高める構成で出力します。',
       fields: [{ id: 'prod', t: 'text', l: '販売商品', ph: '例: ダイエットプログラム', isMainMagic: true }],
       build: function(v) { return '# VSL台本作成指示\n商品「' + (v.prod || '') + '」を販売するための動画セールスレター(VSL)の台本を作成してください。冒頭のフックからオファーまで含めてください。'; } },
-    sns_cal: { cat: 'omega', icon: '📅', name: '30日間SNSカレンダー（特化版）', desc: '占い/副業/通常モード対応の1ヶ月分の投稿計画を自動生成',
+    sns_cal: { cat: 'omega', icon: '📅', name: '30日間SNSカレンダー', desc: 'キャラ×ジャンル特化で1ヶ月分のSNS発信内容を自動構築。',
       help: 'キャラクター×ジャンル×投稿モードで差別化された30日分のSNS投稿計画を自動生成します。訴求ゴールに基づいた投稿内容・ハッシュタグ・最適投稿時間付きのカレンダーを出力します。',
       fields: [
-        { id: 'theme',    t: 'text',   l: '発信テーマ（通常モード時）', ph: '例: 投資・資産運用', isMainMagic: true },
-        { id: 'mode',         t: 'select', l: '🔮 投稿モード', opts: ['通常投稿モード','🔮 占い・スピリチュアルモード','💼 副業全般モード'] },
-        { id: 'uranai_type',  t: 'select', l: '🔮 占い系投稿タイプ（占いモード時）', opts: URANAI_POST_OPTS },
-        { id: 'fukugyo_type', t: 'select', l: '💼 副業系投稿タイプ（副業モード時）', opts: FUKUGYO_POST_OPTS },
-        { id: 'goal',         t: 'select', l: '🎯 訴求ゴール', opts: GOAL_OPTS },
+        { id: 'theme',    t: 'text',   l: '発信テーマ', ph: '例: 投資・資産運用', isMainMagic: true },
         { id: 'persona',  t: 'select', l: '🎭 キャラクター', opts: PERSONA_OPTS },
-        { id: 'p_custom', t: 'text',   l: 'カスタムキャラ（「🔧 カスタム」選択時）', ph: '例: 30代元看護師の占い師' },
-        { id: 'genre',    t: 'select', l: '🏷 特化ジャンル', opts: GENRE_OPTS }
+        { id: 'p_custom', t: 'text',   l: 'カスタムキャラ（「✏️ カスタム」選択時）', ph: '例: 30代元OL、サバサバしているが面倒見が良い' },
+        { id: 'genre',    t: 'select', l: '🏷️ 特化ジャンル', opts: GENRE_OPTS }
       ],
       build: function(v) {
         var persona = getPersonaInstruction(v.persona, v.p_custom);
         var genre = getGenreInstruction(v.genre);
-        var goal = getGoalInstruction(v.goal);
-        var mode = v.mode || '通常投稿モード';
-        var modeInst = '';
-        if (mode.indexOf('占い') >= 0) modeInst = getUranaiPostInstruction(v.uranai_type || '');
-        else if (mode.indexOf('副業全般') >= 0) modeInst = getFukugyoPostInstruction(v.fukugyo_type || '');
-        return '# 30日間SNSカレンダー作成指示' + persona + genre + goal + modeInst + '\n\nテーマ「' + (v.theme||'') + '」について、指定された投稿モード・訴求ゴールに特化した30日間分のSNS投稿カレンダーを作成してください。各日の投稿内容の要点・ハッシュタグ・最適な投稿時間を含め、表形式で出力してください。';
+        return '# SNSカレンダー作成指示' + persona + genre + '\nテーマ「' + (v.theme || '') + '」についてのSNS投稿内容を、30日間のカレンダー形式（表）で作成してください。\n上記のキャラクターとジャンル特化の指示を全投稿に反映してください。各投稿に曜日・テーマ・投稿文の要点を記載してください。';
       }
     },
     ai_meeting: { cat: 'omega', icon: '🧠', name: 'AIエージェント会議', desc: '複数のAIペルソナによる多角的なアイデア出し。',
@@ -433,40 +424,40 @@ const TOOLS = {
       }
     },
 
-    short_vid: { cat: 'sns', icon: '🎬', name: 'ショート動画台本', desc: 'キャラ×ジャンルで視聴者の指を止める動画台本',
+    short_vid: { cat: 'sns', icon: '🎞️', name: 'ショート動画台本', desc: 'キャラ×ジャンルで視聴者の指が止まる台本を生成。',
       help: 'TikTok・Instagram Reels・YouTube Shorts向けの「短い動画用の台本」を生成します。視聴者がスクロールする手を止めるような強烈なフックから始まり、テンポよく展開する台本を作成します。',
       fields: [
-        { id: 'topic',    t: 'text',   l: '動画のテーマ', ph: '例: iPhoneの隠し機能', isMainMagic: true },
-        { id: 'goal',     t: 'select', l: '🎯 訴求ゴール', opts: GOAL_OPTS },
-        { id: 'persona',  t: 'select', l: '🎭 なりきりキャラクター', opts: PERSONA_OPTS },
-        { id: 'p_custom', t: 'text',   l: 'カスタムキャラ（「✏️ カスタム」選択時）', ph: '例: 30代元看護師の占い師' },
-        { id: 'sns_genre',t: 'select', l: '🏷 特化ジャンル', opts: GENRE_OPTS },
-        { id: 'platform', t: 'select', l: '対象プラットフォーム', opts: ['TikTok','Instagram Reels','YouTube Shorts'] },
-        { id: 'duration', t: 'select', l: '動画の長さ', opts: ['15秒','30秒','60秒','90秒'] }
+        { id: 'topic',     t: 'text',   l: '動画のテーマ', ph: '例: iPhoneの隠し機能', isMainMagic: true },
+        { id: 'persona',   t: 'select', l: '🎭 なりきりキャラクター', opts: PERSONA_OPTS },
+        { id: 'p_custom',  t: 'text',   l: 'カスタムキャラ（「✏️ カスタム」選択時）', ph: '例: 30代元OL、サバサバしているが面倒見が良い' },
+        { id: 'sns_genre', t: 'select', l: '🏷️ 特化ジャンル', opts: GENRE_OPTS },
+        { id: 'platform',  t: 'select', l: '対象プラットフォーム', opts: ['TikTok', 'Instagram Reels', 'YouTube Shorts'] },
+        { id: 'duration',  t: 'select', l: '動画の長さ', opts: ['15秒', '30秒', '60秒', '90秒'] }
       ],
       build: function(v) {
         var persona = getPersonaInstruction(v.persona, v.p_custom);
         var genre = getGenreInstruction(v.sns_genre);
-        var goal = getGoalInstruction(v.goal);
-        return '# ショート動画台本作成' + persona + genre + goal + '\nテーマ: 「'+(v.topic||'')+'」\nプラットフォーム: '+(v.platform||'TikTok')+'\n長さ: '+(v.duration||'60秒')+'\n\nフック→本編→CTA の構成で台本を作成してください。';
+        return '# ショート動画台本作成' + persona + genre +
+          '\nテーマ: 「' + (v.topic || '') + '」\nプラットフォーム: ' + (v.platform || 'TikTok') + '\n目標尺: ' + (v.duration || '60秒') +
+          '\n\n以下の形式で台本を作成してください：\n\n【フック（0〜3秒）】\n視聴者の指を止め「続きが見たい」と思わせる最初のセリフと画面の動き\n\n【本編（4秒〜終盤）】\nテンポよく情報を届けるセリフと画面演出（テロップ案も含める）\n\n【CTA・締め（最後3秒）】\nフォロー・いいね・コメントを促す自然な締め\n\n【概要欄・ハッシュタグ】\nSEOを意識したキャプションとハッシュタグ案\n\nキャラクターの口調でセリフを書いてください。テンポとリズムを重視してください。';
       }
     },
 
-    yt_script: { cat: 'sns', icon: '▶', name: 'YouTube対話シナリオ', desc: 'キャラ×ジャンルで飽きない長尺動画シナリオ',
+    yt_script: { cat: 'sns', icon: '▶️', name: 'YouTube対話シナリオ', desc: 'キャラ×ジャンルで飽きさせない長尺台本を生成。',
       help: '通常のYouTube動画（横長動画）用の台本を生成します。視聴者を飽きさせないように「メインMC」と「初心者」の対話形式などを交え、チャプター（目次）構成付きで書き上げます。',
       fields: [
-        { id: 'topic',    t: 'text',   l: '動画のテーマ', ph: '例: NISAの始め方', isMainMagic: true },
-        { id: 'goal',     t: 'select', l: '🎯 訴求ゴール', opts: GOAL_OPTS },
-        { id: 'persona',  t: 'select', l: '🎭 なりきりキャラクター（メインMC）', opts: PERSONA_OPTS },
-        { id: 'p_custom', t: 'text',   l: 'カスタムキャラ（「✏️ カスタム」選択時）', ph: '例: 30代元看護師の占い師' },
-        { id: 'sns_genre',t: 'select', l: '🏷 特化ジャンル', opts: GENRE_OPTS },
-        { id: 'duration', t: 'select', l: '目標時間', opts: ['5～8分','10～15分','20～30分'] }
+        { id: 'topic',     t: 'text',   l: '動画のテーマ', ph: '例: NISAの始め方', isMainMagic: true },
+        { id: 'persona',   t: 'select', l: '🎭 なりきりキャラクター（メインMC）', opts: PERSONA_OPTS },
+        { id: 'p_custom',  t: 'text',   l: 'カスタムキャラ（「✏️ カスタム」選択時）', ph: '例: 30代元OL、サバサバしているが面倒見が良い' },
+        { id: 'sns_genre', t: 'select', l: '🏷️ 特化ジャンル', opts: GENRE_OPTS },
+        { id: 'duration',  t: 'select', l: '目標時間', opts: ['5〜8分', '10〜15分', '20〜30分'] }
       ],
       build: function(v) {
         var persona = getPersonaInstruction(v.persona, v.p_custom);
         var genre = getGenreInstruction(v.sns_genre);
-        var goal = getGoalInstruction(v.goal);
-        return '# YouTube長尺動画シナリオ' + persona + genre + goal + '\nテーマ: 「'+(v.topic||'')+'」\n目標時間: '+(v.duration||'10～15分')+'\n\nオープニング→本編（チャプター構成）→エンディング の台本を作成してください。';
+        return '# YouTube長尺動画シナリオ' + persona + genre +
+          '\nテーマ: 「' + (v.topic || '') + '」\n目標時間: ' + (v.duration || '10〜15分') +
+          '\n\nメインMCのキャラクターと初心者役（視聴者代表）の対話形式で台本を作成してください。\n\n① オープニング（30秒）: サムネと一致する掴みのセリフ\n② 自己紹介・信頼構築（1分）\n③ メインコンテンツ（時間の70%）: Q&A対話形式で\n④ まとめ・行動促進（2分）: 視聴者が今日できる1アクション\n⑤ エンディング（30秒）: チャンネル登録・次回予告\n\n各セクションにセリフと画面演出（テロップ・Bロール案）を記載してください。';
       }
     },
 
@@ -480,6 +471,9 @@ const TOOLS = {
       fields: [{ id: 'title', t: 'text', l: 'コンテンツのタイトル', ph: '例: AIで月10万稼ぐ方法' }],
       build: function(v) { return 'A YouTube thumbnail image for a video titled "' + (v.title || '') + '", high impact, bold typography style, eye-catching, vibrant colors'; } },
 
+    // ================================================================
+    // SNS新機能ツール
+    // ================================================================
     sns_buzz_check: { cat: 'sns', icon: '📊', name: 'バズ診断＆改善AI', desc: '投稿文のバズ予測スコアを診断して自動改善。',
       help: '自分が作成したSNSの投稿文を貼り付けると、AIが「フックの強さ」「読みやすさ」「共感度」などを100点満点で採点し、さらにバズりやすくなるように自動でリライトした文章を提案します。',
       fields: [
@@ -601,15 +595,10 @@ const TOOLS = {
       help: '「集客はできているのに売れない」といった現状のビジネスの悩みを入力すると、AIがコンサルタントとして問題点を見つけ出し、改善策を提示します。',
       fields: [{ id: 'current', t: 'area', l: '現状の導線と悩み', ph: '例: Twitter集客→LINE登録はされるが、商品が売れない' }],
       build: function(v) { return '# ファネル診断\n現状の導線「' + (v.current || '') + '」におけるボトルネック（離脱ポイント）を分析し、成約率を改善するための具体的な打ち手と新しい導線設計を提案してください。'; } },
-    reply: { cat: 'fun', icon: '💬', name: 'LINE/DM 神返信', desc: '顧客からの質問やクレームに対する最適な返信',
+    reply: { cat: 'fun', icon: '📨', name: 'LINE/DM 神返信', desc: '顧客からの質問やクレームに対する完璧な返信。',
       help: '顧客からのLINEやDMへの返信を自動生成します。クレーム対応から価格交渉まで、信頼を損なわないプロフェッショナルな返信を3パターン提案します。',
-      fields: [{ id: 'msg', t: 'area', l: '相手からのメッセージ', ph: '例: 高くて買えません。安くなりませんか？', isMainMagic: true }],
-      build: function(v) { return '# 神返信作成\n以下のメッセージに対して、相手の感情に寄り添い、信頼関係を構築しながら成約に近づけるプロフェッショナルな返信を3パターン作成してください。\n\n' + (v.msg||''); } },
-    review_reply: { cat: 'fun', icon: '⭐', name: '口コミ・レビュー返信文ジェネレーター', desc: 'ポジティブ～ネガティブまで完璧に返信',
-      help: '高評価〜低評価まで、レビューの種類に応じた最適な返信文を3パターン生成。ココナラ・Google・SNS等のプラットフォームに対応します。',
-      fields: [{ id: 'review', t: 'area', l: '届いたレビュー', ph: '例: 迅速な対応ありがとうございました。', isMainMagic: true }],
-      build: function(v) { return '# レビュー返信作成\n以下のレビューに対して、感謝と信頼を伝える返信文を作成してください。\n\n' + (v.review||''); }
-    },
+      fields: [{ id: 'msg', t: 'area', l: '相手からのメッセージ', ph: '例: 高くて買えません。安くなりませんか？' }],
+      build: function(v) { return '# 神返信作成\n以下のメッセージに対して、相手の感情に寄り添い、信頼関係を築きつつ、適切な対応をする返信文を2パターン作成してください。\nメッセージ: ' + (v.msg || ''); } },
     interview: { cat: 'fun', icon: '🎤', name: 'AIインタビュー', desc: 'あなたの頭の中にあるアイデアをAIが引き出す。',
       help: '頭の中にあるモヤモヤしたアイデアを入力すると、AIが記者としてあなたに鋭い質問を投げかけてくれます。壁打ち相手として使うことで、考えを明確に言語化することができます。',
       fields: [{ id: 'topic', t: 'text', l: '壁打ちしたいテーマ', ph: '例: 新しいオンラインサロンの構想' }],
@@ -623,6 +612,7 @@ const TOOLS = {
       fields: [{ id: 'idea', t: 'area', l: '作りたいツール案', ph: '例: 食材からレシピを提案するAIアプリ' }],
       build: function(v) { return '# Webアプリ開発指示\nアイデア「' + (v.idea || '') + '」を実現するための、要件定義と1枚のHTML（JavaScript, CSS含む）で動くプロトタイプコードの構造を設計してください。'; } },
 
+    // --- 無限プロンプト集 ---
     stella_blog_prompt: { cat: 'prompt_only', icon: '🌟', name: 'Stella Note式 ブログ構成', desc: '【Stella Note 監修】高品質なブログ構成案を作成するためのプロンプトです。',
       help: 'Stella Noteの独自ノウハウを用いたブログ構成作成用のプロンプト（指示文）を出力します。',
       fields: [{ id: 'kw', t: 'text', l: '狙いたいキーワード', ph: '例: AI ツール おすすめ' }],

@@ -25,7 +25,7 @@
  
     const DB_KEY = 'AICP_v70_BYOK_DB';   
     const SESS_KEY = 'AICP_v70_Session';  
-    const SYS_VERSION = 'v71.7.0 Ultimate Master Edition';  
+    const SYS_VERSION = 'v71.7.1 Ultimate Master Edition';  
  
     const AppDB = {  
       get: () => {  
