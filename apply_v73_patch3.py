@@ -11,6 +11,11 @@ if not os.path.exists(APP_JS):
 with open(APP_JS, 'r', encoding='utf-8') as f:
     content = f.read()
 
+# lambda関数を使って、置換文字列内の \u 等がエラーになるのを防ぐ安全な置換関数
+def safe_replace(pattern, repl, text):
+    new_text, count = re.subn(pattern, lambda m: repl, text, count=1)
+    return new_text, count
+
 # 1. ペルソナ構築ロジックの書き換え
 repl1 = """let personaText = '';
       if (settings) {
@@ -20,7 +25,8 @@ repl1 = """let personaText = '';
           if (settings.persona) pLines.push('詳細設定: ' + settings.persona);
           if (pLines.length > 0) personaText = '\\n※【マイ・ペルソナ】以下の情報を私（AI）自身の設定として完全に憑依させてください：\\n' + pLines.join('\\n') + '\\n';
       }"""
-content, c1 = re.subn(r"let personaText = settings && settings\.persona \? [^:]+ : '';", repl1, content, count=1)
+content, c1 = safe_replace(r"let personaText = settings && settings\.persona \? [^:]+ : '';", repl1, content)
+print(f"ペルソナ構築ロジック: {'✅ 成功' if c1 > 0 else '⚠️ スキップ'}")
 
 # 2. マイペルソナのウィザードUI化
 repl2 = """div({ className: 'p-4 bg-white/5 border border-white/10 rounded-xl mb-4' },
@@ -33,9 +39,10 @@ repl2 = """div({ className: 'p-4 bg-white/5 border border-white/10 rounded-xl mb
                                 label({ className: 'block text-[10px] text-slate-400 mb-1' }, '自由記述（詳細な設定・口癖など）'),
                                 textarea({ className: 'input-base min-h-[80px] text-xs', placeholder: '例: 語尾に「〜ですよね！」をよく使う。専門用語は避ける。', value: persona, onChange: e => setPersona(e.target.value) })
                             )"""
-content, c2 = re.subn(r"textarea\(\{ className: 'input-base min-h-\[120px\] text-xs', placeholder: '例:[^']+', value: persona, onChange: e => setPersona\(e\.target\.value\) \}\)", repl2, content, count=1)
+content, c2 = safe_replace(r"textarea\(\{ className: 'input-base min-h-\[120px\] text-xs'[\s\S]*?e\.target\.value\) \}\)", repl2, content)
+print(f"マイペルソナのウィザードUI化: {'✅ 成功' if c2 > 0 else '⚠️ スキップ'}")
 
-# 3. API設定のアコーディオンUI化
+# 3. 個人設定UI: API設定のアコーディオン化
 repl3 = """tab === 'advanced' && div({ className: 'animate-in' },
                         div({ className: 'mb-6 p-4 bg-brand/10 border border-brand/20 rounded-xl leading-relaxed text-slate-300 cursor-pointer hover:bg-brand/20 transition', onClick: e => { e.currentTarget.nextElementSibling.classList.toggle('hidden'); e.currentTarget.querySelector('.arrow').textContent = e.currentTarget.nextElementSibling.classList.contains('hidden') ? '▼' : '▲'; } },
                             div({ className: 'flex justify-between items-center' },
@@ -46,10 +53,11 @@ repl3 = """tab === 'advanced' && div({ className: 'animate-in' },
                         ),
                         div({ className: 'hidden animate-in space-y-4' },
                             div({ className: 'flex gap-2 mb-6' },"""
-content, c3 = re.subn(r"tab === 'advanced' && div\(\{ className: 'animate-in' \},\s*div\(\{ className: 'mb-6 p-4 bg-brand/10 border border-brand/20 rounded-xl leading-relaxed text-slate-300' \},[\s\S]*?div\(\{ className: 'flex gap-2 mb-6' \},", repl3, content, count=1)
+content, c3 = safe_replace(r"tab === 'advanced' && div\(\{ className: 'animate-in' \},\s*div\(\{ className: 'mb-6 p-4 bg-brand/10 border border-brand/20 rounded-xl leading-relaxed text-slate-300' \},[\s\S]*?div\(\{ className: 'flex gap-2 mb-6' \},", repl3, content)
+print(f"API設定のアコーディオンUI化: {'✅ 成功' if c3 > 0 else '⚠️ スキップ'}")
 
-# 4. 全ツールの超特化プロンプト注入
-repl4 = """if (isCustom) {
+# 4. 全ツールの超・特化型プロンプト化 (グローバル・インジェクション)
+repl4 = """          if (isCustom) {
               promptText = conf.buildPrompt;
               conf.fields.forEach(f => { promptText = promptText.replace(new RegExp(`{${f.id}}`, 'g'), vals[f.id]||''); });
           } else { promptText = conf.build ? conf.build(vals) : ''; }
@@ -64,13 +72,10 @@ repl4 = """if (isCustom) {
           promptText = specialPersona + promptText;
 
           if (conf.isImagePrompt) return promptText;"""
-content, c4 = re.subn(r"if \(isCustom\) \{[\s\S]*?\} else \{ promptText = conf\.build \? conf\.build\(vals\) : ''; \}\s*if \(conf\.isImagePrompt\) return promptText;", repl4, content, count=1)
+content, c4 = safe_replace(r"          if \(isCustom\) \{[\s\S]*?promptText = conf\.build \? conf\.build\(vals\) : ''; \}\s*if \(conf\.isImagePrompt\) return promptText;", repl4, content)
+print(f"全ツールの超・特化型プロンプト化注入: {'✅ 成功' if c4 > 0 else '⚠️ スキップ'}")
 
 with open(APP_JS, 'w', encoding='utf-8') as f:
     f.write(content)
-    
-print(f"✅ パッチ適用結果:")
-print(f"  1. ペルソナ構築ロジック: {'成功' if c1 else 'スキップ'}")
-print(f"  2. ウィザードUI: {'成功' if c2 else 'スキップ'}")
-print(f"  3. APIアコーディオン: {'成功' if c3 else 'スキップ'}")
-print(f"  4. 超特化プロンプト注入: {'成功' if c4 else 'スキップ'}")
+
+print("\n🚀 app.js のパッチ適用完了！")
