@@ -17,7 +17,7 @@ import random
 import re
 import base64
 
-app = FastAPI(title="AI Content Pro Backend", version="73.0.2")
+app = FastAPI(title="AI Content Pro Backend", version="73.0.3")
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 CONFIG_FILE = "server_config.json"
