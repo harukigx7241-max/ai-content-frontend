@@ -1,3 +1,6 @@
+// ================================================================
+// SNS なりきりキャラ定義
+// ================================================================
 var SNS_PERSONA_MAP = {
   '🌸 活発な女の子': '明るくテンション高め。感嘆符多め。「やってみた！」「マジで神〜」「最高すぎ」など。ギャル語・略語・絵文字を自然に散りばめ、等身大で共感を生む文体。',
   '💅 おしゃれ大人女子': '丁寧だが親しみある文体。「〜かも」「〜だよね」「ていねいに生きる」感。上品で近寄りやすく、センスを感じさせる。',
@@ -70,6 +73,7 @@ function getGoalInstruction(goalOpt) {
 
 var URANAI_POST_OPTS = ['---【占い系】---', '🔮 今日の運勢', '🃏 カード診断', '💌 無料鑑定案内'];
 function getUranaiPostInstruction(postType) { return postType.indexOf('---') >= 0 ? '' : '\n\n【投稿タイプ】' + postType + 'の内容で構成してください。'; }
+
 var FUKUGYO_POST_OPTS = ['---【副業系】---', '✍️ 月収実績報告', '📝 ノウハウ公開', '💡 失敗談'];
 function getFukugyoPostInstruction(postType) { return postType.indexOf('---') >= 0 ? '' : '\n\n【投稿タイプ】' + postType + 'の内容で構成してください。'; }
 
