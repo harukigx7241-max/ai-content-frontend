@@ -17,7 +17,7 @@ import random
 import re
 import base64
 
-app = FastAPI(title="AI Content Pro Backend", version="72.0.3")
+app = FastAPI(title="AI Content Pro Backend", version="73.0.0")
 templates = Jinja2Templates(directory="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 CONFIG_FILE = "server_config.json"
@@ -310,7 +310,7 @@ async def auto_generate(req: AutoGenerateRequest):
 
 @app.get("/api/health")
 async def health():
-    return JSONResponse({"status": "ok", "version": "v72.0.3"})
+    return JSONResponse({"status": "ok", "version": "v73.0.0"})
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8001, reload=True)
