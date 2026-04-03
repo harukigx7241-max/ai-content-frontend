@@ -63,14 +63,7 @@
         ? '有料版(最上位モデル)です。最高の創造性を発揮してください。\n※【最重要】最新のトレンドや正確な事実確認が必要な場合は、必ず「Web検索（ブラウジング機能）」を使用して情報を取得してください。\nその際、海外の情報を直訳したり、検索結果をそのまま羅列するのではなく、必ず「日本の文化・市場・SNSの文脈」に合わせて解釈し、読者が直感的に理解できるわかりやすく魅力的な表現に変換した上で出力に反映させてください。'
         : '無料版です。簡潔かつ的確に要求を満たしてください。';
       let tone = settings && settings.tone ? '\n※出力のトーン・文体は「' + settings.tone + '」で統一してください。' : '';
-      let personaText = '';
-      if (settings) {
-          let pLines = [];
-          if (settings.persona_base) pLines.push('基本性格: ' + settings.persona_base);
-          if (settings.persona_first) pLines.push('一人称: ' + settings.persona_first);
-          if (settings.persona) pLines.push('詳細設定: ' + settings.persona);
-          if (pLines.length > 0) personaText = '\n※【マイ・ペルソナ】以下の情報を私（AI）自身の設定として完全に憑依させてください：\n' + pLines.join('\n') + '\n';
-      }
+      let personaText = settings && settings.persona ? '\n※【マイ・ペルソナ】以下の情報を私（AI）自身の設定として完全に憑依させてください：\n' + settings.persona + '\n' : '';
       let knowledgeText = settings && settings.knowledge ? '\n※【マイ・ナレッジ】以下の情報を前提知識として活用してください：\n' + settings.knowledge + '\n' : '';
       return '【システム指示：' + aiName + ' ' + spec + '】\nあなたは世界トップクラスの専門家（AI）アシスタントです。' + tone + personaText + knowledgeText + '\n\n';
     };  
