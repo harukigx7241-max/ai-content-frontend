@@ -25,7 +25,7 @@
  
     const DB_KEY = 'AICP_v70_BYOK_DB';   
     const SESS_KEY = 'AICP_v70_Session';  
-    const SYS_VERSION = 'v72.0.6 Ultimate Edition';  
+    const SYS_VERSION = 'v73.0.0 Ultimate SaaS Edition';  
  
     const AppDB = {  
       get: () => {  
@@ -49,6 +49,13 @@
       save: (db) => { try { localStorage.setItem(DB_KEY, JSON.stringify(db)); } catch (e) {} }  
     };  
  
+        const trimAIResponse = (text) => {
+        if(!text) return "";
+        let cleaned = text.replace(/^(承知いたしました|承知しました|はい、|以下の通り).*?\n+/g, '');
+        cleaned = cleaned.replace(/いかがでしょうか[。？]?.*$/g, '');
+        return cleaned.trim();
+    };
+
     const getAIPrefix = (modelId, settings) => {  
       const isPaid = modelId.includes('paid');  
       let aiName = modelId.includes('claude') ? 'Claude' : modelId.includes('gemini') ? 'Gemini' : 'ChatGPT';
@@ -495,6 +502,7 @@
       const [copied, setCopied] = useState({});  
       const [res, setRes] = useState((uData.projects[uData.curProj].data[tid] && uData.projects[uData.curProj].data[tid].res) || '');  
       const [error, setError] = useState('');
+      const [alerts, setAlerts] = useState([]);
       const [isLoading, setIsLoading] = useState(false);
       const [isMagicLoading, setIsMagicLoading] = useState(false);
       const [aiModel, setAiModel] = useState(uData.settings.aiModel);
@@ -885,7 +893,12 @@ ${emptyFields.map(f => '　・【' + f + '】').join('\n')}
             if(!ndb.users[user].usage.apiCount) ndb.users[user].usage.apiCount = { openai: 0, anthropic: 0, google: 0 };
             ndb.users[user].usage.apiCount[result.provider] = (ndb.users[user].usage.apiCount[result.provider] || 0) + 1;
             
-            setRes(isImage ? data.data : data.result);
+            let finalRes = isImage ? data.data : trimAIResponse(data.result);
+            setRes(finalRes);
+            if(window.checkCompliance) {
+                const compAlerts = window.checkCompliance(finalRes);
+                if(compAlerts.length > 0) setAlerts(compAlerts);
+            }
             if (role !== 'admin') {
                 if (!ndb.users[user].projects[uData.curProj].data[tid]) ndb.users[user].projects[uData.curProj].data[tid] = {};
                 ndb.users[user].projects[uData.curProj].data[tid].res = isImage ? data.data : data.result;
@@ -1613,6 +1626,18 @@ ${emptyFields.map(f => '　・【' + f + '】').join('\n')}
       );
     };  
  
+        const CommunityGallery = ({ db, user, onBack }) => {
+        return div({ className: 'flex flex-col h-full bg-bg p-6 lg:p-12 overflow-y-auto animate-in' },
+            div({ className: 'flex items-center mb-8 gap-4' },
+                button({ onClick: onBack, className: 'glass-panel px-4 py-2 rounded-lg text-sm font-bold text-slate-400 hover:text-white transition' }, '← 戻る'),
+                h2({ className: 'text-3xl font-black text-white' }, '🌐 みんなのプロンプトギャラリー')
+            ),
+            div({ className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' },
+                p({className: 'text-slate-400'}, '準備中...（今後のアップデートでユーザー共有プロンプトが表示されます）')
+            )
+        );
+    };
+
     const AdminDashboard = ({ user }) => {
         const [db, setDb] = useState(AppDB.get());
         const [toast, setToast] = useState('');
@@ -1868,6 +1893,7 @@ ${emptyFields.map(f => '　・【' + f + '】').join('\n')}
       const [showSettings, setShowSettings] = useState(false);
       const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
       const [showPopup, setShowPopup] = useState(false);
+      const [showGallery, setShowGallery] = useState(false);
       
       const db = AppDB.get();  
       const uData = db.users[props.user];  
