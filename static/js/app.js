@@ -28,7 +28,7 @@
  
     const DB_KEY = 'AICP_v70_BYOK_DB';   
     const SESS_KEY = 'AICP_v70_Session';  
-    const SYS_VERSION = 'v72.0.1 Ultimate SaaS Edition';  
+    const SYS_VERSION = 'v72.0.5 Ultimate SaaS Edition';  
  
     const AppDB = {  
       get: () => {  
@@ -151,7 +151,7 @@
                                 button({ onClick: () => { const nc = myCharas.filter((_, i) => i !== ci); setMyCharas(nc); }, className: 'ml-auto text-[10px] text-brand-danger hover:text-white' }, '削除')
                             ),
                             input({ className: 'input-base !py-1.5 text-xs mb-1.5', placeholder: 'キャラ名 (例: 元看護師の占い師さくら)', value: ch.name || '', onChange: e => { const nc = myCharas.slice(); nc[ci] = Object.assign({}, nc[ci], { name: e.target.value }); setMyCharas(nc); } }),
-                            textarea({ className: 'input-base min-h-[60px] text-xs', placeholder: '性格・口調・特徴', value: ch.desc || '', onChange: e => { const nc = myCharas.slice(); nc[ci] = Object.assign({}, nc[ci], { desc: e.target.value }); setMyCharas(nc); } })
+                            textarea({ className: 'input-base min-h-[60px] text-xs', placeholder: '性格・口調・特徴 (例: 30代女性。優しく寄り添う口調。「〜ですよね」が多い。)', value: ch.desc || '', onChange: e => { const nc = myCharas.slice(); nc[ci] = Object.assign({}, nc[ci], { desc: e.target.value }); setMyCharas(nc); } })
                         )),
                         myCharas.length < 5 && button({ onClick: () => setMyCharas(myCharas.concat([{ name: '', desc: '' }])), className: 'w-full glass-panel py-2.5 rounded-xl text-xs font-bold text-brand-light hover:bg-brand/10 transition border border-dashed border-white/20' }, '+ 新しいキャラを追加')
                     ),
@@ -176,6 +176,7 @@
         const [previewTab, setPreviewTab] = useState('all');
         const [previewMode, setPreviewMode] = useState('pc');
         const [err, setErr] = useState('');
+        const [showHelp, setShowHelp] = useState(false);
 
         const enhancedFields = toolConf.fields.map(f => {
             if (f.l.includes('キャラクター') && f.opts) {
@@ -246,7 +247,8 @@
                     button({ onClick: onBack, className: 'text-slate-400 hover:text-white transition p-2 rounded-full hover:bg-white/10' }, '← 戻る'),
                     div({ className: 'flex items-center gap-3' },
                         span({ className: 'text-2xl' }, toolConf.icon),
-                        h2({ className: 'text-xl font-black text-white' }, toolConf.name)
+                        h2({ className: 'text-xl font-black text-white' }, toolConf.name),
+                        toolConf.help && button({ onClick: () => setShowHelp(!showHelp), className: 'text-[10px] glass-panel px-2 py-1 rounded-lg text-slate-400 hover:text-white transition shrink-0' }, showHelp ? '✕ 閉じる' : '❓ 使い方')
                     )
                 ),
                 div({ className: 'flex gap-2 bg-black/40 p-1 rounded-xl' },
@@ -255,7 +257,19 @@
             ),
             div({ className: 'flex-1 overflow-hidden flex flex-col md:flex-row relative' },
                 div({ className: 'w-full md:w-1/2 h-full overflow-y-auto p-4 md:p-6 custom-scrollbar border-r border-white/10' },
+                    showHelp && toolConf.help && div({ className: 'mb-6 p-4 bg-brand/10 border border-brand/20 rounded-xl animate-in' },
+                        div({ className: 'flex items-center gap-2 mb-2' }, span({ className: 'text-sm' }, '\u2753'), span({ className: 'text-xs font-black text-brand-light' }, toolConf.name + ' の使い方')),
+                        p({ className: 'text-xs text-slate-300 leading-relaxed' }, toolConf.help)
+                    ),
                     err && ErrorAlert({msg: err}),
+                    genMode === 'prompt' && div({ className: 'mb-6 p-4 bg-gradient-to-r from-brand-accent/10 to-orange-500/5 border border-brand-accent/20 rounded-xl animate-in' },
+                        h4({ className: 'text-xs font-black text-brand-accent mb-3 flex items-center gap-2' }, '\uD83D\uDCCB プロンプトモード 3ステップ'),
+                        div({ className: 'flex gap-3' },
+                            div({ className: 'flex-1 text-center p-2.5 rounded-lg ' + (res ? 'bg-brand-success/20 border border-brand-success/30' : 'bg-brand-accent/20 border border-brand-accent/30') }, div({ className: 'text-lg mb-1' }, '\u2776'), p({ className: 'text-[10px] font-bold ' + (res ? 'text-brand-success' : 'text-brand-accent') }, res ? '\u2713 コピー済み' : 'プロンプトをコピー')),
+                            div({ className: 'flex-1 text-center p-2.5 rounded-lg bg-white/5 border border-white/10' }, div({ className: 'text-lg mb-1' }, '\u2777'), p({ className: 'text-[10px] font-bold text-slate-400' }, 'ChatGPT等に貼り付けて生成')),
+                            div({ className: 'flex-1 text-center p-2.5 rounded-lg bg-white/5 border border-white/10' }, div({ className: 'text-lg mb-1' }, '\u2778'), p({ className: 'text-[10px] font-bold text-slate-400' }, '結果を貼り付けてプレビュー'))
+                        )
+                    ),
                     div({ className: 'space-y-6 flex-1' },
                         genMode === 'god' ? div({className: 'text-center p-8'}, p({className: 'text-brand-accent font-bold'}, '🔥 全自動でお任せ生成します')) :
                         enhancedFields.map(f => FormInput({ key: f.id, f, val: formVals[f.id], onChange: (id, v) => setFormVals({...formVals, [id]: v}), onMagic: handleMagic, isMagicLoading: isMagic })),
