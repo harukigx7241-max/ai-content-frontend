@@ -24,10 +24,7 @@ var SNS_GENRE_MAP = {
 };
 
 var GOAL_OPTS = ['🎯 ゴール指定なし（汎用）', '👥 フォロワー増加', '💌 LINE登録誘導', '📩 DM誘導', '🛒 商品・鑑定購入', '🔗 プロフィール誘導'];
-var URANAI_POST_OPTS = ['🔮 今日の運勢', '🃏 カード診断', '💌 無料鑑定案内'];
-var FUKUGYO_POST_OPTS = ['✍️ 月収実績報告', '📝 ノウハウ公開', '💡 失敗談'];
 
-// 共通ヘルパー関数
 function getPersonaInstruction(personaKey, customPersona) {
   if (customPersona && customPersona.trim()) return '\n\n【🎭 憑依ペルソナ】\n以下の人物像になりきって、その人格・文体・口調を完全に憑依させてください：\n「' + customPersona.trim() + '」\n';
   var desc = SNS_PERSONA_MAP[personaKey];
@@ -43,8 +40,8 @@ function getGenreInstruction(genreKey) {
 
 function getGoalInstruction(goalOpt) {
   var inst = {
-    'フォロワー増加': '末尾に「フォローするとこういう情報が毎日届きます」という価値提示を入れてください。',
-    'LINE登録誘導': '「詳しくはプロフのLINEで▶️」など、LINE登録への強力な動機づけを入れてください。',
+    'フォロワー増加': '末尾に「フォローするとこういう情報が毎日届きます」という価値提示を必ず入れてください。',
+    'LINE登録誘導': '「詳しくはプロフのLINEで」など、LINE登録への強力な動機づけを入れてください。',
     'DM誘導': '「気になった方はDMください」など、DM送信への心理的ハードルを下げる一文を添えてください。',
     '商品・鑑定購入': '希少性（先着○名等）や期限を入れ、購入への緊急性を極限まで高めてください。'
   };
@@ -67,9 +64,7 @@ function checkCompliance(text) {
     if (!text) return [];
     const alerts = [];
     COMPLIANCE_NG_WORDS.forEach(rule => {
-        if (text.includes(rule.word)) {
-            alerts.push(`「${rule.word}」: ${rule.reason}`);
-        }
+        if (text.includes(rule.word)) alerts.push(`「${rule.word}」: ${rule.reason}`);
     });
     return alerts;
 }
@@ -112,10 +107,7 @@ const TOOLS = {
 
     // --- 💼 クラウドワークス・仕事完遂 ---
     cw_profile: { cat: 'cw', icon: '🏆', name: 'プロフィール＆ポートフォリオ構築AI', desc: 'クラウドワークスで「この人に頼みたい」と思わせるプロフィール。',
-      fields: [
-        { id: 'skill', t: 'area', l: 'あなたのスキル・経歴', ph: '例: 事務歴5年、Excel得意、動画編集を最近始めた', isMainMagic: true },
-        { id: 'target', t: 'text', l: '獲得したい案件', ph: '例: YouTubeの動画編集' }
-      ],
+      fields: [{ id: 'skill', t: 'area', l: 'あなたのスキル・経歴', ph: '例: 事務歴5年、Excel得意、動画編集を最近始めた', isMainMagic: true }, { id: 'target', t: 'text', l: '獲得したい案件', ph: '例: YouTubeの動画編集' }],
       build: function(v) { return 'あなたはクラウドソーシングで採用率95%を誇るトップフリーランスのプロデューサーです。\n以下の情報を元に、クライアントが「どうしてもこの人に依頼したい」と感じる、圧倒的に信頼感のあるプロフィール文と自己PR文を作成してください。\n\n【経歴・スキル】\n' + (v.skill||'') + '\n【狙う案件】\n' + (v.target||''); }
     },
     cw_hearing: { cat: 'cw', icon: '📋', name: 'プロのヒアリングシート生成', desc: '案件受注時にクライアントの真のニーズを引き出す質問リスト。',
@@ -123,19 +115,13 @@ const TOOLS = {
       build: function(v) { return 'あなたは一流のプロジェクトマネージャーです。\n以下の案件を受注するにあたり、クライアントの「真のニーズ（潜在的な目的）」を引き出し、かつ「この人はプロだ」と信頼させるためのヒアリングシート（質問リスト）を5〜7項目作成してください。質問の意図も添えてください。\n\n【案件概要】\n' + (v.project||''); }
     },
     cw_delivery: { cat: 'cw', icon: '🎁', name: '「神納品」メッセージ＆次回提案', desc: '納品報告と同時に次回リピート案件を獲得する魔法のメッセージ。',
-      fields: [
-        { id: 'work', t: 'text', l: '納品した成果物', ph: '例: 10分のYouTube動画編集', isMainMagic: true },
-        { id: 'effort', t: 'text', l: '今回特に工夫した点', ph: '例: 視聴維持率が上がるよう、最初の5秒のテンポを早めました' }
-      ],
+      fields: [{ id: 'work', t: 'text', l: '納品した成果物', ph: '例: 10分のYouTube動画編集', isMainMagic: true }, { id: 'effort', t: 'text', l: '今回特に工夫した点', ph: '例: 視聴維持率が上がるよう、最初の5秒のテンポを早めました' }],
       build: function(v) { return 'あなたはリピート率100%の超一流フリーランスです。\n以下の内容をもとに、クライアントに感動を与える「納品報告メッセージ」を作成してください。\nただの報告ではなく、工夫点をアピールし、さらに「次回はこんなこともできますがいかがですか？」という自然な継続案件へのアップセル（提案）を必ず含めてください。\n\n【納品物】' + (v.work||'') + '\n【工夫点】' + (v.effort||''); }
     },
 
     // --- 🔮 占い・スピリチュアル特化 ---
     uranai_kantei: { cat: 'uranai', icon: '🔮', name: '占い鑑定書ライター', desc: '有料販売に耐えるプロ品質の長文鑑定書を生成。',
-      fields: [
-        { id: 'method', t: 'select', l: '占術', opts: ['タロット','西洋占星術','四柱推命','霊感・霊視'] },
-        { id: 'client', t: 'area', l: '相談者情報と悩み', ph: '例: 28歳女性。転職すべきか悩んでいる', isMainMagic: true }
-      ],
+      fields: [{ id: 'method', t: 'select', l: '占術', opts: ['タロット','西洋占星術','四柱推命','霊感・霊視'] }, { id: 'client', t: 'area', l: '相談者情報と悩み', ph: '例: 28歳女性。転職すべきか悩んでいる', isMainMagic: true }],
       build: function(v) { return 'あなたは予約が数ヶ月取れない、慈愛と的確さを兼ね備えたカリスマ占い師です。\n【占術】' + (v.method||'') + '\n【相談者】' + (v.client||'') + '\n\n上記の相談者に対し、有料（5000円相当）で提供するプロ品質の鑑定書を2000文字以上で作成してください。導入（寄り添い）→鑑定結果（詳細な解釈）→具体的アドバイス→希望を持てるまとめ、の構成にしてください。'; }
     },
     uranai_age: { cat: 'uranai', icon: '👼', name: 'アゲ鑑定（ポジティブ変換）推敲', desc: '悪い結果を嘘をつかずに「希望」に変換する魔法のツール。',
@@ -153,12 +139,8 @@ const TOOLS = {
 
     // --- 📝 note記事 ＆ 販売 ---
     note: { cat: 'mon', icon: '📝', name: 'note記事 究極生成', desc: '売れるnote有料記事を全自動執筆。',
-      fields: [
-        { id: 'theme',  t: 'text', l: '記事テーマ', ph: '例: スマホ1台で月5万稼ぐ極意', isMainMagic: true },
-        { id: 'target', t: 'area', l: '読者の悩み', ph: '例: 副業したいが時間がない' },
-        { id: 'price',  t: 'text', l: '販売金額', ph: '例: 1980円' }
-      ],
-      build: function(v) { return 'あなたは累計1億円を売り上げたnote作家兼プロのダイレクトレスポンスコピーライターです。\n【テーマ】' + (v.theme||'') + '\n【読者の悩み】' + (v.target||'') + '\n【価格】' + (v.price||'') + '\n\n読者の「潜在的な痛み」を分析し、それを解決できる唯一の手段がこの記事であるという論理展開で執筆してください。必ず以下の区切り線を使って出力してください。\n\n---【タイトル案】---\n（クリックしたくなるタイトル5案）\n---【無料エリア】---\n（読者を強烈に惹きつけ、課金せずにはいられなくする導入）\n---【有料エリア】---\n（圧倒的に有益な解決策・ノウハウ本文）'; }
+      fields: [{ id: 'theme', t: 'text', l: '記事テーマ', ph: '例: スマホ1台で月5万稼ぐ極意', isMainMagic: true }, { id: 'target', t: 'area', l: '読者の悩み', ph: '例: 副業したいが時間がない' }, { id: 'price', t: 'text', l: '販売金額', ph: '例: 1980円' }],
+      build: function(v) { return 'あなたは累計1億円を売り上げたnote作家兼プロのダイレクトレスポンスコピーライターです。\n【テーマ】' + (v.theme||'') + '\n【読者の悩み】' + (v.target||'') + '\n【価格】' + (v.price||'') + '\n\n読者の「潜在的な痛み」を分析し、それを解決できる唯一の手段がこの記事であるという論理展開で執筆してください。必ず以下の区切り線を使って出力してください。\n\n---【タイトル案】---\n（クリックしたくなるタイトル5案）\n---【無料エリア】---\n（読者を強烈に惹きつけ、課金せずにはいられなくする導入）\n---【有料エリア】---\n（圧倒的に有益な解決策・ノウハウ本文）\n---【SEO・ハッシュタグ】---'; }
     },
     note_outline: { cat: 'mon', icon: '📑', name: 'プロ向け「目次・構成」ジェネレーター', desc: '長文記事を書くための完璧な設計図（アウトライン）を作成。',
       fields: [{ id: 'theme', t: 'text', l: '書きたいテーマ', ph: '例: 初心者向けSEO対策', isMainMagic: true }],
@@ -175,12 +157,7 @@ const TOOLS = {
 
     // --- 🚀 集客 ＆ SNSアナリティクス ---
     sns: { cat: 'sns', icon: '📱', name: 'SNS無限集客ポスト', desc: 'キャラ×ジャンル特化でバズる集客投稿を生成。',
-      fields: [
-        { id: 'platform', t: 'select', l: '投稿先SNS', opts: ['X(Twitter)', 'Instagram', 'Threads'] },
-        { id: 'goal',     t: 'select', l: '🎯 訴求ゴール', opts: GOAL_OPTS },
-        { id: 'persona',  t: 'select', l: '🎭 キャラクター', opts: Object.keys(SNS_PERSONA_MAP) },
-        { id: 'content',  t: 'area',   l: '伝えたい内容', ph: '例: 継続が大事', isMainMagic: true }
-      ],
+      fields: [{ id: 'platform', t: 'select', l: '投稿先SNS', opts: ['X(Twitter)', 'Instagram', 'Threads'] }, { id: 'goal', t: 'select', l: '🎯 訴求ゴール', opts: GOAL_OPTS }, { id: 'persona', t: 'select', l: '🎭 キャラクター', opts: Object.keys(SNS_PERSONA_MAP) }, { id: 'content', t: 'area', l: '伝えたい内容', ph: '例: 継続が大事', isMainMagic: true }],
       build: function(v) {
         var persona = getPersonaInstruction(v.persona, '');
         var goal = getGoalInstruction(v.goal);
@@ -198,11 +175,7 @@ const TOOLS = {
       build: function(v) { return 'あなたはカスタマーサクセスの世界的なプロフェッショナルです。\n以下の顧客メッセージに対し、相手の感情に深く寄り添い、決して怒らせることなく、最終的にブランドへの信頼（または成約）へとつなげる「神対応」の返信文を2パターン作成してください。\n\n【顧客のメッセージ】\n' + (v.msg||''); }
     },
     price_up: { cat: 'fun', icon: '📈', name: '値上げ告知ジェネレーター', desc: '既存顧客を逃がさず「今すぐ申込もう」と思わせる告知文。',
-      fields: [
-        { id: 'service', t: 'text', l: 'サービス名', ph: '例: タロット鑑定', isMainMagic: true },
-        { id: 'current_price', t: 'text', l: '現在の価格', ph: '例: 3000円' },
-        { id: 'new_price', t: 'text', l: '値上げ後の価格', ph: '例: 5000円' }
-      ],
+      fields: [{ id: 'service', t: 'text', l: 'サービス名', ph: '例: タロット鑑定', isMainMagic: true }, { id: 'current_price', t: 'text', l: '現在の価格', ph: '例: 3000円' }, { id: 'new_price', t: 'text', l: '値上げ後の価格', ph: '例: 5000円' }],
       build: function(v) { return 'あなたはファンマーケティングのプロです。\nサービス「' + (v.service||'') + '」を ' + (v.current_price||'') + ' から ' + (v.new_price||'') + ' に値上げする告知文を作成してください。\n既存顧客への深い感謝、正当な値上げ理由（価値の向上等）を伝えつつ、値上げ前の「駆け込み申し込み」を強烈に促す文章にしてください。'; }
     }
 };
