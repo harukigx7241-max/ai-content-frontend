@@ -1,1351 +1,1047 @@
-(function() {  
-    'use strict';  
-    const el = React.createElement;  
-    const { useState, useEffect, Component, Fragment, useRef } = React;  
-    
-    // 汎用コンポーネントヘルパー
-    const div = (pr, ...c) => el('div', pr, ...c);  
-    const span = (pr, ...c) => el('span', pr, ...c);  
-    const button = (pr, ...c) => el('button', pr, ...c);  
-    const h1 = (pr, ...c) => el('h1', pr, ...c);
-    const h2 = (pr, ...c) => el('h2', pr, ...c);
-    const h3 = (pr, ...c) => el('h3', pr, ...c);
-    const h4 = (pr, ...c) => el('h4', pr, ...c);
-    const p = (pr, ...c) => el('p', pr, ...c);
-    const ul = (pr, ...c) => el('ul', pr, ...c);
-    const li = (pr, ...c) => el('li', pr, ...c);
-    const label = (pr, ...c) => el('label', pr, ...c);
-    const input = (pr, ...c) => el('input', pr, ...c);
-    const textarea = (pr, ...c) => el('textarea', pr, ...c);
-    const select = (pr, ...c) => el('select', pr, ...c);
-    const option = (pr, ...c) => el('option', pr, ...c);
-    const table = (pr, ...c) => el('table', pr, ...c);
-    const thead = (pr, ...c) => el('thead', pr, ...c);
-    const tbody = (pr, ...c) => el('tbody', pr, ...c);
-    const tr = (pr, ...c) => el('tr', pr, ...c);
-    const th = (pr, ...c) => el('th', pr, ...c);
-    const td = (pr, ...c) => el('td', pr, ...c);
- 
-    const DB_KEY = 'AICP_v70_BYOK_DB';   
-    const SESS_KEY = 'AICP_v70_Session';  
-    const SYS_VERSION = 'v74.0.0 Special Edition';  
- 
-    // ================================================================
-    // 1. データベース管理 (localStorage)
-    // ================================================================
-    const AppDB = {  
-      get: () => {  
-        let db = null;  
-        try { db = JSON.parse(localStorage.getItem(DB_KEY)); } catch (e) {}  
-        if (!db) {  
-          db = {   
-            config: { adminU: 'admin', adminP: 'admin123', announcement: '', inviteCodes: {}, popupMessage: '', popupId: 0 },   
-            errorLogs: [], sharedPrompts: {}, sharedTools: [], 
-            users: { 'admin': { nickname: '管理者', status: 'approved', credits: 99999, lastLogin: '', loginHistory: [], usage: { count: 0, tools: {}, apiCount: { openai: 0, anthropic: 0, google: 0 } }, perms: {}, settings: { aiModel: 'chatgpt_free', keys: {openai:'', anthropic:'', google:''}, theme: 'blue', tone: '丁寧で専門的', notifications: true, persona: '', knowledge: '', templateUrl: '' }, curProj: 'default', projects: { 'default': { name: '管理者領域', data: {} } }, usedInviteCode: '', readPopupId: 0, favoriteTools: [], myTools: [] } }   
-          };  
-          localStorage.setItem(DB_KEY, JSON.stringify(db));  
-        }  
-        Object.keys(db.users).forEach(u => {
-            if(db.users[u].credits === undefined) db.users[u].credits = 100;
-            if(!db.users[u].settings.templates) db.users[u].settings.templates = ['', '', ''];
-            if(!db.users[u].settings.myCharas) db.users[u].settings.myCharas = [];
-            if(!db.users[u].favoriteTools) db.users[u].favoriteTools = [];
-            if(!db.users[u].myTools) db.users[u].myTools = [];
-        });
-        if(!db.sharedTools) db.sharedTools = [];
-        return db;  
-      },  
-      save: (db) => { try { localStorage.setItem(DB_KEY, JSON.stringify(db)); } catch (e) {} }  
-    };  
- 
-    // ================================================================
-    // 2. ユーティリティ関数群 (出力強化、ファイル出力等)
-    // ================================================================
-    const getAIPrefix = (modelId, settings) => {  
-      const isPaid = modelId && modelId.includes('paid');  
-      let aiName = (modelId||'').includes('claude') ? 'Claude' : (modelId||'').includes('gemini') ? 'Gemini' : 'ChatGPT';
-      let spec = isPaid
-        ? '有料版(最上位モデル)です。最高の創造性を発揮してください。\n※【最重要】最新のトレンドや正確な事実確認が必要な場合は、必ず「Web検索（ブラウジング機能）」を使用して情報を取得してください。\nその際、海外の情報を直訳したり、検索結果をそのまま羅列するのではなく、必ず「日本の文化・市場・SNSの文脈」に合わせて解釈し、読者が直感的に理解できるわかりやすく魅力的な表現に変換した上で出力に反映させてください。'
-        : '無料版です。簡潔かつ的確に要求を満たしてください。';
-      let tone = settings && settings.tone ? '\n※出力のトーン・文体は「' + settings.tone + '」で統一してください。' : '';
-      
-      let personaText = '';
-      if (settings) {
-          let pLines = [];
-          if (settings.persona_base) pLines.push('基本性格: ' + settings.persona_base);
-          if (settings.persona_first) pLines.push('一人称: ' + settings.persona_first);
-          if (settings.persona) pLines.push('詳細設定: ' + settings.persona);
-          if (pLines.length > 0) personaText = '\n※【マイ・ペルソナ】以下の情報を私（AI）自身の設定として完全に憑依させてください：\n' + pLines.join('\n') + '\n';
-      }
+'use strict';
+// ============================================================
+//  app.js – AI Content Pro フロントエンド (React 18, No-JSX)
+// ============================================================
 
-      let knowledgeText = settings && settings.knowledge ? '\n※【マイ・ナレッジ】以下の情報を前提知識として活用してください：\n' + settings.knowledge + '\n' : '';
-      return `【システム指示：${aiName} ${spec}】\nあなたは世界トップクラスの専門家（AI）アシスタントです。${tone}${personaText}${knowledgeText}\n\n※AIとしての挨拶（承知しました、以下が作成した文章です等）や解説などは一切出力せず、純粋なコンテンツのテキストのみを直接出力すること。\n\n`;
-    };  
+// ── React helpers ─────────────────────────────────────────
+const { createElement: ce, useState, useEffect, useRef, useCallback, useMemo } = React;
+const e = (tag, props, ...c) => ce(tag, props, ...c);
+const div = (p, ...c) => e('div', p, ...c);
+const span = (p, ...c) => e('span', p, ...c);
+const p = (props, ...c) => e('p', props, ...c);
+const h1 = (props, ...c) => e('h1', props, ...c);
+const h2 = (props, ...c) => e('h2', props, ...c);
+const h3 = (props, ...c) => e('h3', props, ...c);
+const button = (props, ...c) => e('button', props, ...c);
+const input = (props) => e('input', props);
+const textarea = (props) => e('textarea', props);
+const select = (props, ...c) => e('select', props, ...c);
+const option = (props, ...c) => e('option', props, ...c);
+const label = (props, ...c) => e('label', props, ...c);
+const a = (props, ...c) => e('a', props, ...c);
+const ul = (props, ...c) => e('ul', props, ...c);
+const li = (props, ...c) => e('li', props, ...c);
+const nav = (props, ...c) => e('nav', props, ...c);
+const header = (props, ...c) => e('header', props, ...c);
+const strong = (props, ...c) => e('strong', props, ...c);
+const table = (props, ...c) => e('table', props, ...c);
+const thead = (props, ...c) => e('thead', props, ...c);
+const tbody = (props, ...c) => e('tbody', props, ...c);
+const tr = (props, ...c) => e('tr', props, ...c);
+const th = (props, ...c) => e('th', props, ...c);
+const td = (props, ...c) => e('td', props, ...c);
+const section = (props, ...c) => e('section', props, ...c);
+const form = (props, ...c) => e('form', props, ...c);
 
-    const getUserLevel = (count) => {
-        if (count >= 50) return { name: '神', icon: '👑', color: 'text-yellow-400', border: 'border-yellow-400/50' };
-        if (count >= 20) return { name: 'マスター', icon: '💎', color: 'text-purple-400', border: 'border-purple-400/50' };
-        if (count >= 5) return { name: 'レギュラー', icon: '⭐', color: 'text-brand-light', border: 'border-brand-light/50' };
-        return { name: 'ビギナー', icon: '🌱', color: 'text-slate-400', border: 'border-white/10' };
+// ── API Client ─────────────────────────────────────────────
+const API = {
+  async req(method, path, body, token) {
+    const opts = {
+      method,
+      headers: { 'Content-Type': 'application/json',
+                  ...(token ? { Authorization: `Bearer ${token}` } : {}) },
     };
-
-    const trimAIResponse = (text) => {
-        if(!text) return "";
-        let cleaned = text.replace(/^(承知いたしました|承知しました|はい、|以下の通り).*?\n+/g, '');
-        cleaned = cleaned.replace(/いかがでしょうか[。？]?.*$/g, '');
-        return cleaned.trim();
-    };
-
-    const exportToCSV = (text, filename) => {
-        let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
-        const lines = text.split('\n');
-        lines.forEach(line => {
-            if (line.includes('|')) {
-                const row = line.split('|').map(cell => `"${cell.trim().replace(/"/g, '""')}"`).filter(c => c !== '""').join(',');
-                if(row && !row.includes('---')) csvContent += row + "\r\n";
-            }
-        });
-        if(csvContent === "data:text/csv;charset=utf-8,\uFEFF") csvContent += text;
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a"); link.setAttribute("href", encodedUri); link.setAttribute("download", filename + ".csv");
-        document.body.appendChild(link); link.click(); document.body.removeChild(link);
-    };
-
-    const downloadText = (text, filename) => {
-        const element = document.createElement('a');
-        element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
-        element.setAttribute('download', filename + '.txt');
-        element.style.display = 'none';
-        document.body.appendChild(element); element.click(); document.body.removeChild(element);
-    };
-
-    const renderMarkdown = (text) => {  
-      if (!text) return { __html: '' };  
-      let html = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');  
-      html = html.replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>');  
-      html = html.replace(/^### (.*$)/gim, '<h3 class="text-lg font-bold mt-4 mb-2">$1</h3>');  
-      html = html.replace(/^## (.*$)/gim, '<h2 class="text-xl font-black mt-6 mb-3 border-l-4 border-brand pl-2">$1</h2>');  
-      html = html.replace(/^# (.*$)/gim, '<h1 class="text-2xl font-black mt-8 mb-4 border-b border-gray-200 pb-2">$1</h1>');  
-      html = html.replace(/^\- (.*$)/gim, '<ul class="list-disc pl-5 mb-2"><li>$1</li></ul>');  
-      html = html.replace(/<\/ul>\n*<ul class="list-disc pl-5 mb-2">/gim, '');  
-      html = html.replace(/\n/g, '<br/>');  
-      return { __html: html };  
-    };  
-
-    const copyTextToClipboard = (text, isFreeUser) => {
-        let final = text;
-        if (isFreeUser) final += "\n\n--- Created by AICP Pro ---";
-        const textArea = document.createElement("textarea");
-        textArea.value = final;
-        textArea.style.position = "fixed"; textArea.style.left = "-9999px";
-        document.body.appendChild(textArea); textArea.focus(); textArea.select();
-        try { document.execCommand('copy'); } catch (err) {}
-        document.body.removeChild(textArea);
-    };
- 
-    const LoadingCircle = () => div({ className: 'w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin' });
-    const ErrorAlert = ({ msg }) => div({ className: 'p-4 bg-brand-danger/10 border border-brand-danger/30 rounded-xl text-brand-danger text-sm font-bold animate-in' }, '\u26A0\uFE0F エラー: ' + msg);
-
-    // ================================================================
-    // 3. FormInput コンポーネント (音声入力・魔法の杖対応)
-    // ================================================================
-    const FormInput = ({ f, val, onChange, onMagic, isMagicLoading }) => {  
-      const isMainMagic = f.isMainMagic;  
-      const value = val !== undefined ? val : (f.t === 'check' ? false : (f.opts ? f.opts[0] : ''));  
-      const hasSpeech = window.SpeechRecognition || window.webkitSpeechRecognition;
-      const [isListening, setIsListening] = useState(false);
-
-      const startSpeech = () => {
-          const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-          if (!SpeechRecognition) return;
-          const recognition = new SpeechRecognition();
-          recognition.lang = 'ja-JP';
-          recognition.onstart = () => setIsListening(true);
-          recognition.onend = () => setIsListening(false);
-          recognition.onresult = (event) => {
-              const text = event.results[0][0].transcript;
-              onChange(f.id, (value ? value + '\n' + text : text));
-          };
-          recognition.start();
-      };
-
-      const SpeechBtn = () => hasSpeech && button({ 
-          onClick: startSpeech, title: '音声入力',
-          className: 'absolute right-2 bottom-2 p-2 rounded-full transition ' + (isListening ? 'bg-red-500/20 text-red-500 animate-pulse' : 'bg-white/5 text-slate-400 hover:text-brand hover:bg-brand/10')
-      }, '\uD83C\uDFA4');
- 
-      const inputEl = () => {  
-        if (f.t === 'text') return div({className:'relative w-full'}, el('input', { className: 'input-base pr-10', value, placeholder: f.ph||'', onChange: e => onChange(f.id, e.target.value) }), el(SpeechBtn));  
-        if (f.t === 'area') return div({className:'relative w-full h-full'}, el('textarea', { className: 'input-base min-h-[100px] resize-y text-sm pb-10', value, placeholder: f.ph||'', onChange: e => onChange(f.id, e.target.value) }), el(SpeechBtn));  
-        if (f.t === 'select') return el('select', { className: 'input-base text-sm', value, onChange: e => onChange(f.id, e.target.value) }, f.opts.map(o => el('option', { key: o, value: o, className: 'bg-bg-panel' }, o)));  
-        if (f.t === 'check') return el('label', { className: 'flex items-center gap-3 cursor-pointer p-2' },   
-          div({ className: 'w-10 h-6 bg-gray-700 rounded-full relative transition' }, div({ className: 'absolute top-1 left-1 w-4 h-4 rounded-full transition ' + (value ? 'bg-brand left-5' : 'bg-gray-400') })),  
-          el('input', { type: 'checkbox', className: 'hidden', checked: !!value, onChange: e => onChange(f.id, e.target.checked) }),  
-          span({ className: 'text-sm font-bold text-slate-300' }, '機能を有効にする')  
-        );  
-        if (f.t === 'image') return div({ className: 'mt-2' },
-            el('input', { type: 'file', accept: 'image/*', className: 'text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-brand/20 file:text-brand hover:file:bg-brand/30 cursor-pointer transition',
-                onChange: e => { const file = e.target.files[0]; if(file) { const reader = new FileReader(); reader.onload = ev => onChange(f.id, ev.target.result.split(',')[1]); reader.readAsDataURL(file); } }
-            }), value ? span({className: 'ml-3 text-xs text-brand-success font-bold'}, '\u2713 画像セット済') : null
-        );
-        return null;  
-      };  
- 
-      return div({ className: 'mb-6 animate-in relative' },  
-        isMagicLoading && isMainMagic && div({ className: 'absolute inset-0 bg-black/60 z-10 rounded-2xl flex items-center justify-center backdrop-blur-sm' }, el(LoadingCircle)),
-        div({ className: 'flex justify-between items-center mb-2 gap-2' },  
-          span({ className: 'text-xs font-black text-slate-400 tracking-wider' }, f.l),  
-          isMainMagic && button({ onClick: () => onMagic(f.id), disabled: isMagicLoading, className: 'bg-gradient-to-r from-brand-accent to-red-500 text-white text-[10px] font-black px-3 py-1 rounded-full shadow-lg hover:brightness-110 transition disabled:opacity-50' }, '\u2728 魔法で入力')
-        ),  
-        inputEl()  
-      );  
-    };  
- 
-    // ================================================================
-    // 4. UserSettingModal (UI大改修・ペルソナウィザード・APIアコーディオン)
-    // ================================================================
-    const UserSettingModal = ({ user, onClose }) => {
-        const [db, setDb] = useState(AppDB.get());
-        const uData = db.users[user];
-        const [tab, setTab] = useState('account'); 
-        
-        const [keys, setKeys] = useState(uData.settings.keys || {});
-        const [aiModel, setAiModel] = useState(uData.settings.aiModel);
-        const [theme, setTheme] = useState(uData.settings.theme);
-        const [tone, setTone] = useState(uData.settings.tone);
-        const [persona, setPersona] = useState(uData.settings.persona || '');
-        const [knowledge, setKnowledge] = useState(uData.settings.knowledge || '');
-        const [templateUrl, setTemplateUrl] = useState(uData.settings.templateUrl || '');
-        const [notif, setNotif] = useState(uData.settings.notifications);
-        const [templates, setTemplates] = useState(uData.settings.templates || ['','','']);
-        const [myCharas, setMyCharas] = useState(uData.settings.myCharas || []);
-        
-        const [reqNickname, setReqNickname] = useState(uData.changeRequest ? uData.changeRequest.nickname : uData.nickname);
-        const [reqSns, setReqSns] = useState(uData.changeRequest ? uData.changeRequest.sns : (uData.sns || ''));
-        const [showReqForm, setShowReqForm] = useState(false);
-
-        const [currentPass, setCurrentPass] = useState('');
-        const [newPass, setNewPass] = useState('');
-        const [newPassConfirm, setNewPassConfirm] = useState('');
-
-        const [toast, setToast] = useState('');
-        const [showPersonaExtractor, setShowPersonaExtractor] = useState(false);
-        const [personaSource, setPersonaSource] = useState('');
-        const [isExtracting, setIsExtracting] = useState(false);
-
-        const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 3000); };
-
-        const save = () => {
-            const ndb = AppDB.get();
-            ndb.users[user].settings = Object.assign({}, ndb.users[user].settings, { keys, aiModel, theme, tone, persona, knowledge, templateUrl, notifications: notif, templates, myCharas });
-            AppDB.save(ndb); onClose(); window.location.reload(); 
-        };
-
-        const handleExport = () => {
-            const blob = new Blob([JSON.stringify(uData, null, 2)], {type: "application/json"});
-            const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url;
-            a.download = 'aicp_mydata_' + new Date().toISOString().slice(0,10) + '.json'; a.click(); URL.revokeObjectURL(url);
-            showToast('個人データをダウンロードしました');
-        };
-
-        const handleImport = (e) => {
-            const file = e.target.files[0]; if(!file) return;
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                try { 
-                    const imported = JSON.parse(ev.target.result);
-                    if (imported && imported.settings) {
-                        const ndb = AppDB.get(); ndb.users[user] = Object.assign({}, ndb.users[user], imported); AppDB.save(ndb);
-                        showToast('データを復元しました。再読み込みします...'); setTimeout(() => window.location.reload(), 1500);
-                    } else { alert('無効なデータファイルです。'); }
-                } catch(err) { alert('読み込み失敗'); }
-            };
-            reader.readAsText(file);
-        };
-
-        const handleDeleteReq = () => {
-            if(confirm('本当に退会（データ削除）を申請しますか？')) {
-                const ndb = AppDB.get(); ndb.users[user].status = 'delete_requested'; AppDB.save(ndb);
-                alert('退会申請を受け付けました。ログアウトします。'); localStorage.removeItem(SESS_KEY); window.location.reload();
-            }
-        };
-        
-        const extractPersona = async () => {
-            if(!personaSource) return alert('文章を入力してください');
-            setIsExtracting(true);
-            let tried = []; let lastError = ''; let meaningfulError = ''; let order = ['openai', 'google', 'anthropic']; let success = false;
-            for (let provider of order) {
-                let ai_model = provider === 'anthropic' ? 'claude_free' : provider === 'google' ? 'gemini_free' : 'chatgpt_free';
-                try {
-                    const res = await fetch('/api/auto_generate', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ prompt: '以下の文章を分析し、筆者の「職業、専門性、性格、文章のクセ」を詳細に抽出し、AIに憑依させるためのプロンプト（マイ・ペルソナ設定）を作成してください。出力はテキストのみにしてください。\n\n' + personaSource, user_api_key: keys[provider], ai_model: ai_model }) });
-                    const data = await res.json();
-                    if(data.status === 'success') {
-                        setPersona(data.result); setPersonaSource(''); setShowPersonaExtractor(false);
-                        const ndb = AppDB.get(); if(!ndb.users[user].usage.apiCount) ndb.users[user].usage.apiCount = { openai: 0, anthropic: 0, google: 0 };
-                        ndb.users[user].usage.apiCount[provider] = (ndb.users[user].usage.apiCount[provider] || 0) + 1; AppDB.save(ndb);
-                        showToast(tried.length > 0 ? '\uD83D\uDCA1 ' + provider.toUpperCase() + 'で抽出しました！' : '\u2728 自動抽出しました！');
-                        success = true; break;
-                    } else {
-                        lastError = data.message;
-                        if (!data.message.includes('設定されていません') && !meaningfulError) meaningfulError = '[' + provider.toUpperCase() + '] ' + data.message;
-                        tried.push(provider);
-                        if (data.message.includes('設定されていません') || data.message.includes('quota') || data.message.includes('429')) {
-                            if (tried.length < order.length) showToast('\u26A0\uFE0F ' + provider.toUpperCase() + 'エラー。別AIで再試行...');
-                            continue;
-                        } else { break; }
-                    }
-                } catch(e) { lastError = '通信エラー'; tried.push(provider); }
-            }
-            if(!success) alert('抽出エラー: \n' + (meaningfulError || 'APIキーを確認してください。'));
-            setIsExtracting(false);
-        };
-
-        const keyInput = (lang, provider, ph) => div({ className: 'mb-4' },
-            label({ className: 'block text-xs font-bold text-slate-400 mb-1.5' }, lang + ' APIキー (' + provider + ')'),
-            el('input', { type: 'password', className: 'input-base !py-2.5 text-sm font-mono', placeholder: ph, value: keys[provider]||'', onChange: e => setKeys(Object.assign({}, keys, { [provider]: e.target.value })) })
-        );
-
-        return div({ className: 'fixed inset-0 z-[200] flex items-center justify-center bg-black/80 p-4 animate-in' },
-            toast && div({ className: 'fixed top-8 left-1/2 transform -translate-x-1/2 bg-brand text-white px-6 py-3 rounded-full shadow-2xl z-[999] font-bold text-sm animate-in' }, toast),
-            div({ className: 'glass-panel rounded-3xl max-w-2xl w-full p-6 md:p-8 relative flex flex-col max-h-[90vh]' },
-                button({ onClick: onClose, className: 'absolute top-5 right-5 text-slate-400 hover:text-white text-xl font-bold transition' }, '\u2715'),
-                div({className: 'flex justify-between items-center mb-6 pb-4 border-b border-white/10'},
-                    h3({ className: 'text-xl font-black text-white' }, '\u2699\uFE0F 個人設定'),
-                    div({className:'text-right hidden sm:block'}, span({className:'text-[10px] text-brand-light'}, '現在のランク: '), span({className:'text-sm font-bold text-white'}, getUserLevel(uData.usage.count||0).name), span({className:'text-[10px] text-brand-light ml-3'}, '残クレジット: '), span({className:'text-sm font-bold text-white'}, uData.credits))
-                ),
-                
-                div({ className: 'flex gap-2 mb-6 border-b border-white/10 pb-2 overflow-x-auto hide-scrollbar' },
-                    ['account', 'ai', 'ui', 'advanced', 'data'].map(t => button({ key: t, onClick: () => setTab(t), className: 'px-4 py-2 rounded-full text-xs font-bold transition whitespace-nowrap ' + (tab === t ? 'bg-brand text-white' : 'text-slate-400 hover:bg-white/10') }, 
-                        t === 'account' ? '\uD83D\uDC64 アカウント' :
-                        t === 'ai' ? '\uD83E\uDDE0 AIカスタマイズ' : 
-                        t === 'ui' ? '\uD83C\uDFA8 見た目・テーマ' : 
-                        t === 'advanced' ? '\u2699\uFE0F 高度な設定(API)' : '\uD83D\uDCBE データ管理'))
-                ),
-
-                div({ className: 'overflow-y-auto flex-1 pr-3 hide-scrollbar space-y-6' },
-                    tab === 'account' && div({ className: 'animate-in space-y-6' },
-                        div({ className: 'flex gap-4 p-4 bg-brand/10 rounded-xl border border-brand/20' },
-                            div({ className: 'flex-1' }, p({ className: 'text-xs text-brand mb-1 font-bold' }, '\uD83E\uDE99 残りクレジット'), p({ className: 'text-2xl font-black text-white' }, uData.credits)),
-                            div({ className: 'flex-1' }, p({ className: 'text-xs text-brand mb-1 font-bold' }, '\uD83D\uDCC8 総生成回数'), p({ className: 'text-2xl font-black text-white' }, uData.usage.count || 0))
-                        ),
-                        div({ className: 'p-5 bg-white/5 rounded-2xl' },
-                            h4({ className: 'text-sm font-bold text-white mb-2' }, 'プロフィール・SNS情報'),
-                            p({ className: 'text-xs text-slate-400 mb-3' }, '※変更は管理者の承認が必要です'),
-                            input({ className: 'input-base !py-2 text-sm mb-2', placeholder: '新アカウント名', value: reqNickname, onChange: e => setReqNickname(e.target.value) }),
-                            input({ className: 'input-base !py-2 text-sm mb-3', placeholder: '新SNS', value: reqSns, onChange: e => setReqSns(e.target.value) }),
-                            button({ onClick: () => {
-                                const ndb = AppDB.get(); ndb.users[user].changeRequest = { nickname: reqNickname, sns: reqSns };
-                                AppDB.save(ndb); setDb(ndb); showToast('変更申請を送信しました。');
-                            }, className: 'w-full btn-gradient py-2 rounded-lg text-sm' }, '変更を申請')
-                        ),
-                        div({ className: 'p-5 bg-white/5 rounded-2xl' },
-                            h4({ className: 'text-sm font-bold text-white mb-3' }, '\uD83D\uDD12 パスワード再設定'),
-                            input({ type: 'password', className: 'input-base !py-2 text-sm mb-2', placeholder: '現在のパスワード', value: currentPass, onChange: e => setCurrentPass(e.target.value) }),
-                            input({ type: 'password', className: 'input-base !py-2 text-sm mb-2', placeholder: '新パスワード', value: newPass, onChange: e => setNewPass(e.target.value) }),
-                            input({ type: 'password', className: 'input-base !py-2 text-sm mb-3', placeholder: '新パスワード(確認)', value: newPassConfirm, onChange: e => setNewPassConfirm(e.target.value) }),
-                            button({ onClick: () => {
-                                if(currentPass !== uData.password) return alert('現在のパスワードが違います');
-                                if(newPass.length < 6 || newPass !== newPassConfirm) return alert('パスワードが無効です');
-                                const ndb = AppDB.get(); ndb.users[user].password = newPass; AppDB.save(ndb); setDb(ndb);
-                                setCurrentPass(''); setNewPass(''); setNewPassConfirm(''); showToast('パスワードを更新しました');
-                            }, className: 'w-full glass-panel py-2 rounded-lg text-sm hover:bg-white/10' }, 'パスワード変更')
-                        ),
-                        div({ className: 'p-5 bg-white/5 rounded-2xl' }, p({ className: 'text-xs text-slate-400 mb-2' }, 'あなたの招待コード:'), p({ className: 'text-lg font-mono text-white' }, uData.inviteCode||'未発行')),
-                        button({ onClick: handleDeleteReq, className: 'w-full bg-brand-danger/20 text-brand-danger py-3 rounded-xl text-sm font-bold hover:bg-brand-danger/30' }, '\uD83D\uDEAA 退会（全データ削除）申請')
-                    ),
-                    tab === 'ai' && div({ className: 'animate-in space-y-6' },
-                        div({ className: 'pt-2' }, 
-                            label({ className: 'block text-xs font-bold text-slate-400 mb-2 flex justify-between items-center' }, 
-                                span({}, '\uD83D\uDC64 マイ・ペルソナ（自分専用AI化）', span({className:'ml-2 text-[9px] bg-white/10 px-1 rounded cursor-help', title:'この内容が全てのツールで裏側で適用されます'}, '❔')),
-                                button({ onClick: () => setShowPersonaExtractor(!showPersonaExtractor), className: 'text-brand hover:text-brand-light flex items-center gap-1' }, '\u2728 自動抽出ツール')
-                            ),
-                            showPersonaExtractor && div({ className: 'mb-4 p-4 bg-brand/10 border border-brand/20 rounded-xl animate-in' },
-                                textarea({ className: 'input-base min-h-[100px] text-xs mb-2', placeholder: '過去に書いたブログや日記、ツイートなどをここに貼り付けてください...', value: personaSource, onChange: e => setPersonaSource(e.target.value) }),
-                                button({ onClick: extractPersona, disabled: isExtracting, className: 'w-full btn-gradient py-2 rounded-lg text-xs font-bold' }, isExtracting ? '抽出中...' : '文章からペルソナを自動抽出')
-                            ),
-                            div({ className: 'p-4 bg-white/5 border border-white/10 rounded-xl mb-4' },
-                                label({ className: 'block text-[10px] text-slate-400 mb-1' }, 'ベースの性格・トーン'),
-                                select({ className: 'input-base !py-2 text-xs mb-3', value: uData.settings.persona_base || '', onChange: e => { const val=e.target.value; const ndb=AppDB.get(); ndb.users[user].settings.persona_base=val; AppDB.save(ndb); setDb(ndb); } },
-                                    option({value:''}, '指定なし（標準）'), option({value:'プロフェッショナルで論理的'}, 'プロフェッショナルで論理的'), option({value:'優しく寄り添う共感型'}, '優しく寄り添う共感型'), option({value:'熱血で情熱的なリーダー'}, '熱血で情熱的なリーダー'), option({value:'ユーモア溢れる親友'}, 'ユーモア溢れる親友')
-                                ),
-                                label({ className: 'block text-[10px] text-slate-400 mb-1' }, '一人称'),
-                                input({ className: 'input-base !py-2 text-xs mb-3', placeholder: '例: 私、僕、俺', value: uData.settings.persona_first || '', onChange: e => { const val=e.target.value; const ndb=AppDB.get(); ndb.users[user].settings.persona_first=val; AppDB.save(ndb); setDb(ndb); } }),
-                                label({ className: 'block text-[10px] text-slate-400 mb-1' }, '自由記述（詳細な設定・口癖など）'),
-                                textarea({ className: 'input-base min-h-[80px] text-xs', placeholder: '例: 語尾に「〜ですよね！」をよく使う。専門用語は避ける。', value: persona, onChange: e => setPersona(e.target.value) })
-                            )
-                        ),
-                        div({}, label({ className: 'block text-xs font-bold text-slate-400 mb-2' }, '\uD83D\uDCDA マイ・ナレッジ（前提知識・RAG）', span({className:'ml-2 text-[9px] bg-white/10 px-1 rounded cursor-help', title:'自社商品の仕様や専門用語を登録しておくと、AIがそれを元に記事を作成します'}, '❔')),
-                            textarea({ className: 'input-base min-h-[150px] text-xs leading-relaxed', placeholder: '例: 弊社の主力商品は「魔法の美容液」です。特徴は無添加・オーガニックであることです。', value: knowledge, onChange: e => setKnowledge(e.target.value) })
-                        ),
-                        div({ className: 'pt-6 border-t border-white/10' }, label({ className: 'block text-xs font-bold text-slate-400 mb-2' }, '\uD83C\uDFAD マイキャラ保存 (最大5体)'),
-                            myCharas.map((ch, ci) => div({ key: ci, className: 'mb-3 p-3 bg-white/5 border border-white/10 rounded-xl animate-in' },
-                                div({ className: 'flex items-center justify-between mb-2' },
-                                    span({ className: 'text-xs font-bold text-brand-light' }, 'キャラ ' + (ci+1)),
-                                    button({ onClick: () => { const nc = myCharas.filter((_, i) => i !== ci); setMyCharas(nc); }, className: 'text-[10px] text-brand-danger' }, '削除')
-                                ),
-                                input({ className: 'input-base !py-1.5 text-xs mb-1.5', placeholder: 'キャラ名', value: ch.name || '', onChange: e => { const nc = myCharas.slice(); nc[ci] = Object.assign({}, nc[ci], { name: e.target.value }); setMyCharas(nc); } }),
-                                textarea({ className: 'input-base min-h-[60px] text-xs', placeholder: '性格・口調', value: ch.desc || '', onChange: e => { const nc = myCharas.slice(); nc[ci] = Object.assign({}, nc[ci], { desc: e.target.value }); setMyCharas(nc); } })
-                            )),
-                            myCharas.length < 5 && button({ onClick: () => setMyCharas(myCharas.concat([{ name: '', desc: '' }])), className: 'w-full glass-panel py-2 rounded-xl text-xs font-bold hover:bg-brand/10' }, '+ 新しいキャラを追加')
-                        )
-                    ),
-                    tab === 'ui' && div({ className: 'animate-in space-y-6' },
-                        div({}, label({ className: 'block text-xs font-bold text-slate-400 mb-2' }, '\uD83C\uDFA8 UIテーマ'),
-                            select({ className: 'input-base !py-2.5 text-sm', value: theme, onChange: e => setTheme(e.target.value) },
-                                option({ value: 'blue' }, '🌑 ダークブルー'), option({ value: 'purple' }, '🌑 ダークパープル'), option({ value: 'emerald' }, '🌑 ダークエメラルド'), option({ value: 'light' }, '☀️ ライトモード（白背景）')
-                            )
-                        ),
-                        div({}, label({ className: 'block text-xs font-bold text-slate-400 mb-2' }, '\uD83D\uDDE3\uFE0F デフォルト出力トーン'),
-                            el('select', { className: 'input-base !py-2.5 text-sm', value: tone, onChange: e => setTone(e.target.value) }, option({ value: '丁寧で専門的' }, '丁寧で専門的'), option({ value: '親しみやすいタメ口' }, '親しみやすいタメ口'), option({ value: '情熱的でセールス寄り' }, '情熱的でセールス寄り'), option({ value: '論理的で簡潔' }, '論理的で簡潔'))
-                        ),
-                        label({ className: 'flex items-center gap-3 cursor-pointer p-3 bg-white/5 rounded-xl' },   
-                            div({ className: 'w-10 h-6 bg-gray-700 rounded-full relative transition shrink-0' }, div({ className: 'absolute top-1 left-1 w-4 h-4 rounded-full transition ' + (notif ? 'bg-brand left-5' : 'bg-gray-400') })),  
-                            el('input', { type: 'checkbox', className: 'hidden', checked: notif, onChange: e => setNotif(e.target.checked) }),  
-                            span({ className: 'text-sm font-bold text-slate-300' }, '\uD83D\uDD14 ポップアップ通知を有効にする')  
-                        )
-                    ),
-                    tab === 'advanced' && div({ className: 'animate-in' },
-                        div({ className: 'mb-6 p-4 bg-brand/10 border border-brand/20 rounded-xl leading-relaxed text-slate-300 cursor-pointer hover:bg-brand/20 transition', onClick: e => { e.currentTarget.nextElementSibling.classList.toggle('hidden'); e.currentTarget.querySelector('.arrow').textContent = e.currentTarget.nextElementSibling.classList.contains('hidden') ? '▼' : '▲'; } },
-                            div({ className: 'flex justify-between items-center' },
-                                p({ className: 'text-xs font-bold text-brand-light' }, '\u26A0\uFE0F 自身のAPIキー登録 (任意)'),
-                                span({ className: 'text-xs arrow' }, '▼')
-                            ),
-                            p({ className: 'text-[10px] mt-2' }, '※APIキーを登録するとクレジットを消費せずに無制限で生成可能になります。初心者の方は未設定のままでもシステム側のキーで動作します。タップで開閉します。')
-                        ),
-                        div({ className: 'hidden animate-in space-y-4' },
-                            div({ className: 'flex gap-2 mb-6' },
-                                div({ className: 'flex-1 glass-panel p-3 rounded-xl text-center border-white/5' }, p({ className: 'text-[10px] text-slate-400' }, 'ChatGPT'), p({ className: 'text-lg font-bold' }, (uData.usage.apiCount?.openai||0) + '回')),
-                                div({ className: 'flex-1 glass-panel p-3 rounded-xl text-center border-white/5' }, p({ className: 'text-[10px] text-slate-400' }, 'Gemini'), p({ className: 'text-lg font-bold' }, (uData.usage.apiCount?.google||0) + '回')),
-                                div({ className: 'flex-1 glass-panel p-3 rounded-xl text-center border-white/5' }, p({ className: 'text-[10px] text-slate-400' }, 'Claude'), p({ className: 'text-lg font-bold' }, (uData.usage.apiCount?.anthropic||0) + '回'))
-                            ),
-                            keyInput('ChatGPT', 'openai', 'sk-...'), keyInput('Claude', 'anthropic', 'sk-ant-...'), keyInput('Gemini', 'google', 'AIza...'),
-                            div({ className: 'mt-6 pt-6 border-t border-white/10' },
-                                label({ className: 'block text-xs font-bold text-slate-400 mb-1.5' }, '\uD83E\uDD16 デフォルトAIモデル'),
-                                el('select', { className: 'input-base !py-2.5 text-sm', value: aiModel, onChange: e => setAiModel(e.target.value) },
-                                    option({ value: 'chatgpt_free' }, 'ChatGPT (無料版)'), option({ value: 'chatgpt_paid' }, 'ChatGPT Plus (有料版)'),
-                                    option({ value: 'claude_free' }, 'Claude 3 (無料版)'), option({ value: 'claude_paid' }, 'Claude 3 Pro (有料版)'),
-                                    option({ value: 'gemini_free' }, 'Gemini (無料版)'), option({ value: 'gemini_paid' }, 'Gemini Advanced (有料版)')
-                                )
-                            )
-                        )
-                    ),
-                    tab === 'data' && div({ className: 'animate-in space-y-6' },
-                        div({ className: 'p-5 bg-white/5 rounded-2xl flex flex-col gap-3' },
-                            h4({ className: 'text-sm font-bold text-white mb-2' }, '\uD83D\uDCBE データ管理'),
-                            button({ onClick: handleExport, className: 'glass-panel py-3 rounded-xl text-sm hover:bg-white/10' }, '\uD83D\uDCE5 データDL'),
-                            div({ className: 'relative w-full' }, button({ className: 'w-full glass-panel py-3 rounded-xl text-sm hover:bg-white/10' }, '\uD83D\uDCE4 データ復元'), input({ type: 'file', accept: '.json', onChange: handleImport, className: 'absolute inset-0 w-full h-full opacity-0 cursor-pointer' }))
-                        ),
-                        div({ className: 'p-5 bg-white/5 rounded-2xl flex flex-col gap-3' },
-                            button({ onClick: () => { if(confirm('キャッシュをクリアしますか？')){ const ndb=AppDB.get();ndb.users[user].projects[uData.curProj].data={};AppDB.save(ndb);window.location.reload(); } }, className: 'glass-panel py-3 rounded-xl text-sm text-brand-accent hover:bg-brand-accent/20' }, '\uD83E\uDDF9 キャッシュクリア')
-                        )
-                    )
-                ),
-                button({ onClick: save, className: 'w-full btn-gradient py-4 rounded-xl font-black mt-6 shadow-xl' }, '設定を保存して閉じる')
-            )
-        );
-    };
-
-    // ================================================================
-    // 5. ToolCore - メインツール実行コンポーネント
-    // ================================================================
-    const ToolCore = ({ tid, user, role, onBack, onUpdateUser, customTools }) => {  
-      const isCustom = tid.startsWith('my_');
-      const conf = isCustom ? customTools.find(t=>t.id===tid) : window.AICP_TOOLS[tid];
-      if(!conf) return null;
-
-      const [db, setDb] = useState(AppDB.get());  
-      const uData = db.users[user];  
-      const userKeys = uData.settings.keys || {};
-      const [vals, setVals] = useState(uData.projects[uData.curProj].data[tid] || {});  
-      const [copied, setCopied] = useState({});  
-      const [res, setRes] = useState((uData.projects[uData.curProj].data[tid] && uData.projects[uData.curProj].data[tid].res) || '');  
-      const [error, setError] = useState('');
-      const [isLoading, setIsLoading] = useState(false);
-      const [isMagicLoading, setIsMagicLoading] = useState(false);
-      const [aiModel, setAiModel] = useState(uData.settings.aiModel);
-      const [imageAI, setImageAI] = useState('openai');
-      const [toast, setToast] = useState('');
-      const [genMode, setGenMode] = useState('api');
-      const [promptAiModel, setPromptAiModel] = useState('chatgpt_paid');
-      const [shareCode, setShareCode] = useState('');
-      const [loadCode, setLoadCode] = useState('');
-      const [abTest, setAbTest] = useState(false);
-      const [manualInput, setManualInput] = useState('');
-      const [previewTab, setPreviewTab] = useState('all'); 
-      const [previewMode, setPreviewMode] = useState(window.innerWidth < 768 ? 'mobile' : 'pc'); 
-      const [showPasteModal, setShowPasteModal] = useState(false);
-      const [magicAI, setMagicAI] = useState('openai');
-      const [mobileTab, setMobileTab] = useState('input');
-      
-      const [trends, setTrends] = useState([]);
-      const [trendOpen, setTrendOpen] = useState(false);
-      const [urlInput, setUrlInput] = useState('');
-      const [keywordInput, setKeywordInput] = useState('');
-      const [showAdvancedMagic, setShowAdvancedMagic] = useState(false);
-      const [brainstormIdeas, setBrainstormIdeas] = useState([]);
-      const [showHelp, setShowHelp] = useState(false);
-      
-      const [webTemplates, setWebTemplates] = useState([]);
-      const [isLoadingWebTemplates, setIsLoadingWebTemplates] = useState(false);
-      const [alerts, setAlerts] = useState([]);
-      
-      const fetchWebTemplates = async () => {
-          const templateUrl = uData.settings.templateUrl;
-          if (!templateUrl) return;
-          setIsLoadingWebTemplates(true);
-          try {
-              const response = await fetch(templateUrl);
-              const data = await response.json();
-              setWebTemplates(Array.isArray(data) ? data : []);
-          } catch(e) {}
-          setIsLoadingWebTemplates(false);
-      };
-
-      useEffect(() => { 
-          const left = document.getElementById('tool-left-panel'); if (left) left.scrollTop = 0;
-          const right = document.getElementById('tool-right-panel'); if (right) right.scrollTop = 0;
-          fetch('/api/trends').then(r=>r.json()).then(d => { if(d.status === 'success') setTrends(d.data); }).catch(e=>{});
-          if(tid === 'note') fetchWebTemplates();
-      }, [tid]);
-
-      const showToast = (msg) => { if(!uData.settings.notifications) return; setToast(msg); setTimeout(() => setToast(''), 4000); };
- 
-      const updateRes = (v) => {  
-        setRes(v);  
-        if (role !== 'admin') {  
-          const ndb = AppDB.get();  
-          if (!ndb.users[user].projects[uData.curProj].data[tid]) ndb.users[user].projects[uData.curProj].data[tid] = {};  
-          ndb.users[user].projects[uData.curProj].data[tid].res = v;  
-          AppDB.save(ndb);  
-        }  
-      };  
-
-      const fetchWithFallback = async (endpoint, basePayload, defaultProvider, fallbackProviders) => {
-          let tried = []; let lastError = ''; let meaningfulError = ''; 
-          const allProviders = ['openai', 'google', 'anthropic'];
-          let order = [defaultProvider].concat(allProviders.filter(p => p !== defaultProvider));
-
-          for (let provider of order) {
-              let payload = Object.assign({}, basePayload);
-              if (endpoint === '/api/auto_generate') {
-                  let model = provider === 'anthropic' ? 'claude_free' : provider === 'google' ? 'gemini_free' : 'chatgpt_free';
-                  if (basePayload.ai_model && basePayload.ai_model.includes('paid')) model = model.replace('free', 'paid');
-                  payload.ai_model = model; payload.user_api_key = userKeys[provider];
-              } else if (endpoint === '/api/magic_generate') {
-                  payload.prompt_instruction = provider; payload.user_keys = { [provider]: userKeys[provider] };
-              }
-              try {
-                  const res = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                  const data = await res.json();
-                  if (data.status === 'success') return { success: true, data: data, provider: provider, tried: tried.length };
-                  let msg = data.message;
-                  if (msg.includes('insufficient_quota') || msg.includes('429')) msg = 'API上限に達しました。';
-                  if (!data.message.includes('設定されていません') && !meaningfulError) meaningfulError = '[' + provider.toUpperCase() + '] ' + msg;
-                  lastError = msg; tried.push(provider);
-                  if (data.message.includes('設定されていません') || data.message.includes('insufficient_quota') || data.message.includes('429') || data.message.includes('エラー')) {
-                      if (tried.length < order.length) showToast('\u26A0\uFE0F ' + provider.toUpperCase() + 'でエラー。自動切り替え中...');
-                      continue; 
-                  } else { break; }
-              } catch (e) { lastError = '通信エラー'; if (!meaningfulError) meaningfulError = '[' + provider.toUpperCase() + '] ' + lastError; tried.push(provider); }
-          }
-          return { success: false, error: meaningfulError || '[' + defaultProvider.toUpperCase() + '] APIエラー: ' + lastError };
-      };
- 
-      const handleMagic = async (fid, extraParams) => {  
-        if (role !== 'admin' && uData.credits <= 0) { setError('クレジット不足です。'); return; }
-        setIsMagicLoading(true); setError('');
-        const reqFields = conf.fields.map(f => ({ id: f.id, l: f.l, ph: f.ph||'', val: vals[f.id]||'' }));
-        let basePayload = { tool_id: tid, fields: reqFields, target_fid: fid, url: (extraParams && extraParams.url) || urlInput || '', keyword: (extraParams && extraParams.keyword) || null };
-        const result = await fetchWithFallback('/api/magic_generate', basePayload, magicAI, ['openai', 'google', 'anthropic']);
-
-        if (result.success) {
-            const ndb = AppDB.get();
-            if (role !== 'admin') { ndb.users[user].credits = Math.max(0, (ndb.users[user].credits || 0) - 1); }
-            ndb.users[user].usage.count = (ndb.users[user].usage.count || 0) + 1;
-            if(!ndb.users[user].usage.apiCount) ndb.users[user].usage.apiCount = { openai: 0, anthropic: 0, google: 0 };
-            ndb.users[user].usage.apiCount[result.provider] = (ndb.users[user].usage.apiCount[result.provider] || 0) + 1;
-            
-            const newVals = Object.assign({}, vals, result.data.data);
-            setVals(newVals);
-            if (role !== 'admin') {  
-                if(!ndb.users[user].projects[uData.curProj].data[tid]) ndb.users[user].projects[uData.curProj].data[tid] = {};
-                ndb.users[user].projects[uData.curProj].data[tid] = newVals; 
-            }
-            AppDB.save(ndb);
-            showToast(result.tried > 0 ? '\uD83D\uDCA1 ' + result.provider.toUpperCase() + 'で魔法を実行！' : '\uD83D\uDCAB 魔法で入力しました！');
-        } else { setError(result.error); }
-        setIsMagicLoading(false);
-      };  
-
-      const getAutoBrowsingMode = () => {
-          if (conf.isImagePrompt) return 'none';
-          const textFields = conf.fields.filter(f => f.t !== 'image' && f.t !== 'check' && f.t !== 'select');
-          const filledCount = textFields.filter(f => vals[f.id] && vals[f.id].trim() !== '').length;
-          if (filledCount === 0) return 'god'; 
-          if (filledCount < textFields.length) return 'auto';
-          return 'full'; 
-      };
-
-      const getFinalPrompt = () => {
-          let promptText = "";
-          if (isCustom) {
-              promptText = conf.buildPrompt;
-              conf.fields.forEach(f => { promptText = promptText.replace(new RegExp(`{${f.id}}`, 'g'), vals[f.id]||''); });
-          } else { promptText = conf.build ? conf.build(vals) : ''; }
-          
-          let specialPersona = "";
-          if (conf.cat === 'mon') specialPersona = "【超特化型ペルソナ】\nあなたは累計10億円を売り上げた世界トップクラスのダイレクトレスポンスコピーライターであり、天才マーケターです。読者の「潜在的な痛み（Pain）」を深くえぐり、論理と感情の両面から購買意欲を限界まで高める文章を構築してください。出力は常に専門的かつ説得力に満ちたものにします。\n\n";
-          else if (conf.cat === 'sns') specialPersona = "【超特化型ペルソナ】\nあなたは各SNS（X, Instagram, TikTok等）のアルゴリズムを完全にハックし、累計100万フォロワーを熱狂させてきた天才SNSマーケターです。スクロールする指を強制的に止める強烈なフック、読者の共感と有益性、そして思わずシェアしたくなる心理的トリガーを駆使して作成してください。\n\n";
-          else if (conf.cat === 'cw') specialPersona = "【超特化型ペルソナ】\nあなたはクラウドソーシングで採用率99%、リピート率100%を誇るトップ1%のフリーランスプロデューサーです。クライアントの潜在的なニーズ（言外の要望）を先読みし、圧倒的な信頼感と「この人に頼めば間違いない」という安心感を与える文章を作成してください。\n\n";
-          else if (conf.cat === 'fun') specialPersona = "【超特化型ペルソナ】\nあなたは世界最高のカスタマーサクセス・プロフェッショナルであり、ファン化の達人です。相手の感情に深く寄り添い、どんなクレームも感動に変え、既存顧客を熱狂的なファン（リピーター）へと育成する、温かく誠実なコミュニケーションを構築してください。\n\n";
-          else if (conf.cat === 'uranai') specialPersona = "【超特化型ペルソナ】\nあなたは予約が数ヶ月取れない、慈愛と的確さを兼ね備えたカリスマ占い師です。相談者の心に深く寄り添い、ネガティブな結果であっても希望の光を見出せるような、温かくポジティブなアドバイスへと昇華させて伝えてください。\n\n";
-          
-          let abText = abTest ? "\n\n【A/Bテスト指示】\n全く異なる2つの切り口（パターンA、パターンB）で出力してください。" : "";
-          promptText = specialPersona + promptText + abText;
-
-          if (conf.isImagePrompt) return promptText;
-          
-          let emptyFields = []; let filledFields = []; let mainThemeValue = '';
-          const today = new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
-          
-          conf.fields.forEach(f => {
-              if (f.t === 'image' || f.t === 'check') return; 
-              const val = vals[f.id] || '';
-              if (!val || val.trim() === '') emptyFields.push(f.l);
-              else { filledFields.push({ label: f.l, value: val }); if (f.isMainMagic || ['theme', 'topic', 'prod', 'kw'].includes(f.id)) mainThemeValue = val; }
-          });
-          
-          const isGodMode = filledFields.length === 0;
-          const isAutoMode = emptyFields.length > 0 && !isGodMode; 
-          let magicBlock = '';
-          
-          if (isGodMode) {
-              magicBlock = `\n🔥【STELLA NOTE - 神丸投げ LEVEL 3 SYSTEM】\n調査日時:${today}\nWeb検索を駆使してトレンド調査を行い、最適なテーマ選定から全項目の内容構築までを自動で行い、以下のプロンプトの要求に応えてください。\n`;
-          } else if (isAutoMode) {
-              magicBlock = `\n🌟【STELLA NOTE - AI自動補完 SYSTEM】\n調査日時:${today}\n未入力項目があります。Web検索で最新情報を調査し、最適な内容で補完した上で要求に応えてください。\n`;
-          }
-          
-          let inputSummary = conf.fields.map(f => {
-              if (f.t === 'image') return null; const val = vals[f.id];
-              if (f.t === 'check') return '【' + f.l + '】\n' + (val ? '有効' : '無効');
-              if (f.t === 'select') return '【' + f.l + '】\n' + (val || (f.opts && f.opts[0]) || '');
-              if (!val || val.toString().trim() === '') return '【' + f.l + '】\n⚡ AI自動補完指示';
-              return '【' + f.l + '】\n' + val;
-          }).filter(Boolean).join('\n\n');
-
-          let targetAiModel = genMode === 'api' ? aiModel : promptAiModel;
-          return getAIPrefix(targetAiModel, uData.settings) + magicBlock + '\n' + promptText + '\n\n' + inputSummary;
-      };
-
-      const handleCopyPrompt = () => {
-          copy(getFinalPrompt(), 'prompt');
-          const mode = getAutoBrowsingMode();
-          showToast(mode === 'god' ? '\uD83D\uDD25 神丸投げプロンプトをコピー！' : '\uD83D\uDCCB プロンプトをコピーしました！');
-      };
-
-      const handleGenerate = async () => {  
-        if (role !== 'admin' && uData.credits <= 0) { setError('クレジットが不足しています。'); return; }
-        setIsLoading(true); setError(''); setAlerts([]);
-        
-        let imageBase64 = null;
-        if (conf.fields.some(f => f.t === 'image')) {
-            imageBase64 = vals['image']; 
-            if (!imageBase64) { setError('画像をアップロードしてください。'); setIsLoading(false); return; }
-        }
-
-        const fullPrompt = getFinalPrompt();
-        const isImage = conf.isImagePrompt;
-        const endpoint = isImage ? '/api/magic_generate' : '/api/auto_generate';
-        const defaultProvider = isImage ? imageAI : (aiModel.includes('claude') ? 'anthropic' : aiModel.includes('gemini') ? 'google' : 'openai');
-        
-        let basePayload = isImage ? { tool_id: tid, fields: conf.fields.map(f => Object.assign({}, f, {val: vals[f.id]||''})) } : { prompt: fullPrompt, image_base64: imageBase64, ai_model: aiModel };
-
-        const result = await fetchWithFallback(endpoint, basePayload, defaultProvider, ['openai', 'google', 'anthropic']);
-
-        if (result.success) {
-            const ndb = AppDB.get();
-            if (role !== 'admin') { ndb.users[user].credits = Math.max(0, (ndb.users[user].credits || 0) - 1); }
-            ndb.users[user].usage.count = (ndb.users[user].usage.count || 0) + 1;
-            if(!ndb.users[user].usage.apiCount) ndb.users[user].usage.apiCount = { openai: 0, anthropic: 0, google: 0 };
-            ndb.users[user].usage.apiCount[result.provider] = (ndb.users[user].usage.apiCount[result.provider] || 0) + 1;
-            
-            let finalRes = isImage ? result.data.data : trimAIResponse(result.data.result);
-            setRes(finalRes); setPreviewTab('all');
-            
-            if(window.checkCompliance && !isImage) {
-                const compAlerts = window.checkCompliance(finalRes);
-                if(compAlerts.length > 0) setAlerts(compAlerts);
-            }
-
-            if (role !== 'admin') {
-                if (!ndb.users[user].projects[uData.curProj].data[tid]) ndb.users[user].projects[uData.curProj].data[tid] = {};
-                ndb.users[user].projects[uData.curProj].data[tid].res = finalRes;
-                if(!ndb.users[user].history) ndb.users[user].history = [];
-                ndb.users[user].history.unshift({ tool: conf.name, date: new Date().toLocaleString(), result: finalRes });
-                if(ndb.users[user].history.length > 5) ndb.users[user].history.pop();
-            }
-            AppDB.save(ndb); if(onUpdateUser) onUpdateUser(ndb);
-            
-            showToast(result.tried > 0 ? '\uD83D\uDCA1 ' + result.provider.toUpperCase() + 'で生成しました！' : '\u2728 生成完了！');
-            if(window.innerWidth < 1024) setMobileTab('preview'); 
-        } else { setError(result.error); }
-        setIsLoading(false);
-      };  
-
-      const modifyActionNames = { 'catchy': 'キャッチーに推敲', 'simple': 'シンプルに推敲', 'compliance': '炎上チェック', 'eyecatch_prompt': '画像プロンプト', 'x_thread': 'Xツリー展開' };
-      const buildModifyPrompt = (actionType, sourceText) => {
-          if (actionType === 'catchy') return '以下の文章をよりキャッチーでバズりやすく推敲してください。\n\n' + sourceText;
-          if (actionType === 'simple') return '以下の文章を小学生でも分かるシンプル表現にしてください。\n\n' + sourceText;
-          if (actionType === 'compliance') return '以下の文章のコンプライアンス(薬機法・炎上)チェックと修正を行ってください。\n\n' + sourceText;
-          if (actionType === 'x_thread') return '以下の文章をXのツリー投稿形式に分割してください。\n\n' + sourceText;
-          if (actionType === 'eyecatch_prompt') return '以下の文章の内容を象徴する、画像生成AI向けの「英語のプロンプト」を1つ作成してください。\n\n' + sourceText;
-          return sourceText;
-      };
-
-      const handleModify = async (actionType) => {
-          const builtPrompt = buildModifyPrompt(actionType, res);
-          if (genMode === 'prompt') { copyTextToClipboard(builtPrompt); showToast('\uD83D\uDCCB 推敲プロンプトをコピーしました'); return; }
-          if (role !== 'admin' && uData.credits <= 0) { setError('クレジット不足です'); return; }
-          setIsLoading(true); setError('');
-
-          let currentProvider = aiModel.includes('claude') ? 'anthropic' : aiModel.includes('gemini') ? 'google' : 'openai';
-          const result = await fetchWithFallback('/api/auto_generate', { prompt: builtPrompt, ai_model: aiModel }, currentProvider, ['openai', 'google', 'anthropic']);
-          
-          if (result.success) {
-              const newRes = res + '\n\n---\n\n### \uD83D\uDD04 追加結果 (' + (modifyActionNames[actionType]||actionType) + ')\n\n' + trimAIResponse(result.data.result);
-              updateRes(newRes); showToast('\u2728 推敲完了！');
-          } else { setError(result.error); }
-          setIsLoading(false);
-      };
- 
-      const copy = (text, key) => {
-          copyTextToClipboard(text, role !== 'admin');
-          setCopied(Object.assign({}, copied, { [key]: true }));
-          setTimeout(() => setCopied(prev => Object.assign({}, prev, { [key]: false })), 2000);
-      };
-
-      const handleShare = () => {
-          if (!shareCode.trim()) return alert('合言葉を入力してください');
-          const ndb = AppDB.get(); ndb.sharedPrompts[shareCode] = { tid, vals }; AppDB.save(ndb);
-          showToast('合言葉「' + shareCode + '」で保存しました！'); setShareCode('');
-      };
-      
-      const handleLoadShare = () => {
-          const ndb = AppDB.get(); const shared = ndb.sharedPrompts[loadCode];
-          if (shared && shared.tid === tid) { setVals(shared.vals); showToast('復元しました！'); setLoadCode(''); } 
-          else { alert('無効な合言葉です'); }
-      };
-
-      const handlePartialCopy = (part) => {
-          if (!res) return;
-          let extract = '';
-          try {
-              if (part === 'title') extract = res.split('---【無料エリア】---')[0].replace(/---【タイトル案】---/g, '').trim();
-              else if (part === 'free') extract = res.split('---【無料エリア】---')[1].split('---【有料エリア】---')[0].trim();
-              else if (part === 'paid') extract = res.split('---【有料エリア】---')[1].split('---【SEO・ハッシュタグ】---')[0].trim();
-              else if (part === 'seo') extract = res.split('---【SEO・ハッシュタグ】---')[1].trim();
-          } catch (e) { extract = res; }
-          if(extract) {
-              copyTextToClipboard(extract, role !== 'admin'); setCopied(Object.assign({}, copied, { [part]: true }));
-              setTimeout(() => setCopied(prev => Object.assign({}, prev, { [part]: false })), 2000); showToast('\uD83D\uDCCB セクションをコピーしました！');
-          }
-      };
-
-      const getScore = () => {
-          if (!res || conf.isImagePrompt) return null;
-          const len = res.length; const time = Math.ceil(len / 500);
-          const kanjiMatch = res.match(/[\u4e00-\u9faf]/g); const kanjiRatio = kanjiMatch ? Math.round((kanjiMatch.length / len) * 100) : 0;
-          let readScore = 100;
-          if (kanjiRatio < 15) readScore -= (15 - kanjiRatio) * 2;
-          if (kanjiRatio > 35) readScore -= (kanjiRatio - 35) * 2;
-          return { len, time, readScore: Math.max(0, Math.min(100, readScore)) };
-      };
-      const score = getScore();
-      const autoBrowsingMode = getAutoBrowsingMode();
-
-      return div({ className: 'flex flex-col lg:flex-row h-full w-full animate-in relative lg:overflow-hidden' },  
-        toast && div({ className: 'fixed top-4 lg:top-8 left-1/2 transform -translate-x-1/2 bg-brand text-white px-6 py-3 rounded-full shadow-2xl z-[999] font-bold text-sm animate-in' }, toast),
-
-        // ▼ 手動貼り付けモーダル
-        showPasteModal && div({ className: 'fixed inset-0 z-[300] bg-black/90 flex flex-col p-4 md:p-8 animate-in' },
-            div({ className: 'flex items-center justify-between mb-4' },
-                h3({ className: 'text-lg font-black text-white flex items-center gap-2' }, '\uD83D\uDCDD AI結果を貼り付け'),
-                button({ onClick: () => setShowPasteModal(false), className: 'text-slate-400 hover:text-white text-2xl font-bold' }, '\u2715')
-            ),
-            textarea({ className: 'input-base flex-1 text-sm leading-relaxed resize-none mb-4', style: { minHeight: '60vh' }, placeholder: 'ここにAIの生成結果を貼り付けてください...', value: manualInput, onChange: e => setManualInput(e.target.value), autoFocus: true }),
-            div({ className: 'flex gap-3' },
-                button({ onClick: () => setShowPasteModal(false), className: 'flex-1 glass-panel py-3 rounded-xl font-bold text-white hover:bg-white/10' }, 'キャンセル'),
-                button({ onClick: () => { if(manualInput.trim()) { updateRes(manualInput); setManualInput(''); setPreviewTab('all'); setShowPasteModal(false); } }, disabled: !manualInput.trim(), className: 'flex-1 btn-gradient py-3 rounded-xl font-black shadow-xl disabled:opacity-50' }, '\u2728 プレビューに反映')
-            )
-        ),
-
-        // モバイル用タブ切替 UI
-        div({ className: 'lg:hidden flex border-b border-white/10 bg-panel shrink-0' },
-            button({ onClick: ()=>setMobileTab('input'), className: `flex-1 py-3 text-sm font-bold text-center ${mobileTab==='input' ? 'text-brand border-b-2 border-brand':'text-slate-400'}`}, '✏️ 入力・設定'),
-            button({ onClick: ()=>setMobileTab('preview'), className: `flex-1 py-3 text-sm font-bold text-center ${mobileTab==='preview' ? 'text-brand border-b-2 border-brand':'text-slate-400'}`}, '👁️ プレビュー')
-        ),
-
-        // 左側（入力）
-        div({ id: 'tool-left-panel', className: `w-full lg:w-[400px] lg:border-r border-white/10 p-6 md:p-8 shrink-0 flex flex-col lg:h-full lg:overflow-y-auto hide-scrollbar ${mobileTab==='input' ? 'block' : 'hidden lg:block'}` },
-          div({ className: 'flex items-center gap-3 mb-6' },
-              button({ onClick: onBack, className: 'glass-panel px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-white/10' }, '\u2190'),
-              h2({ className: 'text-xl font-black text-white' }, conf.name),
-              conf.help && button({ onClick: () => setShowHelp(!showHelp), className: 'text-[10px] glass-panel px-2 py-1 rounded-lg text-slate-400 hover:text-white transition shrink-0 ml-auto' }, showHelp ? '✕ 閉じる' : '❓ 使い方')
-          ),
-
-          showHelp && conf.help && div({ className: 'mb-6 p-4 bg-brand/10 border border-brand/20 rounded-xl' }, p({ className: 'text-xs text-slate-300 leading-relaxed' }, conf.help)),
-          
-          trends.length > 0 && div({ className: 'mb-4' },
-              button({ onClick: () => setTrendOpen(!trendOpen), className: 'w-full flex items-center justify-between p-3 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10' },
-                  div({ className: 'flex items-center gap-2' }, span({}, '\uD83D\uDD25'), span({ className: 'text-xs font-black text-white' }, '急上昇トレンド'), span({ className: 'text-[10px] bg-brand/20 text-brand-light px-1.5 rounded-full' }, trends.length + '件')),
-                  span({ className: 'text-slate-400 text-xs' }, trendOpen ? '\u25B2 閉じる' : '\u25BC 開く')
-              ),
-              trendOpen && div({ className: 'mt-2 grid grid-cols-2 gap-2' },
-                  trends.map((t, i) => button({ key: i, onClick: () => handleMagic('all', { keyword: t.title }), className: 'bg-white/5 border border-white/10 rounded-xl p-3 text-left hover:bg-white/10 transition group' },
-                      p({ className: 'text-xs font-black text-white leading-tight line-clamp-2' }, t.title),
-                      p({ className: 'text-[9px] text-slate-500 mt-1' }, 'タップで丸投げ \u2192')
-                  ))
-              )
-          ),
-
-          div({ className: 'mb-6 p-4 bg-white/5 border border-white/10 rounded-xl' },
-              div({ className: 'flex justify-between items-center mb-3' },
-                  h4({ className: 'text-xs font-bold text-brand-light flex items-center gap-2' }, '\u2728 魔法ツール'),
-                  button({ onClick: () => setShowAdvancedMagic(!showAdvancedMagic), className: 'text-[10px] text-slate-400' }, showAdvancedMagic ? '閉じる' : '展開')
-              ),
-              button({ onClick: () => handleMagic('all'), disabled: isMagicLoading, className: 'w-full bg-gradient-to-r from-brand-accent to-red-500 text-white text-xs font-bold py-2 rounded-lg shadow-lg disabled:opacity-50' }, isMagicLoading ? '魔法詠唱中...' : '\uD83D\uDCAB 全項目を一撃で埋める'),
-              
-              showAdvancedMagic && div({ className: 'space-y-3 mt-3 pt-3 border-t border-white/10' },
-                  div({}, label({ className: 'block text-[10px] text-slate-400 mb-1' }, '\uD83D\uDD17 URL抽出'),
-                      div({ className: 'flex gap-2' }, input({ className: 'input-base !py-1.5 text-xs flex-1', value: urlInput, onChange: e => setUrlInput(e.target.value) }), button({ onClick: () => handleMagic('all'), disabled: !urlInput||isMagicLoading, className: 'glass-panel px-3 rounded-lg text-xs font-bold hover:bg-white/10 disabled:opacity-50'},'抽出'))
-                  ),
-                  div({}, label({ className: 'block text-[10px] text-slate-400 mb-1' }, '\uD83D\uDCA1 アイデア考案'),
-                      div({ className: 'flex gap-2' }, input({ className: 'input-base !py-1.5 text-xs flex-1', value: keywordInput, onChange: e => setKeywordInput(e.target.value) }), button({ 
-                          onClick: async () => {
-                              if(!keywordInput) return; setIsMagicLoading(true);
-                              try {
-                                  const r = await fetch('/api/auto_generate', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ prompt: 'キーワード「' + keywordInput + '」のコンテンツアイデアを3つ箇条書きで。', user_api_key: userKeys.openai, ai_model: 'chatgpt_free' }) });
-                                  const d = await r.json(); if(d.status === 'success') setBrainstormIdeas(d.result.split('\n').filter(l => l.trim()));
-                              } catch(e) {} setIsMagicLoading(false);
-                          }, disabled: !keywordInput||isMagicLoading, className: 'glass-panel px-3 rounded-lg text-xs font-bold hover:bg-white/10 disabled:opacity-50' }, '考案')
-                      )
-                  ),
-                  brainstormIdeas.length > 0 && div({ className: 'mt-2 space-y-1' }, brainstormIdeas.map((id, i) => button({ key: i, onClick: () => { handleMagic('all', { keyword: id }); setBrainstormIdeas([]); }, className: 'block w-full text-left text-[10px] bg-white/5 p-2 rounded text-slate-300' }, id)))
-              )
-          ),
-
-          div({ className: 'mb-6 pb-6 border-b border-white/10' },
-              div({ className: 'flex gap-2 mb-4' },
-                  button({ onClick: () => setGenMode('api'), className: 'flex-1 py-2 rounded-lg text-xs font-bold border ' + (genMode === 'api' ? 'bg-brand/20 border-brand text-white' : 'bg-black/30 border-white/5 text-slate-400') }, 'API生成'),
-                  button({ onClick: () => setGenMode('prompt'), className: 'flex-1 py-2 rounded-lg text-xs font-bold border ' + (genMode === 'prompt' ? 'bg-brand/20 border-brand text-white' : 'bg-black/30 border-white/5 text-slate-400') }, 'プロンプトのみ')
-              )
-          ),
-
-          !conf.isImagePrompt && div({ className: 'mb-6 bg-black/20 border border-brand-light/20 rounded-xl p-4' },
-              div({ className: 'flex items-center gap-2 mb-2' }, span({ className: 'text-xs font-black text-brand-light' }, '丸投げ状態: ' + (autoBrowsingMode==='god'?'神丸投げ':autoBrowsingMode==='auto'?'自動補完':'手動入力'))),
-              p({ className: 'text-[10px] text-slate-400' }, autoBrowsingMode==='god'?'全自動でトレンドを調査し生成します。':autoBrowsingMode==='auto'?'未入力項目をAIが補完します。':'全項目が入力されています。')
-          ),
-
-          // プロンプトモード3ステップUI
-          genMode === 'prompt' && !conf.isImagePrompt && div({ className: 'mb-6 p-4 bg-gradient-to-r from-brand-accent/10 to-orange-500/5 border border-brand-accent/20 rounded-xl animate-in' },
-              h4({ className: 'text-xs font-black text-brand-accent mb-3 flex items-center gap-2' }, '\uD83D\uDCCB プロンプトモード 3ステップ'),
-              div({ className: 'flex gap-3' },
-                  div({ className: 'flex-1 text-center p-2.5 rounded-lg ' + (res ? 'bg-brand-success/20 border border-brand-success/30' : 'bg-brand-accent/20 border border-brand-accent/30') },
-                      div({ className: 'text-lg mb-1' }, '\u2776'),
-                      p({ className: 'text-[10px] font-bold ' + (res ? 'text-brand-success' : 'text-brand-accent') }, res ? '\u2713 コピー済み' : 'プロンプトをコピー')
-                  ),
-                  div({ className: 'flex-1 text-center p-2.5 rounded-lg bg-white/5 border border-white/10' },
-                      div({ className: 'text-lg mb-1' }, '\u2777'),
-                      p({ className: 'text-[10px] font-bold text-slate-400' }, 'ChatGPT等に貼り付けて生成')
-                  ),
-                  div({ className: 'flex-1 text-center p-2.5 rounded-lg bg-white/5 border border-white/10' },
-                      div({ className: 'text-lg mb-1' }, '\u2778'),
-                      p({ className: 'text-[10px] font-bold text-slate-400' }, '結果を貼り付けてプレビュー')
-                  )
-              )
-          ),
-
-          div({ className: 'space-y-6 flex-1' }, 
-              conf.fields.map(f => el(FormInput, { key: f.id, f, val: vals[f.id], onChange: (id, v) => { const nv = Object.assign({}, vals, { [id]: v }); setVals(nv); if (role !== 'admin') { const ndb = AppDB.get(); ndb.users[user].projects[uData.curProj].data[tid] = nv; AppDB.save(ndb); } }, onMagic: handleMagic, isMagicLoading }))
-          ),
-
-          // A/Bテスト
-          (genMode === 'api' || !conf.isImagePrompt) && label({ className: 'flex items-center gap-3 cursor-pointer p-3 bg-white/5 rounded-xl mt-4 border border-white/10' },   
-              div({ className: 'w-10 h-6 bg-gray-700 rounded-full relative transition shrink-0' }, div({ className: 'absolute top-1 left-1 w-4 h-4 rounded-full transition ' + (abTest ? 'bg-brand left-5' : 'bg-gray-400') })),  
-              el('input', { type: 'checkbox', className: 'hidden', checked: abTest, onChange: e => setAbTest(e.target.checked) }),  
-              span({ className: 'text-xs font-bold text-slate-300' }, '\u2696\uFE0F A/Bテスト（2パターン同時に出力する）')  
-          ),
-
-          // 画像生成AI選択 (BYOK)
-          conf.isImagePrompt && div({ className: 'mt-8 pt-6 border-t border-white/10' },
-              label({ className: 'block text-xs font-bold text-slate-400 mb-2' }, '\uD83D\uDD2E プロンプトを作成するAIを選択 (BYOK)'),
-              div({ className: 'flex gap-2' },
-                  ['openai', 'anthropic', 'google'].map(p => button({
-                      key: p, onClick: () => setImageAI(p),
-                      className: 'flex-1 py-2 rounded-lg text-xs font-bold border transition ' + (imageAI === p ? 'bg-brand/20 border-brand text-white' : 'bg-black/30 border-white/5 text-slate-400 hover:bg-white/5')
-                  }, p.toUpperCase()))
-              )
-          ),
-
-          // プロンプトモードでのAI選択
-          (genMode === 'prompt' && !conf.isImagePrompt) && div({ className: 'animate-in mt-4' },
-              label({ className: 'block text-xs font-bold text-slate-400 mb-2' }, '\uD83E\uDD16 コピー先のAIバージョンを選択'),
-              el('select', { className: 'input-base !py-2.5 text-sm', value: promptAiModel, onChange: e => setPromptAiModel(e.target.value) },
-                  option({ value: 'chatgpt_free' }, 'ChatGPT (無料版)'), option({ value: 'chatgpt_paid' }, 'ChatGPT Plus (有料版) ★推奨'),
-                  option({ value: 'claude_free' }, 'Claude (無料版)'), option({ value: 'claude_paid' }, 'Claude Pro (有料版) ★推奨'),
-                  option({ value: 'gemini_free' }, 'Gemini (無料版)'), option({ value: 'gemini_paid' }, 'Gemini Advanced (有料版) ★推奨')
-              ),
-              p({ className: 'text-[10px] text-slate-500 mt-2' }, '※有料版を選択するとWeb検索機能を用いた情報取得の指示が追加され、丸投げ機能の精度が大幅に向上します。')
-          ),
-
-          button({ onClick: () => { setVals({}); updateRes(''); setError(''); setUrlInput(''); setKeywordInput(''); setBrainstormIdeas([]); }, className: 'text-xs text-slate-500 hover:text-white mt-4 w-full text-right' }, '\uD83D\uDDD1\uFE0F クリア'),
-
-          div({ className: 'mt-6 pt-6 border-t border-white/10' },
-              button({ onClick: genMode === 'api' ? handleGenerate : handleCopyPrompt, disabled: isLoading || isMagicLoading, className: 'w-full btn-gradient py-4 rounded-xl font-black text-lg flex items-center justify-center gap-3 shadow-xl' }, 
-                  isLoading ? [el(LoadingCircle), '魔法詠唱中...'] : (genMode === 'api' ? '\u2728 ' + (conf.isImagePrompt ? '呪文' : 'コンテンツ') + 'を生成' : '\uD83D\uDCCB プロンプトをコピー')
-              )
-          ),
-          error && div({ className: 'mt-4' }, el(ErrorAlert, { msg: error }))
-        ),
-
-        // 右側（プレビュー）
-        div({ id: 'tool-right-panel', className: `flex-1 bg-black min-h-[400px] lg:min-h-0 lg:h-full lg:overflow-y-auto flex flex-col ${mobileTab==='preview' ? 'block' : 'hidden lg:flex'}` },
-            div({ className: 'flex flex-col gap-3 p-4 border-b border-white/10 bg-black/40 shrink-0' },
-                div({ className: 'flex items-center justify-between' },
-                    h3({ className: 'text-sm font-black text-slate-300 flex items-center gap-2' }, '\uD83D\uDC40 プレビュー'),
-                    div({ className: 'flex gap-2' },
-                        div({ className: 'flex bg-white/5 rounded-lg p-0.5 border border-white/10' },
-                            button({ onClick: () => setPreviewMode('pc'), className: 'px-2 py-1 rounded text-xs font-bold transition ' + (previewMode === 'pc' ? 'bg-brand text-white' : 'text-slate-400') }, '\uD83D\uDCBB'),
-                            button({ onClick: () => setPreviewMode('mobile'), className: 'px-2 py-1 rounded text-xs font-bold transition ' + (previewMode === 'mobile' ? 'bg-brand text-white' : 'text-slate-400') }, '\uD83D\uDCF1')
-                        ),
-                        button({ onClick: () => copy(res, 'raw'), className: 'glass-panel px-3 py-1.5 rounded-lg text-xs font-bold ' + (copied.raw?'text-brand-success':'text-slate-300') }, copied.raw ? '\u2713' : '\uD83D\uDCCB Raw'),
-                        !conf.isImagePrompt && button({ onClick: () => {
-                            const elNode = document.getElementById('preview-tab-content');
-                            if(elNode) {
-                                const range = document.createRange(); range.selectNodeContents(elNode);
-                                const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(range);
-                                try { document.execCommand('copy'); copy('', 'rich'); } catch(e){}
-                                sel.removeAllRanges(); 
-                            }
-                        }, className: 'btn-gradient px-3 py-1.5 rounded-lg text-xs font-bold transition ' + (copied.rich ? 'opacity-50' : '') }, copied.rich ? '\u2713' : '\uD83C\uDFA8 装飾'),
-                        button({ onClick: () => downloadText(res, conf.name), className: 'glass-panel px-3 py-1.5 rounded-lg text-xs font-bold text-slate-300' }, 'TXT'),
-                        button({ onClick: () => exportToCSV(res, conf.name), className: 'glass-panel px-3 py-1.5 rounded-lg text-xs font-bold text-slate-300' }, 'CSV')
-                    )
-                ),
-                alerts.length > 0 && div({ className: 'p-2 bg-brand-danger/10 border border-brand-danger/30 rounded-lg' }, alerts.map((a,i)=>p({key:i,className:'text-[10px] text-brand-danger'}, '\u26A0\uFE0F '+a))),
-                
-                // ── 汎用セクション自動判別タブ（note以外のツール）──
-                tid !== 'note' && res && (() => {
-                    const sectionMarkers = res.match(/---【[^】]+】---/g);
-                    if (sectionMarkers && sectionMarkers.length >= 2) {
-                        const sectionNames = sectionMarkers.map(m => m.replace(/---【|】---/g, ''));
-                        return div({ className: 'flex gap-1 overflow-x-auto hide-scrollbar mt-2' },
-                            button({ onClick: () => setPreviewTab('all'), className: 'px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition ' + (previewTab === 'all' ? 'bg-brand text-white shadow-lg' : 'glass-panel text-slate-400 hover:text-white') }, '\uD83D\uDCCB 全体'),
-                            sectionNames.map((name, i) => button({ key: i, onClick: () => setPreviewTab('sec_' + i), className: 'px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition ' + (previewTab === 'sec_' + i ? 'bg-brand text-white shadow-lg' : 'glass-panel text-slate-400 hover:text-white') }, name))
-                        );
-                    }
-                    return null;
-                })(),
-                
-                tid === 'note' && res && div({ className: 'flex gap-1 overflow-x-auto hide-scrollbar mt-2' },
-                    [{id:'all',l:'全体'},{id:'title',l:'タイトル'},{id:'free',l:'無料'},{id:'paid',l:'有料'},{id:'seo',l:'SEO'}].map(t => button({ key: t.id, onClick: ()=>setPreviewTab(t.id), className: 'px-3 py-1 rounded-lg text-xs font-bold ' + (previewTab===t.id?'bg-brand text-white':'glass-panel text-slate-400') }, t.l))
-                ),
-
-                score && div({ className: 'flex flex-wrap gap-2 mt-2' },
-                    div({ className: 'bg-white/5 px-2.5 py-1 rounded-lg border border-white/10 flex items-center gap-1.5' }, span({ className: 'text-[10px] text-slate-400' }, '\uD83D\uDCDD'), span({ className: 'text-xs font-bold text-white' }, score.len + '字')),
-                    div({ className: 'bg-white/5 px-2.5 py-1 rounded-lg border border-white/10 flex items-center gap-1.5' }, span({ className: 'text-[10px] text-slate-400' }, '\u23F1'), span({ className: 'text-xs font-bold text-white' }, '約' + score.time + '分')),
-                    div({ className: 'bg-white/5 px-2.5 py-1 rounded-lg border border-white/10 flex items-center gap-1.5' }, span({ className: 'text-[10px] text-slate-400' }, '\uD83D\uDCCA'), span({ className: 'text-xs font-bold ' + (score.readScore >= 80 ? 'text-brand-success' : score.readScore >= 50 ? 'text-brand-accent' : 'text-brand-danger') }, score.readScore + '点'))
-                )
-            ),
-            
-            div({ className: 'flex-1 overflow-y-auto p-4 md:p-6' },
-                div({ className: 'mx-auto transition-all duration-300 ' + (previewMode === 'mobile' ? 'max-w-[390px]' : 'max-w-full') },
-                    conf.isImagePrompt ? div({ className: 'bg-gray-100 p-6 rounded-2xl font-mono text-sm text-black whitespace-pre-wrap' }, res) :
-                    
-                    tid === 'note' && res ? (() => {
-                        const extractPart = (part) => {
-                            try {
-                                if (part === 'title') return res.split('---【無料エリア】---')[0].replace(/---【タイトル案】---/g,'').trim();
-                                if (part === 'free') { const t = res.split('---【無料エリア】---')[1]; return t ? t.split('---【有料エリア】---')[0].trim() : res; }
-                                if (part === 'paid') { const t = res.split('---【有料エリア】---')[1]; return t ? t.split('---【SEO・ハッシュタグ】---')[0].trim() : res; }
-                                if (part === 'seo') { const t = res.split('---【SEO・ハッシュタグ】---')[1]; return t ? t.trim() : res; }
-                                return res;
-                            } catch(e) { return res; }
-                        };
-                        if (previewTab === 'all') return div({ id: 'preview-tab-content', className: 'bg-white p-5 md:p-8 rounded-2xl preview-content text-black leading-relaxed shadow-inner' }, div({ dangerouslySetInnerHTML: renderMarkdown(res) }));
-                        if (previewTab === 'title') {
-                            const titleText = extractPart('title'); const titles = titleText.split('\n').filter(l => l.trim());
-                            return div({ id: 'preview-tab-content', className: 'space-y-3' },
-                                div({ className: 'flex items-center justify-between mb-4' }, h4({ className: 'text-sm font-black text-white' }, 'タイトル案'), button({ onClick: () => { copyTextToClipboard(titleText, role !== 'admin'); showToast('コピーしました'); }, className: 'text-xs btn-gradient px-3 py-1.5 rounded-lg font-bold' }, '全コピー')),
-                                titles.map((t, i) => div({ key: i, onClick: () => { copyTextToClipboard(t.replace(/^[\-\*\d\.\s]+/, ''), role !== 'admin'); showToast('コピーしました'); }, className: 'bg-white p-4 rounded-xl cursor-pointer hover:bg-brand/5 transition' }, p({ className: 'text-gray-800 font-bold' }, t.replace(/^[\-\*\d\.\s]+/, ''))))
-                            );
-                        }
-                        if (previewTab === 'free') return div({ id: 'preview-tab-content' }, div({ className: 'flex items-center justify-between mb-4' }, span({ className: 'bg-brand-success/20 text-brand-success text-xs font-black px-3 py-1 rounded-full' }, '無料エリア'), button({ onClick: () => handlePartialCopy('free'), className: 'text-xs btn-gradient px-3 py-1.5 rounded-lg' }, 'コピー')), div({ className: 'bg-white p-5 md:p-8 rounded-2xl preview-content text-black leading-relaxed shadow-inner' }, div({ dangerouslySetInnerHTML: renderMarkdown(extractPart('free')) })));
-                        if (previewTab === 'paid') return div({ id: 'preview-tab-content' }, div({ className: 'flex items-center justify-between mb-4' }, span({ className: 'bg-brand-accent/20 text-brand-accent text-xs font-black px-3 py-1 rounded-full' }, '有料エリア'), button({ onClick: () => handlePartialCopy('paid'), className: 'text-xs btn-gradient px-3 py-1.5 rounded-lg' }, 'コピー')), div({ className: 'bg-white p-5 md:p-8 rounded-2xl preview-content text-black leading-relaxed shadow-inner' }, div({ dangerouslySetInnerHTML: renderMarkdown(extractPart('paid')) })));
-                        if (previewTab === 'seo') return div({ id: 'preview-tab-content', className: 'space-y-4' }, div({ className: 'flex items-center justify-between mb-2' }, span({ className: 'bg-brand/20 text-brand text-xs font-black px-3 py-1 rounded-full' }, 'SEO・タグ'), button({ onClick: () => handlePartialCopy('seo'), className: 'text-xs btn-gradient px-3 py-1.5 rounded-lg' }, 'コピー')), div({ className: 'bg-white p-5 rounded-2xl text-black text-sm leading-relaxed' }, extractPart('seo')));
-                        return null;
-                    })() : 
-                    
-                    (() => {
-                        if (previewTab.startsWith('sec_')) {
-                            const secIdx = parseInt(previewTab.replace('sec_', ''));
-                            const sections = res.split(/---【[^】]+】---/).filter(s => s.trim());
-                            const sectionContent = sections[secIdx] || res;
-                            return div({ id: 'preview-tab-content', className: 'bg-white p-5 md:p-8 rounded-2xl preview-content text-black leading-relaxed shadow-inner' }, div({ dangerouslySetInnerHTML: renderMarkdown(sectionContent.trim()) }));
-                        }
-                        return div({ id: 'preview-tab-content', className: 'bg-white p-5 md:p-8 rounded-2xl preview-content text-black leading-relaxed shadow-inner' }, div({ dangerouslySetInnerHTML: renderMarkdown(res) }));
-                    })()
-                )
-            ),
-            
-            !conf.isImagePrompt && div({ className: 'p-4 border-t border-white/10 shrink-0 bg-black/20' },
-                h4({ className: 'text-[10px] font-black text-brand mb-2' }, '\uD83E\uDDD1\u200D\uD83C\uDFEB 推敲・展開'),
-                div({ className: 'flex flex-wrap gap-1.5' },
-                    ['catchy','simple','compliance','eyecatch_prompt','x_thread'].map(a => button({ key: a, onClick: ()=>handleModify(a), disabled: isLoading, className: 'glass-panel px-2 py-1 rounded text-[10px] text-slate-300' }, modifyActionNames[a]||a))
-                )
-            ),
-
-            // 合言葉で共有・復元
-            div({ className: 'p-4 bg-white/5 border-t border-white/10 text-sm' },
-                h4({ className: 'text-[10px] font-bold text-slate-400 mb-2 flex items-center gap-2' }, '\uD83E\uDD1D 合言葉で設定を共有・復元'),
-                div({ className: 'flex flex-col gap-2' },
-                    div({ className: 'flex gap-2' },
-                        input({ className: 'input-base !py-1.5 text-xs flex-1', placeholder: '合言葉を入力して保存', value: shareCode, onChange: e => setShareCode(e.target.value) }),
-                        button({ onClick: handleShare, className: 'glass-panel px-3 rounded-lg text-xs font-bold hover:bg-white/10 whitespace-nowrap' }, '保存')
-                    ),
-                    div({ className: 'flex gap-2' },
-                        input({ className: 'input-base !py-1.5 text-xs flex-1', placeholder: '合言葉で復元', value: loadCode, onChange: e => setLoadCode(e.target.value) }),
-                        button({ onClick: handleLoadShare, className: 'glass-panel px-3 rounded-lg text-xs font-bold hover:bg-white/10 whitespace-nowrap' }, '復元')
-                    )
-                )
-            )
-        )
-      );
-    };  
-
-    // ================================================================
-    // CommunityGallery (プロンプトギャラリー)
-    // ================================================================
-    const CommunityGallery = ({ db, user, onUpdateDB, onBack }) => {
-        const handleClone = (tool) => {
-            const newDb = {...db};
-            newDb.users[user].myTools.push({...tool, id: 'my_' + Date.now(), isCloned: true});
-            AppDB.save(newDb); onUpdateDB(newDb);
-            alert(`「${tool.name}」をマイツールにクローンしました！`);
-        };
-
-        return div({ className: 'flex flex-col h-full bg-bg p-6 lg:p-12 overflow-y-auto animate-in' },
-            div({ className: 'flex items-center mb-8 gap-4' },
-                button({ onClick: onBack, className: 'glass-panel px-4 py-2 rounded-lg text-sm font-bold text-slate-400 hover:text-white transition' }, '← 戻る'),
-                h2({ className: 'text-3xl font-black text-white' }, '🌐 みんなのプロンプトギャラリー')
-            ),
-            div({ className: 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' },
-                (db.sharedTools || []).length === 0 ? p({className: 'text-slate-400'}, 'まだ共有されたツールがありません。') :
-                db.sharedTools.map((t, i) => div({ key: i, className: 'glass-panel p-6 rounded-2xl hover:border-brand/40 transition' },
-                    h3({ className: 'text-xl font-bold text-white mb-2' }, t.name),
-                    p({ className: 'text-sm text-slate-400 mb-4 line-clamp-3' }, t.desc),
-                    div({ className: 'flex justify-between items-center text-xs text-slate-500 mb-4' }, span({}, `作者: ${t.author}`), span({}, `❤️ ${t.likes||0}  🔄 ${t.clones||0}`)),
-                    button({ onClick: ()=>handleClone(t), className: 'w-full btn-gradient py-3 rounded-xl text-sm font-bold shadow-lg' }, '📥 クローンして使う')
-                ))
-            )
-        );
-    };
-
-    // ================================================================
-    // AdminDashboard (管理画面)
-    // ================================================================
-    const AdminDashboard = ({ user }) => {
-        const [db, setDb] = useState(AppDB.get());
-        const [toast, setToast] = useState('');
-        const [tab, setTab] = useState('users'); 
-        const [ann, setAnn] = useState(db.config.announcement);
-        const [popupMsg, setPopupMsg] = useState(db.config.popupMessage || '');
-        const [ic, setIc] = useState('');
-        const showToast = (msg) => { setToast(msg); setTimeout(() => setToast(''), 3000); };
-
-        const handleStatus = (username, newStatus) => { const ndb = Object.assign({}, db); ndb.users[username].status = newStatus; AppDB.save(ndb); setDb(ndb); showToast('更新しました'); };
-        const handleDelete = (username) => { if(confirm('完全に削除しますか？')) { const ndb = Object.assign({}, db); delete ndb.users[username]; AppDB.save(ndb); setDb(ndb); showToast('削除しました。'); } };
-
-        const renderUsers = () => {
-            const users = Object.keys(db.users).filter(k => k !== 'admin');
-            return div({ className: 'glass-panel rounded-2xl overflow-x-auto' },
-                table({ className: 'w-full text-left min-w-[800px]' },
-                    thead({}, tr({ className: 'border-b border-white/10' }, th({className:'p-4'}, 'ユーザー'), th({className:'p-4'}, '状態'), th({className:'p-4'}, '利用'), th({className:'p-4'}, '操作'))),
-                    tbody({}, users.map(u => {
-                        const cost = ((db.users[u].usage?.count||0) * 0.5).toFixed(1); 
-                        return tr({ key: u, className: 'border-b border-white/5' },
-                        td({ className: 'p-4' }, div({ className: 'font-bold' }, u), div({ className: 'text-xs text-slate-500' }, db.users[u].sns)),
-                        td({ className: 'p-4 text-xs' }, db.users[u].status, el('br'), db.users[u].lastLogin),
-                        td({ className: 'p-4 text-xs' }, '🪙 ' + db.users[u].credits, el('br'), `生成 ${db.users[u].usage.count}回 (約${cost}円)`),
-                        td({ className: 'p-4 flex gap-1' },
-                            db.users[u].status === 'pending' ? button({ onClick:()=>handleStatus(u,'approved'), className: 'px-2 py-1 bg-brand-success/20 text-brand-success rounded' }, '承認') : button({ onClick:()=>handleStatus(u,'suspended'), className: 'px-2 py-1 bg-brand-accent/20 rounded' }, '凍結'),
-                            button({ onClick:()=>handleDelete(u), className: 'px-2 py-1 bg-brand-danger/20 text-brand-danger rounded' }, '削除')
-                        )
-                    )}))
-                )
-            );
-        };
-
-        return div({ className: 'w-full max-w-6xl mx-auto p-6 md:p-12 animate-in' },
-            toast && div({ className: 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-brand text-white px-6 py-3 rounded-full' }, toast),
-            h1({ className: 'text-3xl font-black mb-6' }, '👑 管理者ダッシュボード'),
-            div({ className: 'flex gap-2 mb-6 border-b border-white/10 pb-2' }, ['users','system'].map(t => button({ key: t, onClick: () => setTab(t), className: 'px-4 py-2 rounded-full ' + (tab===t?'bg-brand':'bg-white/5') }, t))),
-            tab === 'users' && renderUsers(),
-            tab === 'system' && div({ className: 'space-y-6' },
-                div({ className: 'glass-panel p-8 rounded-2xl' }, h3({className:'mb-4'}, 'お知らせ配信'), textarea({value:ann, onChange:e=>setAnn(e.target.value), className:'input-base mb-2 min-h-[100px]'}), button({onClick:()=>{const ndb={...db}; ndb.config.announcement=ann; AppDB.save(ndb); setDb(ndb);}, className:'btn-gradient px-4 py-2 rounded'}, '配信')),
-                div({ className: 'glass-panel p-8 rounded-2xl' }, h3({className:'mb-4'}, '強制ポップアップ'), textarea({value:popupMsg, onChange:e=>setPopupMsg(e.target.value), className:'input-base mb-2 min-h-[100px]'}), button({onClick:()=>{const ndb={...db}; ndb.config.popupMessage=popupMsg; ndb.config.popupId=Date.now(); AppDB.save(ndb); setDb(ndb);}, className:'btn-gradient px-4 py-2 rounded'}, '配信')),
-                div({ className: 'glass-panel p-8 rounded-2xl' }, h3({className:'mb-4'}, '招待コード (1回使い捨て)'), div({className:'flex gap-2'}, input({className:'input-base font-mono', value:ic, onChange:e=>setIc(e.target.value)}), button({onClick:()=>{if(!ic)return; const ndb={...db}; ndb.config.inviteCodes[ic]=true; AppDB.save(ndb); setDb(ndb); setIc('');}, className:'btn-gradient px-4 py-2 rounded'}, '発行')))
-            )
-        );
-    };
-
-    // ================================================================
-    // MainApp (メイン画面)
-    // ================================================================
-    const MainApp = (props) => {  
-      const [screen, setScreen] = useState('home');  
-      const [activeCat, setActiveCat] = useState('mon'); // 初期カテゴリ変更
-      const [showSettings, setShowSettings] = useState(false);
-      const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-      const [showPopup, setShowPopup] = useState(false);
-      const [showGallery, setShowGallery] = useState(false);
-      
-      const db = AppDB.get();  
-      const uData = db.users[props.user];  
- 
-      useEffect(() => { 
-          if(props.role === 'admin') setScreen('admin_dashboard');
-          else if (db.config.popupId && uData.readPopupId !== db.config.popupId) setShowPopup(true);
-      }, [props.role]);
-
-      const openTool = (tid) => {  
-        if (tid === 'admin_dashboard') { setScreen('admin_dashboard'); setIsMobileMenuOpen(false); return; }
-        const t = tid.startsWith('my_') ? uData.myTools.find(mt=>mt.id===tid) : window.AICP_TOOLS[tid];
-        if(!t) return;
-        const isLocked = t.reqLevel && ((uData.usage && uData.usage.count) || 0) < t.reqLevel && props.role !== 'admin';
-        if (isLocked) return alert('生成回数不足によりロックされています。');
-        setScreen(tid); setIsMobileMenuOpen(false); setShowGallery(false);
-      };  
-
-      const handleUpdateDB = (newDb) => { AppDB.save(newDb); };
-
-      const toggleFav = (e, tid) => {
-          e.stopPropagation();
-          const ndb = AppDB.get();
-          let favs = ndb.users[props.user].favoriteTools || [];
-          if(favs.includes(tid)) favs = favs.filter(id => id !== tid); else favs.push(tid);
-          ndb.users[props.user].favoriteTools = favs;
-          AppDB.save(ndb); handleUpdateDB(ndb);
-      };
-
-      const ForcePopupModal = () => div({ className: 'fixed inset-0 z-[1000] flex items-center justify-center bg-black/90 p-4 animate-in' },
-          div({ className: 'glass-panel rounded-3xl max-w-lg w-full p-8' }, h3({ className: 'text-2xl font-black mb-4' }, 'お知らせ'), p({className:'whitespace-pre-wrap mb-8'}, db.config.popupMessage), button({ onClick: () => { const ndb = AppDB.get(); ndb.users[props.user].readPopupId = ndb.config.popupId; AppDB.save(ndb); setShowPopup(false); }, className: 'w-full btn-gradient py-4 rounded-xl font-black' }, '確認して次へ'))
-      );
-
-      const Sidebar = () => div({ className: 'fixed lg:relative inset-y-0 left-0 z-50 transform ' + (isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full') + ' lg:translate-x-0 transition-transform duration-300 w-[260px] h-full bg-bg-panel border-r border-white/10 p-6 flex flex-col shrink-0' },
-          button({ className: 'lg:hidden absolute top-4 right-4 text-slate-400 text-2xl', onClick: () => setIsMobileMenuOpen(false) }, '\u2715'),
-          div({ className: 'flex items-center gap-2 mb-8 cursor-pointer', onClick: () => { setScreen('home'); setIsMobileMenuOpen(false); setShowGallery(false); } }, div({ className: 'w-3 h-8 bg-brand rounded-full' }), h1({ className: 'text-2xl font-black text-white' }, 'AICP Pro')),
-          div({ className: 'flex-1 space-y-2 overflow-y-auto pb-10 custom-scrollbar' },
-              props.role === 'admin' && div({ className: 'mb-6' }, button({ onClick: () => openTool('admin_dashboard'), className: 'w-full text-left p-3 rounded-lg text-sm font-bold ' + (screen==='admin_dashboard'?'bg-brand/10 text-white':'text-slate-300') }, '👑 ダッシュボード')),
-              
-              uData.favoriteTools?.length > 0 && div({ className: 'mb-6' },
-                  h2({ className: 'text-[10px] font-black text-brand-accent uppercase tracking-[0.2em] mt-6 mb-2 ml-2' }, '⭐ お気に入り'),
-                  uData.favoriteTools.map(tid => {
-                      const t = window.AICP_TOOLS[tid] || uData.myTools?.find(mt=>mt.id===tid);
-                      if(!t) return null;
-                      return button({ key: `fav-${tid}`, onClick: () => openTool(tid), className: 'w-full text-left p-3 rounded-lg text-sm font-bold text-slate-300 hover:bg-white/5 truncate' }, t.icon + ' ' + t.name);
-                  })
-              ),
-
-              h2({ className: 'text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mt-6 mb-2 ml-2' }, '📁 カテゴリー'),
-              (window.AICP_CATEGORIES||[]).map(cat => button({ key: cat.id, onClick: () => { setActiveCat(cat.id); setScreen('home'); setShowGallery(false); setIsMobileMenuOpen(false); }, className: 'w-full text-left p-3 rounded-lg text-sm font-bold hover:bg-white/5 transition ' + (activeCat===cat.id && screen==='home' && !showGallery ? 'bg-brand/10 text-white' : 'text-slate-300') }, cat.name)),
-              
-              uData.myTools?.length > 0 && button({ onClick: () => { setActiveCat('mytools'); setScreen('home'); setShowGallery(false); setIsMobileMenuOpen(false); }, className: 'w-full text-left p-3 rounded-lg text-sm font-bold hover:bg-white/5 transition ' + (activeCat==='mytools' && screen==='home' && !showGallery ? 'bg-brand/10 text-white' : 'text-slate-300') }, '🛠️ マイツール'),
-              
-              div({className: 'my-4 border-t border-white/10'}),
-              button({ onClick: () => { setShowGallery(true); setScreen('home'); setIsMobileMenuOpen(false); }, className: 'w-full text-left p-3 rounded-lg text-sm font-bold text-brand-accent hover:bg-white/5 ' + (showGallery?'bg-brand-accent/10':'') }, '🌐 プロンプトギャラリー')
-          ),
-          div({ className: 'mt-auto pt-6 border-t border-white/10 space-y-3' },
-              button({ onClick: () => setShowSettings(true), className: 'w-full bg-white/5 p-3 rounded-lg text-sm font-bold text-slate-300 flex items-center gap-3' }, '\u2699\uFE0F 個人設定'),
-              button({ onClick: props.onLogout, className: 'w-full text-left p-3 rounded-lg text-sm font-bold text-slate-500' }, '\uD83D\uDC4B ログアウト')
+    if (body) opts.body = JSON.stringify(body);
+    const res = await fetch(path, opts);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ detail: `HTTP ${res.status}` }));
+      throw new Error(err.detail || `HTTP ${res.status}`);
+    }
+    return res.json();
+  },
+  login:    (e, pw)   => API.req('POST', '/api/auth/login',    { email:e, password:pw }),
+  register: (e,pw,u,c)=> API.req('POST', '/api/auth/register', { email:e, password:pw, username:u, invite_code:c }),
+  logout:   (t)       => API.req('POST', '/api/auth/logout',   null, t),
+  me:       (t)       => API.req('GET',  '/api/user/me',       null, t),
+  updSettings:(s,t)   => API.req('PUT',  '/api/user/settings', s, t),
+  generate: (d, t)    => API.req('POST', '/api/generate',      d, t),
+  magicGen: (d, t)    => API.req('POST', '/api/magic_generate',d, t),
+  extractPersona:(txt,t)=>API.req('POST','/api/persona/extract',{text:txt},t),
+  savePW:   (pw,v,t)  => API.req('POST', '/api/passphrase/save',{passphrase:pw,vals:v},t),
+  loadPW:   (pw,t)    => API.req('POST', '/api/passphrase/load',{passphrase:pw},t),
+  notices:  (t)       => API.req('GET',  '/api/notices',       null, t),
+  adminLogin:(pw)     => API.req('POST', '/api/admin/login',   {password:pw}),
+  adminStats:(t)      => API.req('GET',  '/api/admin/stats',   null, t),
+  adminInvites:(t)    => API.req('GET',  '/api/admin/invites', null, t),
+  adminCreateInvite:(t)=>API.req('POST', '/api/admin/invite',  {}, t),
+  adminUpdateUser:(id,d,t)=>API.req('PUT',`/api/admin/user/${id}`,d,t),
+  adminNotice:(msg,type,t)=>API.req('POST','/api/admin/notice',{message:msg,type},t),
+};
+
+// ── Utilities ──────────────────────────────────────────────
+function parseOutput(text) {
+  const sectionRegex = /---【(.+?)】---/g;
+  const parts = text.split(sectionRegex);
+  if (parts.length < 3) return null;
+  const sections = [];
+  for (let i = 1; i < parts.length; i += 2) {
+    sections.push({ name: parts[i], content: (parts[i+1] || '').trim() });
+  }
+  return sections;
+}
+
+function checkCompliance(text) {
+  if (!text) return [];
+  return COMPLIANCE_NG_WORDS.filter(w => text.includes(w));
+}
+
+function maskApiKey(key) {
+  if (!key || key.length < 8) return key;
+  return key.substring(0, 6) + '****' + key.substring(key.length - 4);
+}
+
+// ── Toast system ───────────────────────────────────────────
+let _toastId = 0;
+let _toastSetFn = null;
+function toast(msg, type = 'success') {
+  if (!_toastSetFn) return;
+  const id = ++_toastId;
+  _toastSetFn(prev => [...prev, { id, msg, type }]);
+  setTimeout(() => _toastSetFn(prev => prev.filter(t => t.id !== id)), 3200);
+}
+
+function ToastContainer() {
+  const [toasts, setToasts] = useState([]);
+  useEffect(() => { _toastSetFn = setToasts; }, []);
+  return div({ style: { position:'fixed', top:20, right:20, zIndex:9999, display:'flex', flexDirection:'column', gap:8, pointerEvents:'none' } },
+    ...toasts.map(t =>
+      div({ key: t.id, className: `toast ${t.type}`, style:{display:'flex',alignItems:'center',gap:8} },
+        span({}, t.type === 'success' ? '✅' : t.type === 'error' ? '❌' : t.type === 'warning' ? '⚠️' : 'ℹ️'),
+        span({}, t.msg)
+      )
+    )
+  );
+}
+
+// ── Spinner ────────────────────────────────────────────────
+function Spinner() {
+  return div({ className: 'spinner' });
+}
+
+// ── Auth Page ──────────────────────────────────────────────
+function AuthPage({ onLogin }) {
+  const [tab, setTab] = useState('login');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('');
+  const [inviteCode, setInviteCode] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  async function handleLogin(e) {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const data = await API.login(email, password);
+      localStorage.setItem('aicp_token', data.token);
+      onLogin(data.user, data.token);
+      toast('ログインしました！', 'success');
+    } catch(err) { toast(err.message, 'error'); }
+    finally { setLoading(false); }
+  }
+
+  async function handleRegister(e) {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const data = await API.register(email, password, username, inviteCode);
+      localStorage.setItem('aicp_token', data.token);
+      onLogin(data.user, data.token);
+      toast('アカウントを作成しました！', 'success');
+    } catch(err) { toast(err.message, 'error'); }
+    finally { setLoading(false); }
+  }
+
+  async function handleAdminLogin(e) {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const data = await API.adminLogin(adminPassword);
+      localStorage.setItem('aicp_token', data.token);
+      onLogin(data.user, data.token);
+      toast('管理者としてログインしました', 'success');
+    } catch(err) { toast(err.message, 'error'); }
+    finally { setLoading(false); }
+  }
+
+  return div({ className: 'auth-bg', style:{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',padding:'20px'} },
+    div({ style:{width:'100%',maxWidth:'420px'} },
+      // Logo
+      div({ style:{textAlign:'center',marginBottom:'32px'} },
+        div({ style:{fontSize:'48px',marginBottom:'8px'} }, '🤖'),
+        h1({ className:'gradient-text', style:{fontSize:'28px',fontWeight:800,margin:0} }, 'AI Content Pro'),
+        p({ style:{color:'#64748b',marginTop:'4px',fontSize:'14px'} }, '日本特化型 AIコンテンツ生成SaaS')
+      ),
+      // Card
+      div({ className:'glass', style:{padding:'32px'} },
+        // Tabs
+        div({ style:{display:'flex',gap:'4px',marginBottom:'24px',background:'#0d0d1a',borderRadius:'10px',padding:'4px'} },
+          ...[['login','ログイン'],['register','新規登録'],['admin','管理者']].map(([id, name]) =>
+            button({ key:id, onClick:()=>setTab(id),
+              style:{flex:1,padding:'8px',borderRadius:'8px',border:'none',cursor:'pointer',fontSize:'13px',fontWeight:600,
+                     background: tab===id ? '#7c3aed' : 'transparent',
+                     color: tab===id ? 'white' : '#64748b',
+                     transition:'all .15s'} }, name)
           )
-      );
+        ),
 
-      const MobileHeader = () => div({ className: 'lg:hidden flex items-center justify-between p-4 bg-bg-panel border-b border-white/10 shrink-0' },
-          div({ className: 'flex items-center gap-2 cursor-pointer', onClick: () => { setScreen('home'); setShowGallery(false); } }, div({ className: 'w-2 h-6 bg-brand rounded-full' }), h1({ className: 'text-xl font-black text-white' }, 'AICP Pro')),
-          button({ onClick: () => setIsMobileMenuOpen(true), className: 'text-white text-3xl pb-1' }, '\u2261')
-      );
+        tab === 'login' && form({ onSubmit: handleLogin, style:{display:'flex',flexDirection:'column',gap:'16px'} },
+          div({},
+            label({ style:{display:'block',fontSize:'12px',fontWeight:600,color:'#94a3b8',marginBottom:'4px'} }, 'メールアドレス'),
+            input({ type:'email', value:email, onChange:ev=>setEmail(ev.target.value),
+              className:'field-input', placeholder:'you@example.com', required:true })
+          ),
+          div({},
+            label({ style:{display:'block',fontSize:'12px',fontWeight:600,color:'#94a3b8',marginBottom:'4px'} }, 'パスワード'),
+            input({ type:'password', value:password, onChange:ev=>setPassword(ev.target.value),
+              className:'field-input', placeholder:'••••••••', required:true })
+          ),
+          button({ type:'submit', className:'btn-brand', disabled:loading, style:{padding:'12px',fontSize:'15px',width:'100%'} },
+            loading ? '...ログイン中' : '🚀 ログイン')
+        ),
 
-      // ★ 新規ツール手動作成・貼り付け用のUI (Home画面の先頭に表示)
-      const PasteRawResultButton = () => button({ 
-          onClick: () => openTool('note'), 
-          className: 'w-full max-w-md bg-gradient-to-r from-brand/20 to-brand-light/10 border-2 border-brand/30 hover:border-brand/60 rounded-2xl p-6 transition group mb-8 mx-auto block'
+        tab === 'register' && form({ onSubmit: handleRegister, style:{display:'flex',flexDirection:'column',gap:'16px'} },
+          div({},
+            label({ style:{display:'block',fontSize:'12px',fontWeight:600,color:'#94a3b8',marginBottom:'4px'} }, 'ニックネーム'),
+            input({ type:'text', value:username, onChange:ev=>setUsername(ev.target.value),
+              className:'field-input', placeholder:'例: さくらさん', required:true })
+          ),
+          div({},
+            label({ style:{display:'block',fontSize:'12px',fontWeight:600,color:'#94a3b8',marginBottom:'4px'} }, 'メールアドレス'),
+            input({ type:'email', value:email, onChange:ev=>setEmail(ev.target.value),
+              className:'field-input', placeholder:'you@example.com', required:true })
+          ),
+          div({},
+            label({ style:{display:'block',fontSize:'12px',fontWeight:600,color:'#94a3b8',marginBottom:'4px'} }, 'パスワード'),
+            input({ type:'password', value:password, onChange:ev=>setPassword(ev.target.value),
+              className:'field-input', placeholder:'8文字以上推奨', required:true })
+          ),
+          div({},
+            label({ style:{display:'block',fontSize:'12px',fontWeight:600,color:'#94a3b8',marginBottom:'4px'} }, '招待コード'),
+            input({ type:'text', value:inviteCode, onChange:ev=>setInviteCode(ev.target.value),
+              className:'field-input', placeholder:'XXXXXXXX', required:true, style:{textTransform:'uppercase'} })
+          ),
+          button({ type:'submit', className:'btn-brand', disabled:loading, style:{padding:'12px',fontSize:'15px',width:'100%'} },
+            loading ? '...登録中' : '✨ アカウントを作成')
+        ),
+
+        tab === 'admin' && form({ onSubmit: handleAdminLogin, style:{display:'flex',flexDirection:'column',gap:'16px'} },
+          p({ style:{color:'#94a3b8',fontSize:'13px',textAlign:'center'} }, '管理者専用ログイン'),
+          div({},
+            label({ style:{display:'block',fontSize:'12px',fontWeight:600,color:'#94a3b8',marginBottom:'4px'} }, '管理者パスワード'),
+            input({ type:'password', value:adminPassword, onChange:ev=>setAdminPassword(ev.target.value),
+              className:'field-input', placeholder:'管理者パスワード', required:true })
+          ),
+          button({ type:'submit', className:'btn-brand', disabled:loading, style:{padding:'12px',fontSize:'15px',width:'100%',background:'linear-gradient(135deg,#dc2626,#7f1d1d)'} },
+            loading ? '...ログイン中' : '🔑 管理者ログイン')
+        )
+      )
+    )
+  );
+}
+
+// ── Sidebar ────────────────────────────────────────────────
+function Sidebar({ currentTool, onSelectTool, isOpen, onClose }) {
+  const [expandedCat, setExpandedCat] = useState('note');
+  const toolsByCategory = useMemo(() => {
+    const map = {};
+    CATEGORIES.forEach(c => { map[c.id] = TOOLS.filter(t => t.category === c.id); });
+    return map;
+  }, []);
+
+  return div({
+    className: 'sidebar',
+    style:{ width:260, minHeight:'100vh', background:'#13132b',
+            borderRight:'1px solid rgba(124,58,237,.15)',
+            paddingBottom:24, overflowY:'auto',
+            position:'fixed', top:60, left:0, bottom:0, zIndex:30 }
+  },
+    div({ style:{padding:'16px 12px 8px'} },
+      p({ style:{fontSize:'11px',fontWeight:700,color:'#475569',textTransform:'uppercase',letterSpacing:'.1em'} }, '🛠 ツール一覧')
+    ),
+    ...CATEGORIES.map(cat =>
+      div({ key: cat.id },
+        // Category header (clickable)
+        div({
+          onClick: () => setExpandedCat(expandedCat === cat.id ? null : cat.id),
+          style:{ padding:'8px 16px', display:'flex', justifyContent:'space-between',
+                  alignItems:'center', cursor:'pointer', userSelect:'none',
+                  background: expandedCat === cat.id ? 'rgba(124,58,237,.08)' : 'transparent',
+                  borderTop: '1px solid rgba(255,255,255,.04)' }
+        },
+          span({ style:{display:'flex',alignItems:'center',gap:'8px',fontSize:'12px',fontWeight:700,
+                         color: expandedCat === cat.id ? '#c4b5fd' : '#64748b'} },
+            span({}, cat.emoji), span({}, cat.name)
+          ),
+          span({ style:{fontSize:'10px',color:'#475569'} }, expandedCat === cat.id ? '▼' : '▶')
+        ),
+        // Tool list
+        expandedCat === cat.id && div({ style:{paddingBottom:'4px'} },
+          ...(toolsByCategory[cat.id] || []).map(tool =>
+            div({
+              key: tool.id,
+              className: `tool-item ${currentTool?.id === tool.id ? 'active' : ''}`,
+              onClick: () => { onSelectTool(tool); if(onClose) onClose(); }
+            },
+              span({ style:{fontSize:'16px'} }, tool.emoji),
+              span({ style:{flex:1,lineHeight:1.3} }, tool.name)
+            )
+          )
+        )
+      )
+    )
+  );
+}
+
+// ── Tool Input Panel ───────────────────────────────────────
+function ToolInputPanel({ tool, vals, onChange, onGenerate, onMagicGenerate, isGenerating, abTest, setAbTest, modelType, setModelType, user }) {
+  if (!tool) return div({ style:{padding:32,textAlign:'center',color:'#475569'} },
+    div({ style:{fontSize:'48px',marginBottom:'16px'} }, '👈'),
+    p({ style:{fontSize:'16px'} }, 'サイドバーからツールを選んでください')
+  );
+
+  const allEmpty = tool.inputs.every(inp => !vals[inp.id] || !vals[inp.id].toString().trim());
+  const someEmpty = !allEmpty && tool.inputs.some(inp => !vals[inp.id] || !vals[inp.id].toString().trim());
+
+  return div({ style:{padding:'20px 24px',overflowY:'auto',flex:1} },
+    // Tool header
+    div({ style:{marginBottom:'20px'} },
+      div({ style:{display:'flex',alignItems:'center',gap:'10px',marginBottom:'4px'} },
+        span({ style:{fontSize:'28px'} }, tool.emoji),
+        h2({ style:{fontSize:'18px',fontWeight:800,color:'#e2e8f0',margin:0} }, tool.name)
+      ),
+      p({ style:{color:'#64748b',fontSize:'13px',margin:0} }, tool.description)
+    ),
+
+    // Input fields
+    div({ style:{display:'flex',flexDirection:'column',gap:'16px',marginBottom:'24px'} },
+      ...tool.inputs.map(inp =>
+        div({ key: inp.id },
+          label({ style:{display:'block',fontSize:'12px',fontWeight:600,color:'#94a3b8',marginBottom:'6px'} },
+            inp.label,
+            span({ style:{color:'#475569',fontWeight:400,marginLeft:4} }, '（空欄でAIが設定）')
+          ),
+          inp.type === 'textarea' ?
+            textarea({ value: vals[inp.id] || '', onChange: ev => onChange(inp.id, ev.target.value),
+              className:'field-input', placeholder: inp.placeholder || '', rows:3 }) :
+          inp.type === 'select' ?
+            select({ value: vals[inp.id] || inp.options[0], onChange: ev => onChange(inp.id, ev.target.value),
+              className:'field-input' },
+              ...(inp.options || []).map(opt => option({ key:opt, value:opt }, opt))
+            ) :
+            input({ type: inp.type || 'text', value: vals[inp.id] || '',
+              onChange: ev => onChange(inp.id, ev.target.value),
+              className:'field-input', placeholder: inp.placeholder || '' })
+        )
+      )
+    ),
+
+    // Options bar
+    div({ style:{display:'flex',flexWrap:'wrap',gap:'12px',marginBottom:'20px',alignItems:'center'} },
+      // A/B test toggle
+      label({ style:{display:'flex',alignItems:'center',gap:'8px',cursor:'pointer',userSelect:'none'} },
+        input({ type:'checkbox', checked:abTest, onChange:ev=>setAbTest(ev.target.checked),
+          style:{accentColor:'#7c3aed',width:16,height:16} }),
+        span({ style:{fontSize:'13px',color:'#94a3b8',fontWeight:600} }, '🔀 A/Bテスト')
+      ),
+      // Model selector
+      div({ style:{display:'flex',gap:'6px',marginLeft:'auto'} },
+        ...[['free','⚡ 無料'],['pro','👑 プロ']].map(([val,label_]) =>
+          button({ key:val, onClick:()=>setModelType(val),
+            style:{padding:'6px 12px',borderRadius:'20px',border:'1px solid',fontSize:'12px',fontWeight:600,cursor:'pointer',
+                   borderColor: modelType===val ? '#7c3aed' : '#1e1e3f',
+                   background: modelType===val ? 'rgba(124,58,237,.3)' : 'transparent',
+                   color: modelType===val ? '#a78bfa' : '#475569',
+                   transition:'all .15s'} }, label_)
+        )
+      )
+    ),
+
+    // Buttons
+    div({ style:{display:'flex',gap:'10px',flexWrap:'wrap'} },
+      // Main generate
+      button({
+        className:'btn-brand', onClick: onGenerate,
+        disabled: isGenerating,
+        style:{flex:1,minWidth:140,padding:'13px 20px',fontSize:'15px',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px'}
       },
-          div({ className: 'text-4xl mb-3 group-hover:scale-110 transition' }, '\uD83D\uDCDD'),
-          h4({ className: 'text-base font-black text-white mb-2' }, 'Web版AIの結果を貼り付ける'),
-          p({ className: 'text-xs text-slate-400 leading-relaxed' }, 'ChatGPT・Claude・Geminiなどで生成したテキストを\n貼り付けてプレビュー＆コピーできます'),
-          div({ className: 'mt-3 inline-block bg-brand/20 text-brand-light text-xs font-bold px-4 py-1.5 rounded-full' }, 'タップして貼り付け \u2192')
-      );
+        isGenerating ? ce(Spinner) : span({}, '⚡'),
+        isGenerating ? '生成中...' : '生成する'
+      ),
+      // Magic generate
+      button({
+        className:'btn-magic', onClick: onMagicGenerate,
+        disabled: isGenerating,
+        style:{flex:1,minWidth:140,padding:'13px 20px',fontSize:'14px',display:'flex',alignItems:'center',justifyContent:'center',gap:'8px'}
+      },
+        isGenerating ? ce(Spinner) : span({}, '🌟'),
+        isGenerating ? '魔法実行中...' : (allEmpty ? '✨ 神丸投げ' : (someEmpty ? '🤖 自動補完' : '✨ 神丸投げ'))
+      )
+    ),
 
-      return div({ className: `flex h-full w-full relative overflow-hidden ${uData.settings?.theme === 'light' ? 'theme-light' : ''}` },  
-        showPopup && el(ForcePopupModal),
-        isMobileMenuOpen && div({ className: 'fixed inset-0 bg-black/60 z-40 lg:hidden', onClick: () => setIsMobileMenuOpen(false) }),
-        el(Sidebar), showSettings && el(UserSettingModal, { user: props.user, onClose: () => setShowSettings(false) }),
-        
-        div({ className: 'flex-1 flex flex-col min-w-0 h-full bg-bg relative' },
-            el(MobileHeader),
-            div({ id: 'main-scroll-container', className: 'flex-1 overflow-y-auto hide-scrollbar' },
-                screen === 'admin_dashboard' && props.role === 'admin' ? el(AdminDashboard, { user: props.user }) :
-                showGallery ? el(CommunityGallery, { db, user: props.user, onUpdateDB: handleUpdateDB, onBack: ()=>setShowGallery(false) }) :
-                screen === 'home' ? div({ className: 'max-w-6xl mx-auto p-6 md:p-12' },
-                    uData.history && uData.history.length > 0 && div({className: 'mb-8'},
-                        h4({className: 'text-xs font-bold text-slate-400 mb-3'}, '🕒 最近の生成履歴'),
-                        div({className: 'flex gap-3 overflow-x-auto pb-2'}, uData.history.map((h, i) => div({key: i, className: 'glass-panel px-4 py-2 rounded-xl text-xs whitespace-nowrap shrink-0 border-white/5'}, span({className:'text-brand mr-2'}, h.tool), h.date)))
-                    ),
-                    div({ className: 'mb-12 flex justify-between items-end' },
-                        div({}, h1({ className: 'text-4xl font-black text-white mb-3' }, 'こんにちは、' + uData.nickname + 'さん'), p({ className: 'text-slate-400' }, 'ツールを選択してください')),
-                        props.role !== 'admin' && div({ className: 'glass-panel px-6 py-4 rounded-2xl text-right border-brand-accent/30 hidden md:block' }, p({ className: 'text-xs text-slate-400' }, '残りクレジット'), p({ className: 'text-3xl font-black text-brand-accent' }, '\uD83E\uDE99 ' + (uData.credits || 0)))
-                    ),
-                    
-                    // el(PasteRawResultButton), // (v73でToolCore内に手動ペーストがあるのでHomeでは任意)
+    // Credit info
+    user && !user.is_admin && div({ style:{marginTop:12,padding:'8px 12px',borderRadius:8,background:'rgba(245,158,11,.08)',border:'1px solid rgba(245,158,11,.15)',fontSize:'12px',color:'#94a3b8'} },
+      span({},
+        user.api_keys && (user.api_keys.openai || user.api_keys.anthropic || user.api_keys.google)
+          ? '🔑 APIキー登録済み（クレジット消費なし）'
+          : `💳 残クレジット: ${user.credits || 0}枚`
+      )
+    )
+  );
+}
 
-                    (activeCat === 'mytools' ? [{id:'mytools', name:'🛠️ マイツール'}] : (window.AICP_CATEGORIES||[]).filter(c => c.id === activeCat)).map(cat => div({ key: cat.id, className: 'mb-12 animate-in' },
-                        h2({ className: 'text-2xl font-black text-white mb-6 border-b border-white/10 pb-4' }, cat.name),
-                        div({ className: 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6' },
-                            cat.id === 'mytools' && (uData.myTools||[]).map(t => div({ key: t.id, onClick: () => openTool(t.id), className: 'glass-panel p-6 rounded-2xl cursor-pointer hover:-translate-y-1 transition group relative' },
-                                div({ className: 'absolute top-4 right-4 z-10 text-xl', onClick: (e)=>toggleFav(e, t.id) }, uData.favoriteTools?.includes(t.id) ? '⭐' : '☆'),
-                                div({ className: 'text-4xl mb-4 group-hover:scale-110 transition' }, t.icon), h3({ className: 'text-lg font-black text-white mb-2' }, t.name), p({ className: 'text-xs text-slate-400 line-clamp-2' }, t.desc)
-                            )),
-                            cat.id !== 'mytools' && Object.keys(window.AICP_TOOLS||{}).filter(k=>window.AICP_TOOLS[k].cat===cat.id).map(tid => {
-                                const t = window.AICP_TOOLS[tid];
-                                return div({ key: tid, onClick: () => openTool(tid), className: 'glass-panel p-6 rounded-2xl cursor-pointer hover:-translate-y-1 transition group relative' },
-                                    div({ className: 'absolute top-4 right-4 z-10 text-xl', onClick: (e)=>toggleFav(e, tid) }, uData.favoriteTools?.includes(tid) ? '⭐' : '☆'),
-                                    div({ className: 'text-4xl mb-4 group-hover:scale-110 transition' }, t.icon), h3({ className: 'text-lg font-black text-white mb-2 pr-6' }, t.name), p({ className: 'text-xs text-slate-400 line-clamp-2' }, t.desc)
-                                );
-                            })
-                        )
-                    ))
-                ) : (window.AICP_TOOLS[screen] || (uData.myTools&&uData.myTools.find(mt=>mt.id===screen))) && el(ToolCore, { tid: screen, user: props.user, role: props.role, onBack: () => setScreen('home'), onUpdateUser: handleUpdateDB, customTools: uData.myTools })
-            )
+// ── Preview Panel ──────────────────────────────────────────
+function PreviewPanel({ output, isGenerating, onCopy, onRefine, onAbTest }) {
+  const [activeSection, setActiveSection] = useState('all');
+  const sections = useMemo(() => output ? parseOutput(output) : null, [output]);
+  const ngWords = useMemo(() => checkCompliance(output), [output]);
+
+  const displayText = useMemo(() => {
+    if (!output) return '';
+    if (!sections || activeSection === 'all') return output;
+    const sec = sections.find(s => s.name === activeSection);
+    return sec ? sec.content : output;
+  }, [output, sections, activeSection]);
+
+  useEffect(() => { setActiveSection('all'); }, [output]);
+
+  return div({ style:{display:'flex',flexDirection:'column',height:'100%'} },
+    // Header
+    div({ style:{padding:'16px 24px',borderBottom:'1px solid rgba(255,255,255,.05)',display:'flex',alignItems:'center',justifyContent:'space-between'} },
+      span({ style:{fontWeight:700,fontSize:'14px',color:'#94a3b8'} }, '👁 プレビュー'),
+      output && div({ style:{display:'flex',gap:'8px'} },
+        button({ onClick:()=>onCopy(displayText), style:{padding:'6px 12px',borderRadius:'6px',background:'rgba(124,58,237,.2)',border:'1px solid rgba(124,58,237,.3)',color:'#a78bfa',fontSize:'12px',fontWeight:600,cursor:'pointer'} }, '📋 コピー'),
+        button({ onClick:onRefine, style:{padding:'6px 12px',borderRadius:'6px',background:'rgba(6,182,212,.1)',border:'1px solid rgba(6,182,212,.2)',color:'#22d3ee',fontSize:'12px',fontWeight:600,cursor:'pointer'} }, '✨ 推敲')
+      )
+    ),
+
+    // Content
+    div({ style:{flex:1,overflowY:'auto',padding:'20px 24px'} },
+      // Compliance alert
+      ngWords.length > 0 && div({ className:'compliance-alert' },
+        div({ style:{display:'flex',alignItems:'center',gap:'8px',marginBottom:'6px'} },
+          span({ style:{fontSize:'20px'} }, '🚨'),
+          strong({ style:{color:'#f87171',fontSize:'13px'} }, 'コンプライアンス警告')
+        ),
+        p({ style:{color:'#fca5a5',fontSize:'12px',margin:0} },
+          `以下のNGワードが含まれています: ${ngWords.join('、')}`
+        ),
+        p({ style:{color:'#94a3b8',fontSize:'11px',marginTop:4,marginBottom:0} }, '薬機法・景表法に抵触する可能性があります。表現を修正してください。')
+      ),
+
+      // Section tabs
+      sections && div({ style:{display:'flex',gap:'6px',marginBottom:'16px',flexWrap:'wrap'} },
+        div({ className:`section-tab ${activeSection==='all'?'active':''}`,
+              onClick:()=>setActiveSection('all') }, '📄 全体'),
+        ...sections.map(s =>
+          div({ key:s.name, className:`section-tab ${activeSection===s.name?'active':''}`,
+                onClick:()=>setActiveSection(s.name) }, `【${s.name}】`)
         )
-      );  
-    };  
- 
-    // ================================================================
-    // AuthBox 
-    // ================================================================
-    const AuthBox = (props) => {  
-      const [mode, setMode] = useState('login');
-      const [nickname, setNickname] = useState('');  
-      const [pass, setPass] = useState('');  
-      const [regSns, setRegSns] = useState('X(Twitter)');
-      const [regUsername, setRegUsername] = useState('@');
-      const [regPass, setRegPass] = useState(''); 
-      const [regInviteCode, setRegInviteCode] = useState('');
-      const [regAgreed, setRegAgreed] = useState(false);
-      const [showTerms, setShowTerms] = useState(false);
-      const [err, setErr] = useState('');  
-      const [msg, setMsg] = useState('');
- 
-      const login = () => {  
-        setErr(''); setMsg(''); const db = AppDB.get();  
-        if (nickname === db.config.adminU && pass === db.config.adminP) {  
-          db.users['admin'].lastLogin = new Date().toLocaleString('ja-JP'); AppDB.save(db);
-          localStorage.setItem(SESS_KEY, JSON.stringify({ u: 'admin', r: 'admin' }));  
-          props.onLogin('admin', 'admin'); return;  
-        }  
-        if(nickname && db.users[nickname]) {
-            if (db.users[nickname].password && db.users[nickname].password !== pass && db.users[nickname].status !== 'pending') return setErr('パスワードが違います。');
-            if (db.users[nickname].status === 'suspended') return setErr('凍結されています。');
-            if (db.users[nickname].status === 'approved') {
-                db.users[nickname].lastLogin = new Date().toLocaleString('ja-JP'); 
-                AppDB.save(db); localStorage.setItem(SESS_KEY, JSON.stringify({ u: nickname, r: 'approved' })); props.onLogin(nickname, 'approved');
-            } else if (db.users[nickname].status === 'pending') { setErr('承認待ちです。'); }
-        } else { setErr('ユーザーが存在しません。'); }
-      };  
+      ),
 
-      const register = () => {
-          setErr(''); setMsg('');
-          if (!regUsername.trim() || regUsername.trim() === '@') return setErr('ユーザー名を入力してください。');
-          if (regPass.length < 6) return setErr('パスワードは6文字以上で設定してください。');
-          if (!regAgreed) return setErr('利用規約に同意してください。');
-          const db = AppDB.get();
-          if (db.users[regUsername]) return setErr('このユーザー名は既に登録されています。');
-          
-          let initialStatus = 'pending';
-          if (regInviteCode) {
-              if (db.config.inviteCodes[regInviteCode]) { initialStatus = 'approved'; delete db.config.inviteCodes[regInviteCode]; }
-              else {
-                  let foundInviter = Object.keys(db.users).find(k => db.users[k].inviteCode === regInviteCode);
-                  if (foundInviter) { initialStatus = 'approved'; db.users[foundInviter].credits += 50; } else return setErr('招待コードが無効です。');
-              }
-          }
+      // Loading shimmer
+      isGenerating && !output && div({},
+        ...[100,80,95,70,85].map((w,i) => div({ key:i, className:'shimmer', style:{width:`${w}%`} }))
+      ),
 
-          db.users[regUsername] = {
-              nickname: regUsername, sns: regSns, status: initialStatus, password: regPass, credits: regInviteCode ? 150 : 100, 
-              lastLogin: '-', loginHistory: [], usedInviteCode: regInviteCode || '', readPopupId: 0, inviteCode: 'USR'+Math.floor(Math.random()*100000),
-              usage: { count: 0, tools: {}, apiCount: { openai: 0, anthropic: 0, google: 0 } }, perms: {}, settings: { aiModel: 'chatgpt_free', keys: {openai:'', anthropic:'', google:''}, theme: 'blue', tone: '丁寧で専門的', notifications: true, persona: '', knowledge: '', templateUrl: '' }, curProj: 'default', projects: { 'default': { name: 'マイスペース', data: {} } }
-          };
-          AppDB.save(db);
-          setMsg(initialStatus === 'approved' ? '招待コードが適用され、登録されました！ログインしてください。' : '申請完了！承認をお待ちください。');
-          setRegUsername('@'); setRegPass(''); setRegInviteCode(''); setRegAgreed(false); setMode('login');
-      };
+      // Output text
+      output && div({ className:'preview-content fade-in', style:{whiteSpace:'pre-wrap'} }, displayText),
 
-      const TermsModal = () => div({ className: 'fixed inset-0 z-[200] flex items-center justify-center bg-black/80 p-4 animate-in' },
-          div({ className: 'glass-panel rounded-3xl max-w-lg w-full p-8' }, 
-              h3({ className: 'text-xl font-black text-white mb-4' }, '\uD83D\uDCDC 利用規約 / プライバシーポリシー'), 
-              div({ className: 'h-64 overflow-y-auto text-sm text-slate-300 mb-6 bg-black/30 p-4 rounded-lg leading-relaxed' }, 
-                  p({}, '本システムをご利用いただくにあたり、以下の規約に同意していただく必要があります。'),
-                  ul({ className: 'list-disc pl-5 space-y-3 mt-2' },
-                      li({}, '第1条（禁止事項）：本システムのアクセスURL、アカウント情報、およびシステム自体の第三者への共有・譲渡・販売・配布を固く禁じます。'),
-                      li({}, '第2条（自作発言の禁止）：本システムが生成したコンテンツを除き、本システム自体の設計やUI、機能について、自身が作成したと虚偽の申告をすることを禁じます。'),
-                      li({}, '第3条（複製の禁止）：本システムのソースコード、UIデザイン、機能構造等の無断複製、リバースエンジニアリング、および類似サービスの作成を禁じます。'),
-                      li({}, '第4条（利用停止）：上記に違反した場合、または管理者が不適切と判断した場合、事前通知なくアカウントを直ちに停止・削除できるものとします。')
-                  )
-              ), 
-              button({ onClick: () => { setRegAgreed(true); setShowTerms(false); }, className: 'w-full btn-gradient py-4 rounded-xl font-black shadow-xl' }, '規約を確認し、同意する')
-          )
-      );
- 
-      return div({ className: 'w-full h-full flex items-center justify-center p-4' },  
-        showTerms && el(TermsModal),
-        div({ className: 'glass-panel rounded-3xl p-10 md:p-16 shadow-2xl text-center max-w-lg w-full relative animate-in' },  
-          h2({ className: 'text-3xl font-black mb-8 tracking-tight text-white' }, 'AICP Pro'),  
-          div({ className: 'flex mb-8 border-b border-white/10' },
-              button({ onClick: () => { setMode('login'); setErr(''); setMsg(''); }, className: 'flex-1 pb-3 font-bold transition-colors ' + (mode === 'login' ? 'text-brand border-b-2 border-brand' : 'text-slate-500 hover:text-slate-300') }, 'ログイン'),
-              button({ onClick: () => { setMode('register'); setErr(''); setMsg(''); }, className: 'flex-1 pb-3 font-bold transition-colors ' + (mode === 'register' ? 'text-brand border-b-2 border-brand' : 'text-slate-500 hover:text-slate-300') }, '新規登録')
+      // Empty state
+      !output && !isGenerating && div({ style:{textAlign:'center',padding:'48px 24px',color:'#374151'} },
+        div({ style:{fontSize:'56px',marginBottom:'12px'} }, '💬'),
+        p({ style:{fontSize:'15px',color:'#475569'} }, 'ここに生成結果が表示されます'),
+        p({ style:{fontSize:'13px',color:'#374151'} }, '左のフォームに入力して「生成する」か「✨ 神丸投げ」を押してください')
+      )
+    ),
+
+    // Action buttons
+    output && div({ style:{padding:'12px 24px',borderTop:'1px solid rgba(255,255,255,.05)',display:'flex',gap:'8px',flexWrap:'wrap'} },
+      ...[
+        ['📋 全体コピー', ()=>onCopy(output)],
+        ['🔀 A/Bテスト', onAbTest],
+        ['✂️ キャッチーに推敲', onRefine],
+      ].map(([label_, fn]) =>
+        button({ key:label_, onClick:fn,
+          style:{padding:'7px 12px',borderRadius:'8px',background:'rgba(255,255,255,.04)',border:'1px solid rgba(255,255,255,.08)',color:'#94a3b8',fontSize:'12px',cursor:'pointer',transition:'all .15s'} },
+          label_)
+      )
+    )
+  );
+}
+
+// ── Settings Modal ─────────────────────────────────────────
+function SettingsModal({ user, token, onClose, onUpdate }) {
+  const [tab, setTab] = useState('keys');
+  const [apiKeys, setApiKeys] = useState({
+    openai: user?.api_keys?.openai || '',
+    anthropic: user?.api_keys?.anthropic || '',
+    google: user?.api_keys?.google || '',
+  });
+  const [persona, setPersona] = useState({
+    base_personality: user?.settings?.persona?.base_personality || 'friendly',
+    first_person: user?.settings?.persona?.first_person || '私',
+    custom_style: user?.settings?.persona?.custom_style || '',
+  });
+  const [preferredAI, setPreferredAI] = useState(user?.settings?.preferred_ai || 'openai');
+  const [personaText, setPersonaText] = useState('');
+  const [extracting, setExtracting] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [passphrase, setPassphrase] = useState('');
+  const [loadPW, setLoadPW] = useState('');
+
+  async function handleSave() {
+    setSaving(true);
+    try {
+      const updated = await API.updSettings({
+        api_keys: apiKeys,
+        settings: { persona, preferred_ai: preferredAI },
+      }, token);
+      onUpdate(updated);
+      toast('設定を保存しました', 'success');
+    } catch(err) { toast(err.message, 'error'); }
+    finally { setSaving(false); }
+  }
+
+  async function handleExtractPersona() {
+    if (!personaText.trim()) return toast('文章を入力してください', 'warning');
+    setExtracting(true);
+    try {
+      const r = await API.extractPersona(personaText, token);
+      setPersona(prev => ({ ...prev, custom_style: r.persona }));
+      toast('ペルソナを抽出しました', 'success');
+    } catch(err) { toast(err.message, 'error'); }
+    finally { setExtracting(false); }
+  }
+
+  async function handleSavePW() {
+    if (!passphrase.trim()) return toast('合言葉を入力してください', 'warning');
+    try {
+      await API.savePW(passphrase, { persona, apiKeys }, token);
+      toast('合言葉で設定を保存しました', 'success');
+    } catch(err) { toast(err.message, 'error'); }
+  }
+
+  async function handleLoadPW() {
+    if (!loadPW.trim()) return toast('合言葉を入力してください', 'warning');
+    try {
+      const r = await API.loadPW(loadPW, token);
+      if (r.vals.persona) setPersona(r.vals.persona);
+      if (r.vals.apiKeys) setApiKeys(r.vals.apiKeys);
+      toast('設定を復元しました', 'success');
+    } catch(err) { toast(err.message, 'error'); }
+  }
+
+  const tabs = [['keys','🔑 APIキー'],['persona','👤 ペルソナ'],['passphrase','🔐 合言葉']];
+
+  return div({ className:'overlay-bg', onClick:e=>{if(e.target===e.currentTarget)onClose()} },
+    div({ className:'modal-panel', style:{width:'min(580px,95vw)',maxHeight:'90vh',overflowY:'auto',padding:'0'} },
+      // Modal header
+      div({ style:{padding:'20px 24px',borderBottom:'1px solid rgba(255,255,255,.08)',display:'flex',justifyContent:'space-between',alignItems:'center'} },
+        h2({ style:{margin:0,fontSize:'16px',fontWeight:700} }, '⚙️ 個人設定'),
+        button({ onClick:onClose, style:{background:'none',border:'none',color:'#94a3b8',fontSize:'20px',cursor:'pointer',padding:'4px'} }, '✕')
+      ),
+
+      // Tabs
+      div({ style:{display:'flex',borderBottom:'1px solid rgba(255,255,255,.06)',padding:'0 24px'} },
+        ...tabs.map(([id,name]) =>
+          button({ key:id, onClick:()=>setTab(id),
+            style:{padding:'12px 16px',background:'none',border:'none',cursor:'pointer',fontSize:'13px',fontWeight:600,
+                   color: tab===id ? '#a78bfa' : '#475569',
+                   borderBottom: tab===id ? '2px solid #7c3aed' : '2px solid transparent',
+                   transition:'all .15s'} }, name)
+        )
+      ),
+
+      div({ style:{padding:'24px'} },
+        // API Keys tab
+        tab === 'keys' && div({ style:{display:'flex',flexDirection:'column',gap:'16px'} },
+          p({ style:{color:'#94a3b8',fontSize:'13px',marginTop:0} },
+            '🔑 APIキーを登録するとクレジット消費なしで無制限に利用できます（BYOK方式）'
           ),
-          msg && p({ className: 'text-brand-success text-sm font-bold text-center mb-6 bg-brand-success/10 p-3 rounded-lg border border-brand-success/20' }, msg),
-          err && p({ className: 'text-brand-danger text-sm font-bold text-center mb-6 bg-brand-danger/10 p-3 rounded-lg border border-brand-danger/20' }, err),
-
-          mode === 'login' ? div({ className: 'space-y-5 animate-in text-left' },  
-            input({ className: 'input-base text-center', placeholder: 'SNSユーザー名 / ニックネーム', value: nickname, onChange: e => setNickname(e.target.value) }),  
-            input({ type: 'password', className: 'input-base text-center font-mono', placeholder: 'パスワード', value: pass, onChange: e => setPass(e.target.value), onKeyDown: e => { if(e.key === 'Enter') login(); } }),  
-            button({ onClick: login, className: 'w-full btn-gradient py-4 rounded-xl text-lg mt-4 shadow-lg' }, 'ログインする')  
-          ) : div({ className: 'space-y-5 animate-in text-left' },
-            el('select', { className: 'input-base text-center text-sm', value: regSns, onChange: e => { const val = e.target.value; setRegSns(val); if (val === 'X(Twitter)') setRegUsername('@'); else if (val === 'Threads') setRegUsername(''); }}, option({ value: 'X(Twitter)' }, 'X (Twitter)で登録'), option({ value: 'Threads' }, 'Threadsで登録')),
-            input({ className: 'input-base text-center font-mono', placeholder: regSns === 'X(Twitter)' ? '@ユーザー名' : 'ユーザー名', value: regUsername, onChange: e => setRegUsername(e.target.value) }),
-            input({ type: 'password', className: 'input-base text-center font-mono mt-2', placeholder: 'パスワードを設定 (6文字以上)', value: regPass, onChange: e => setRegPass(e.target.value) }),
-            input({ className: 'input-base text-center font-mono mt-2', placeholder: '招待コード (お持ちの場合)', value: regInviteCode, onChange: e => setRegInviteCode(e.target.value) }),
-            div({ className: 'flex items-center gap-3 p-3 mt-4 bg-black/30 rounded-xl border border-white/5' },
-                div({ className: 'w-10 h-6 bg-gray-700 rounded-full relative transition shrink-0 cursor-pointer' }, div({ className: 'absolute top-1 left-1 w-4 h-4 rounded-full transition ' + (regAgreed ? 'bg-brand left-5' : 'bg-gray-400') }) ),  
-                button({ onClick: () => setShowTerms(true), className: 'text-xs text-brand hover:text-brand-light font-bold text-left underline underline-offset-4' }, '利用規約を確認し、同意する')  
-            ),
-            button({ onClick: register, disabled: !regAgreed, className: 'w-full btn-gradient py-4 rounded-xl text-lg mt-4 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg' }, '登録申請する')
+          div({ style:{background:'rgba(245,158,11,.08)',border:'1px solid rgba(245,158,11,.2)',borderRadius:8,padding:'12px',fontSize:'12px',color:'#fbbf24'} },
+            '⚠️ APIキーはサーバー上に暗号化して保存されます。フロントエンドには表示されません。'
+          ),
+          ...([
+            ['openai', '🤖 OpenAI APIキー', 'sk-...'],
+            ['anthropic', '🧠 Anthropic APIキー', 'sk-ant-...'],
+            ['google', '🔍 Google APIキー', 'AIza...'],
+          ]).map(([key, lbl, ph]) =>
+            div({ key },
+              label({ style:{display:'block',fontSize:'12px',fontWeight:600,color:'#94a3b8',marginBottom:'6px'} }, lbl),
+              input({ type:'text', value:apiKeys[key], onChange:ev=>setApiKeys(prev=>({...prev,[key]:ev.target.value})),
+                className:'field-input', placeholder:ph })
+            )
+          ),
+          div({},
+            label({ style:{display:'block',fontSize:'12px',fontWeight:600,color:'#94a3b8',marginBottom:'6px'} }, '優先AI'),
+            select({ value:preferredAI, onChange:ev=>setPreferredAI(ev.target.value), className:'field-input' },
+              option({value:'openai'}, 'OpenAI (ChatGPT)'),
+              option({value:'anthropic'}, 'Anthropic (Claude)'),
+              option({value:'google'}, 'Google (Gemini)')
+            )
           )
-        )  
-      );  
-    };  
- 
-    const App = () => {  
-      const [auth, setAuth] = useState({ u: null, r: null });  
-      useEffect(() => {  
-        const session = localStorage.getItem(SESS_KEY);  
-        if (session) { try { setAuth(JSON.parse(session)); } catch(e) { localStorage.removeItem(SESS_KEY); } }
-      }, []);  
-      if (!auth.u) return el(AuthBox, { onLogin: (u, r) => setAuth({ u, r }) });  
-      return el(MainApp, { user: auth.u, role: auth.r, onLogout: () => { localStorage.removeItem(SESS_KEY); setAuth({ u: null, r: null }); } });  
-    };  
- 
-    ReactDOM.createRoot(document.getElementById('root')).render(el(App));  
-})();
+        ),
+
+        // Persona tab
+        tab === 'persona' && div({ style:{display:'flex',flexDirection:'column',gap:'16px'} },
+          p({ style:{color:'#94a3b8',fontSize:'13px',marginTop:0} },
+            '👤 ペルソナ設定で全ツールの文章がパーソナライズされます'
+          ),
+          div({},
+            label({ style:{display:'block',fontSize:'12px',fontWeight:600,color:'#94a3b8',marginBottom:'6px'} }, '一人称'),
+            select({ value:persona.first_person, onChange:ev=>setPersona(p=>({...p,first_person:ev.target.value})), className:'field-input' },
+              ...'私,僕,俺,自分,ウチ'.split(',').map(v_ => option({key:v_,value:v_}, v_))
+            )
+          ),
+          div({},
+            label({ style:{display:'block',fontSize:'12px',fontWeight:600,color:'#94a3b8',marginBottom:'6px'} }, 'ベースの性格'),
+            select({ value:persona.base_personality, onChange:ev=>setPersona(p=>({...p,base_personality:ev.target.value})), className:'field-input' },
+              ...['friendly（親しみやすい）','professional（プロ・信頼感）','cool（クール・カリスマ）',
+                  'energetic（熱血・エネルギッシュ）','mystical（神秘的・スピリチュアル）','comic（コミカル・エンタメ）']
+                  .map(v_ => option({key:v_,value:v_.split('（')[0]}, v_))
+            )
+          ),
+          div({},
+            label({ style:{display:'block',fontSize:'12px',fontWeight:600,color:'#94a3b8',marginBottom:'6px'} }, 'カスタムペルソナ（全ツールのシステムプロンプトに追加）'),
+            textarea({ value:persona.custom_style, onChange:ev=>setPersona(p=>({...p,custom_style:ev.target.value})),
+              className:'field-input', rows:4, placeholder:'例: あなたは独自の語り口を持ち、読者を引き込む文章を書くライターです。...' })
+          ),
+          // Auto-extract
+          div({ style:{borderTop:'1px solid rgba(255,255,255,.06)',paddingTop:'16px'} },
+            label({ style:{display:'block',fontSize:'12px',fontWeight:600,color:'#94a3b8',marginBottom:'6px'} }, '🤖 自動抽出ツール（過去の文章を貼り付けてAI分析）'),
+            textarea({ value:personaText, onChange:ev=>setPersonaText(ev.target.value),
+              className:'field-input', rows:4, placeholder:'あなたの過去の投稿・記事・文章を貼り付けてください...' }),
+            button({ onClick:handleExtractPersona, disabled:extracting,
+              style:{marginTop:8,padding:'8px 16px',borderRadius:8,background:'rgba(6,182,212,.15)',border:'1px solid rgba(6,182,212,.3)',color:'#22d3ee',fontSize:'13px',cursor:'pointer',fontWeight:600} },
+              extracting ? '分析中...' : '🔍 ペルソナを自動抽出')
+          )
+        ),
+
+        // Passphrase tab
+        tab === 'passphrase' && div({ style:{display:'flex',flexDirection:'column',gap:'16px'} },
+          p({ style:{color:'#94a3b8',fontSize:'13px',marginTop:0} },
+            '🔐 合言葉で現在の設定を保存し、別の端末や別セッションで復元できます'
+          ),
+          div({ style:{borderRadius:8,background:'rgba(124,58,237,.08)',border:'1px solid rgba(124,58,237,.2)',padding:'16px'} },
+            h3({ style:{margin:'0 0 8px',fontSize:'13px',fontWeight:700,color:'#a78bfa'} }, '設定を保存'),
+            div({ style:{display:'flex',gap:'8px'} },
+              input({ type:'text', value:passphrase, onChange:ev=>setPassphrase(ev.target.value),
+                className:'field-input', placeholder:'合言葉を入力（例: さくら2024）', style:{flex:1} }),
+              button({ onClick:handleSavePW,
+                style:{padding:'8px 16px',background:'#7c3aed',border:'none',borderRadius:8,color:'white',cursor:'pointer',fontWeight:600,whiteSpace:'nowrap'} },
+                '💾 保存')
+            )
+          ),
+          div({ style:{borderRadius:8,background:'rgba(6,182,212,.06)',border:'1px solid rgba(6,182,212,.15)',padding:'16px'} },
+            h3({ style:{margin:'0 0 8px',fontSize:'13px',fontWeight:700,color:'#22d3ee'} }, '設定を復元'),
+            div({ style:{display:'flex',gap:'8px'} },
+              input({ type:'text', value:loadPW, onChange:ev=>setLoadPW(ev.target.value),
+                className:'field-input', placeholder:'保存時の合言葉を入力', style:{flex:1} }),
+              button({ onClick:handleLoadPW,
+                style:{padding:'8px 16px',background:'rgba(6,182,212,.2)',border:'1px solid rgba(6,182,212,.4)',borderRadius:8,color:'#22d3ee',cursor:'pointer',fontWeight:600,whiteSpace:'nowrap'} },
+                '🔄 復元')
+            )
+          )
+        ),
+
+        // Save button (keys and persona)
+        (tab === 'keys' || tab === 'persona') && button({ onClick:handleSave, disabled:saving,
+          className:'btn-brand', style:{width:'100%',padding:'12px',fontSize:'14px',marginTop:8} },
+          saving ? '保存中...' : '💾 設定を保存'
+        )
+      )
+    )
+  );
+}
+
+// ── Admin Dashboard ─────────────────────────────────────────
+function AdminDashboard({ token, onClose }) {
+  const [stats, setStats] = useState(null);
+  const [invites, setInvites] = useState([]);
+  const [tab, setTab] = useState('stats');
+  const [loading, setLoading] = useState(true);
+  const [noticeMsg, setNoticeMsg] = useState('');
+  const [noticeType, setNoticeType] = useState('notice');
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const [s, inv] = await Promise.all([API.adminStats(token), API.adminInvites(token)]);
+        setStats(s);
+        setInvites(inv.invites || []);
+      } catch(err) { toast(err.message, 'error'); }
+      finally { setLoading(false); }
+    }
+    load();
+  }, [token]);
+
+  async function createInvite() {
+    try {
+      const r = await API.adminCreateInvite(token);
+      toast(`招待コード発行: ${r.code}`, 'success');
+      const inv = await API.adminInvites(token);
+      setInvites(inv.invites || []);
+    } catch(err) { toast(err.message, 'error'); }
+  }
+
+  async function updateUser(userId, updates) {
+    try {
+      await API.adminUpdateUser(userId, updates, token);
+      const s = await API.adminStats(token);
+      setStats(s);
+      toast('ユーザーを更新しました', 'success');
+    } catch(err) { toast(err.message, 'error'); }
+  }
+
+  async function sendNotice() {
+    if (!noticeMsg.trim()) return toast('メッセージを入力してください', 'warning');
+    try {
+      await API.adminNotice(noticeMsg, noticeType, token);
+      toast('お知らせを送信しました', 'success');
+      setNoticeMsg('');
+    } catch(err) { toast(err.message, 'error'); }
+  }
+
+  const tabs = [['stats','📊 統計'],['users','👥 ユーザー'],['invites','🎫 招待コード'],['notice','📣 お知らせ']];
+
+  return div({ className:'overlay-bg', onClick:ev=>{if(ev.target===ev.currentTarget)onClose()} },
+    div({ className:'modal-panel', style:{width:'min(900px,96vw)',maxHeight:'92vh',overflowY:'auto',padding:0} },
+      div({ style:{padding:'20px 24px',borderBottom:'1px solid rgba(255,255,255,.08)',display:'flex',justifyContent:'space-between',alignItems:'center'} },
+        h2({ style:{margin:0,fontSize:'16px',fontWeight:700} }, '🛡 管理者ダッシュボード'),
+        button({ onClick:onClose, style:{background:'none',border:'none',color:'#94a3b8',fontSize:'20px',cursor:'pointer'} }, '✕')
+      ),
+
+      div({ style:{display:'flex',borderBottom:'1px solid rgba(255,255,255,.06)',padding:'0 24px',overflowX:'auto'} },
+        ...tabs.map(([id,nm]) =>
+          button({ key:id, onClick:()=>setTab(id),
+            style:{padding:'12px 16px',background:'none',border:'none',cursor:'pointer',fontSize:'13px',fontWeight:600,whiteSpace:'nowrap',
+                   color:tab===id?'#a78bfa':'#475569',
+                   borderBottom:tab===id?'2px solid #7c3aed':'2px solid transparent'} }, nm)
+        )
+      ),
+
+      div({ style:{padding:'24px'} },
+        loading && div({ style:{textAlign:'center',padding:40} }, ce(Spinner)),
+
+        // Stats
+        !loading && tab === 'stats' && stats && div({ style:{display:'flex',flexDirection:'column',gap:'20px'} },
+          div({ style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(160px,1fr))',gap:12} },
+            ...[
+              ['👥 総ユーザー数', stats.total_users, '#7c3aed'],
+              ['✅ アクティブ', stats.active_users, '#059669'],
+              ['⚡ 総生成回数', stats.total_generations, '#2563eb'],
+              ['💴 推定コスト', `¥${stats.estimated_cost_jpy?.toLocaleString()}`, '#d97706'],
+            ].map(([label_, val, color]) =>
+              div({ key:label_, style:{background:'rgba(255,255,255,.04)',borderRadius:10,padding:'16px',textAlign:'center',border:`1px solid ${color}33`} },
+                p({ style:{color:'#64748b',fontSize:'11px',fontWeight:700,margin:'0 0 4px'} }, label_),
+                p({ style:{color,fontSize:'24px',fontWeight:800,margin:0} }, val)
+              )
+            )
+          )
+        ),
+
+        // Users
+        !loading && tab === 'users' && stats && div({ style:{overflowX:'auto'} },
+          table({ style:{width:'100%',borderCollapse:'collapse',fontSize:'12px'} },
+            thead({},
+              tr({ style:{borderBottom:'1px solid rgba(255,255,255,.08)'} },
+                ...'名前,メール,ステータス,クレジット,生成回数,推定コスト,操作'.split(',').map(h_ =>
+                  th({ key:h_, style:{padding:'8px 12px',textAlign:'left',color:'#64748b',fontWeight:700,whiteSpace:'nowrap'} }, h_)
+                )
+              )
+            ),
+            tbody({},
+              ...(stats.users || []).map(u =>
+                tr({ key:u.id, style:{borderBottom:'1px solid rgba(255,255,255,.04)'} },
+                  td({ style:{padding:'8px 12px',color:'#e2e8f0'} }, u.username || '—'),
+                  td({ style:{padding:'8px 12px',color:'#94a3b8'} }, u.email),
+                  td({ style:{padding:'8px 12px'} },
+                    span({ style:{padding:'2px 8px',borderRadius:12,fontSize:'11px',fontWeight:700,
+                                  background:u.status==='active'?'rgba(5,150,105,.2)':'rgba(220,38,38,.2)',
+                                  color:u.status==='active'?'#34d399':'#f87171'} }, u.status)
+                  ),
+                  td({ style:{padding:'8px 12px',color:'#fbbf24',textAlign:'right'} }, u.credits),
+                  td({ style:{padding:'8px 12px',color:'#94a3b8',textAlign:'right'} }, u.total_generations),
+                  td({ style:{padding:'8px 12px',color:'#94a3b8',textAlign:'right'} }, `¥${u.cost_jpy}`),
+                  td({ style:{padding:'8px 12px'} },
+                    div({ style:{display:'flex',gap:4} },
+                      button({ onClick:()=>updateUser(u.id,{credits:(u.credits||0)+100}),
+                        style:{padding:'4px 8px',borderRadius:6,background:'rgba(5,150,105,.2)',border:'none',color:'#34d399',fontSize:'11px',cursor:'pointer'} }, '+100'),
+                      button({ onClick:()=>updateUser(u.id,{status:u.status==='active'?'frozen':'active'}),
+                        style:{padding:'4px 8px',borderRadius:6,background:'rgba(220,38,38,.15)',border:'none',color:'#f87171',fontSize:'11px',cursor:'pointer'} },
+                        u.status==='active'?'凍結':'解除')
+                    )
+                  )
+                )
+              )
+            )
+          )
+        ),
+
+        // Invites
+        !loading && tab === 'invites' && div({ style:{display:'flex',flexDirection:'column',gap:'16px'} },
+          button({ onClick:createInvite, className:'btn-brand', style:{padding:'10px 20px',fontSize:'14px',alignSelf:'flex-start'} }, '＋ 招待コードを発行'),
+          div({ style:{overflowX:'auto'} },
+            table({ style:{width:'100%',borderCollapse:'collapse',fontSize:'12px'} },
+              thead({},
+                tr({ style:{borderBottom:'1px solid rgba(255,255,255,.08)'} },
+                  ...['コード','作成日','使用状況'].map(h_ =>
+                    th({ key:h_, style:{padding:'8px 12px',textAlign:'left',color:'#64748b',fontWeight:700} }, h_)
+                  )
+                )
+              ),
+              tbody({},
+                ...invites.map(inv =>
+                  tr({ key:inv.code, style:{borderBottom:'1px solid rgba(255,255,255,.04)'} },
+                    td({ style:{padding:'8px 12px',fontFamily:'monospace',color:'#a78bfa',fontWeight:700,letterSpacing:2} }, inv.code),
+                    td({ style:{padding:'8px 12px',color:'#64748b',fontSize:'11px'} }, inv.created_at?.substring(0,10) || '—'),
+                    td({ style:{padding:'8px 12px'} },
+                      span({ style:{padding:'2px 8px',borderRadius:12,fontSize:'11px',fontWeight:700,
+                                    background:inv.used_by?'rgba(220,38,38,.2)':'rgba(5,150,105,.2)',
+                                    color:inv.used_by?'#f87171':'#34d399'} },
+                        inv.used_by ? `使用済み` : '未使用'
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+        ),
+
+        // Notice
+        !loading && tab === 'notice' && div({ style:{display:'flex',flexDirection:'column',gap:'16px'} },
+          div({},
+            label({ style:{display:'block',fontSize:'12px',fontWeight:600,color:'#94a3b8',marginBottom:6} }, 'お知らせの種類'),
+            select({ value:noticeType, onChange:ev=>setNoticeType(ev.target.value), className:'field-input' },
+              option({value:'notice'}, '📣 お知らせ（バナー表示）'),
+              option({value:'popup'}, '🚨 強制ポップアップ（次回ログイン時）')
+            )
+          ),
+          div({},
+            label({ style:{display:'block',fontSize:'12px',fontWeight:600,color:'#94a3b8',marginBottom:6} }, 'メッセージ内容'),
+            textarea({ value:noticeMsg, onChange:ev=>setNoticeMsg(ev.target.value),
+              className:'field-input', rows:5, placeholder:'全ユーザーに送るメッセージを入力...' })
+          ),
+          button({ onClick:sendNotice, className:'btn-brand', style:{padding:'12px',fontSize:'14px'} }, '📣 送信する')
+        )
+      )
+    )
+  );
+}
+
+// ── Notice Banner ──────────────────────────────────────────
+function NoticeBanner({ notices }) {
+  const [dismissed, setDismissed] = useState([]);
+  const visible = (notices || []).filter(n => !dismissed.includes(n.id)).slice(0, 1);
+  if (!visible.length) return null;
+  const notice = visible[0];
+  return div({ style:{padding:'10px 24px',background:'linear-gradient(135deg,rgba(37,99,235,.2),rgba(124,58,237,.15))',borderBottom:'1px solid rgba(124,58,237,.2)',display:'flex',alignItems:'center',justifyContent:'space-between',fontSize:'13px',color:'#bfdbfe'} },
+    span({}, `📣 ${notice.message}`),
+    button({ onClick:()=>setDismissed(p=>[...p,notice.id]),
+      style:{background:'none',border:'none',color:'#64748b',cursor:'pointer',fontSize:'18px',padding:'0 4px'} }, '✕')
+  );
+}
+
+// ── Main App ───────────────────────────────────────────────
+function MainApp({ user: initialUser, token, onLogout }) {
+  const [user, setUser] = useState(initialUser);
+  const [currentTool, setCurrentTool] = useState(TOOLS[0]);
+  const [vals, setVals] = useState({});
+  const [output, setOutput] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [abTest, setAbTest] = useState(false);
+  const [modelType, setModelType] = useState(user?.settings?.default_model || 'free');
+  const [mobileTab, setMobileTab] = useState('input');
+  const [showSettings, setShowSettings] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(false);
+  const [notices, setNotices] = useState([]);
+
+  useEffect(() => {
+    API.notices(token).then(r => setNotices(r.notices || [])).catch(() => {});
+  }, [token]);
+
+  const handleValChange = useCallback((id, val) => {
+    setVals(prev => ({ ...prev, [id]: val }));
+  }, []);
+
+  const handleToolSelect = useCallback((tool) => {
+    setCurrentTool(tool);
+    setVals({});
+    setOutput('');
+    setMobileTab('input');
+  }, []);
+
+  async function handleGenerate() {
+    if (!currentTool) return;
+    setIsGenerating(true);
+    setOutput('');
+    try {
+      const messages = currentTool.buildMessages(vals);
+      const r = await API.generate({ tool_id: currentTool.id, messages, ab_test: abTest, model_type: modelType }, token);
+      setOutput(r.result);
+      if (!user.api_keys?.openai && !user.api_keys?.anthropic && !user.api_keys?.google) {
+        setUser(prev => ({ ...prev, credits: r.credits }));
+      }
+      setMobileTab('preview');
+      toast('生成完了！', 'success');
+    } catch(err) { toast(err.message, 'error'); }
+    finally { setIsGenerating(false); }
+  }
+
+  async function handleMagicGenerate() {
+    if (!currentTool) return;
+    setIsGenerating(true);
+    setOutput('');
+    try {
+      const r = await API.magicGen({ tool_id: currentTool.id, tool_name: currentTool.name, partial_vals: vals, model_type: modelType }, token);
+      setOutput(r.result);
+      if (!user.api_keys?.openai && !user.api_keys?.anthropic && !user.api_keys?.google) {
+        setUser(prev => ({ ...prev, credits: r.credits }));
+      }
+      setMobileTab('preview');
+      toast('✨ 神丸投げ完了！', 'success');
+    } catch(err) { toast(err.message, 'error'); }
+    finally { setIsGenerating(false); }
+  }
+
+  function handleCopy(text) {
+    if (!text) return;
+    navigator.clipboard.writeText(text).then(() => toast('コピーしました！', 'success')).catch(() => toast('コピーに失敗しました', 'error'));
+  }
+
+  async function handleRefine() {
+    if (!output) return toast('先に文章を生成してください', 'warning');
+    setIsGenerating(true);
+    try {
+      const messages = [
+        { role: 'system', content: 'あなたは日本最高峰のコピーライターです。' },
+        { role: 'user', content: `以下の文章をより魅力的・キャッチーに推敲してください。意図と内容は変えずに、表現を洗練させてください。\n\n${output}` },
+      ];
+      const r = await API.generate({ tool_id: 'refine', messages, ab_test: false, model_type: modelType }, token);
+      setOutput(r.result);
+      toast('推敲完了！', 'success');
+    } catch(err) { toast(err.message, 'error'); }
+    finally { setIsGenerating(false); }
+  }
+
+  function handleAbTest() {
+    setAbTest(true);
+    toast('A/Bテストモードをオンにして再生成します', 'info');
+    setTimeout(handleGenerate, 300);
+  }
+
+  const hasByok = user?.api_keys && (user.api_keys.openai || user.api_keys.anthropic || user.api_keys.google);
+
+  return div({ style:{minHeight:'100vh',display:'flex',flexDirection:'column'} },
+    // Top navbar
+    header({ style:{height:60,background:'#0d0d1a',borderBottom:'1px solid rgba(124,58,237,.2)',display:'flex',alignItems:'center',padding:'0 20px',gap:12,position:'sticky',top:0,zIndex:40} },
+      // Logo
+      div({ style:{display:'flex',alignItems:'center',gap:8,marginRight:'auto'} },
+        span({ style:{fontSize:'22px'} }, '🤖'),
+        span({ className:'gradient-text', style:{fontWeight:800,fontSize:'16px',whiteSpace:'nowrap'} }, 'AI Content Pro'),
+        span({ style:{fontSize:'10px',background:'rgba(124,58,237,.2)',color:'#a78bfa',padding:'2px 8px',borderRadius:12,fontWeight:700,letterSpacing:1} }, 'v74')
+      ),
+      // Credits / BYOK badge
+      div({ className:'credits-badge' },
+        hasByok ? '🔑 BYOK' : `💳 ${user?.credits || 0}枚`
+      ),
+      // Settings
+      button({ onClick:()=>setShowSettings(true),
+        style:{background:'rgba(255,255,255,.05)',border:'1px solid rgba(255,255,255,.08)',borderRadius:8,color:'#94a3b8',padding:'7px 12px',cursor:'pointer',fontSize:'13px',fontWeight:600} }, '⚙️'),
+      // Admin (if admin)
+      user?.is_admin && button({ onClick:()=>setShowAdmin(true),
+        style:{background:'rgba(239,68,68,.1)',border:'1px solid rgba(239,68,68,.2)',borderRadius:8,color:'#f87171',padding:'7px 12px',cursor:'pointer',fontSize:'13px',fontWeight:600} }, '🛡 管理'),
+      // Logout
+      button({ onClick:onLogout,
+        style:{background:'none',border:'1px solid rgba(255,255,255,.06)',borderRadius:8,color:'#64748b',padding:'7px 12px',cursor:'pointer',fontSize:'13px'} }, 'ログアウト')
+    ),
+
+    // Notice banner
+    ce(NoticeBanner, { notices }),
+
+    // Mobile tab bar
+    div({ className:'mobile-tab-bar' },
+      ...[['input','✏ 入力・設定'],['preview','👁 プレビュー']].map(([id,nm]) =>
+        div({ key:id, className:`mobile-tab-btn ${mobileTab===id?'active':''}`, onClick:()=>setMobileTab(id) }, nm)
+      )
+    ),
+
+    // Body
+    div({ style:{display:'flex',flex:1,overflow:'hidden'} },
+      // Sidebar (desktop)
+      ce(Sidebar, { currentTool, onSelectTool:handleToolSelect }),
+
+      // Main content
+      div({ style:{marginLeft:260,flex:1,display:'flex',overflow:'hidden'} },
+        // Input panel
+        div({ style:{width:'min(480px,100%)',borderRight:'1px solid rgba(255,255,255,.05)',overflowY:'auto',
+                      display: (typeof window !== 'undefined' && window.innerWidth < 768 && mobileTab !== 'input') ? 'none' : 'flex',
+                      flexDirection:'column',paddingTop: typeof window !== 'undefined' && window.innerWidth < 768 ? 44 : 0} },
+          ce(ToolInputPanel, {
+            tool: currentTool, vals, onChange: handleValChange,
+            onGenerate: handleGenerate, onMagicGenerate: handleMagicGenerate,
+            isGenerating, abTest, setAbTest, modelType, setModelType, user,
+          })
+        ),
+
+        // Preview panel
+        div({ style:{flex:1,display:'flex',flexDirection:'column',overflow:'hidden',
+                      display: typeof window !== 'undefined' && window.innerWidth < 768 && mobileTab !== 'preview' ? 'none' : 'flex',
+                      paddingTop: typeof window !== 'undefined' && window.innerWidth < 768 ? 44 : 0} },
+          ce(PreviewPanel, { output, isGenerating, onCopy:handleCopy, onRefine:handleRefine, onAbTest:handleAbTest })
+        )
+      )
+    ),
+
+    // Modals
+    showSettings && ce(SettingsModal, { user, token, onClose:()=>setShowSettings(false), onUpdate:setUser }),
+    showAdmin    && user?.is_admin && ce(AdminDashboard, { token, onClose:()=>setShowAdmin(false) })
+  );
+}
+
+// ── Root App ───────────────────────────────────────────────
+function App() {
+  const [auth, setAuth] = useState({ token: null, user: null, loading: true });
+
+  useEffect(() => {
+    const token = localStorage.getItem('aicp_token');
+    if (!token) { setAuth({ token:null, user:null, loading:false }); return; }
+    API.me(token)
+      .then(user => setAuth({ token, user, loading: false }))
+      .catch(() => { localStorage.removeItem('aicp_token'); setAuth({ token:null, user:null, loading:false }); });
+  }, []);
+
+  function handleLogin(user, token) {
+    setAuth({ token, user, loading: false });
+  }
+
+  function handleLogout() {
+    API.logout(auth.token).catch(() => {});
+    localStorage.removeItem('aicp_token');
+    setAuth({ token: null, user: null, loading: false });
+    toast('ログアウトしました', 'info');
+  }
+
+  if (auth.loading) {
+    return div({ style:{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'#0d0d1a'} },
+      div({ style:{textAlign:'center'} },
+        div({ style:{fontSize:'48px',marginBottom:12} }, '🤖'),
+        ce(Spinner),
+        p({ style:{color:'#475569',marginTop:12} }, '読み込み中...')
+      )
+    );
+  }
+
+  return div({},
+    ce(ToastContainer),
+    auth.user
+      ? ce(MainApp, { user: auth.user, token: auth.token, onLogout: handleLogout })
+      : ce(AuthPage, { onLogin: handleLogin })
+  );
+}
+
+// ── Mount ──────────────────────────────────────────────────
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(ce(App));
