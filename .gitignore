@@ -3,3 +3,6 @@ __pycache__/
 __pycache__/
 *.bak
 *.bak2
+__pycache__/
+data.json
+server_config.json
