@@ -1,20 +1,16 @@
-from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
+cd /root/ai-content-pro
+
+cat > main.py <<'EOF'
+from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 
-app = FastAPI(title="AI Content Pro", version="1.1.0")
-
-app.mount("/static", StaticFiles(directory="static"), name="static")
-templates = Jinja2Templates(directory="templates")
-
+app = FastAPI(title="AI Content Pro", version="1.2.0")
 
 class NotePromptRequest(BaseModel):
     theme: str = Field(..., min_length=1, max_length=200)
     target: str = Field(..., min_length=1, max_length=200)
     tone: str = Field(..., min_length=1, max_length=100)
-
 
 def build_note_prompt(theme: str, target: str, tone: str) -> str:
     return f"""
@@ -38,35 +34,30 @@ def build_note_prompt(theme: str, target: str, tone: str) -> str:
 - 導入文の方向性を書く
 - 本文で扱うべき重要ポイントを箇条書きで整理する
 - 最後にCTA案を出す
-- 実践的で再現性がある内容にする
-- 日本語で自然かつ読みやすく出力する
-
-【出力形式】
-1. タイトル案
-2. 想定読者の悩み
-3. ベネフィット
-4. 見出し構成
-5. 導入文の方向性
-6. 本文で書くべき要点
-7. CTA案
 """.strip()
 
-
-@app.get("/")
-async def root(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
-
+@app.get("/", response_class=HTMLResponse)
+def root():
+    return """
+    <!DOCTYPE html>
+    <html lang="ja">
+    <head>
+      <meta charset="UTF-8">
+      <title>AI Content Pro</title>
+    </head>
+    <body>
+      <h1>AI Content Pro</h1>
+      <p>本番デプロイ済みの最小動作確認ページです。</p>
+      <p><a href="/health">/health</a></p>
+    </body>
+    </html>
+    """
 
 @app.get("/health")
 def health():
     return {"status": "ok"}
 
-
 @app.post("/api/note/prompt")
-async def create_note_prompt(payload: NotePromptRequest):
-    prompt = build_note_prompt(
-        theme=payload.theme,
-        target=payload.target,
-        tone=payload.tone,
-    )
-    return JSONResponse({"prompt": prompt})
+def create_note_prompt(payload: NotePromptRequest):
+    return {"prompt": build_note_prompt(payload.theme, payload.target, payload.tone)}
+EOF
