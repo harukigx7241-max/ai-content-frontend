@@ -1,8 +1,13 @@
-from fastapi import FastAPI
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
 
-app = FastAPI(title="AI Content Pro", version="1.2.0")
+app = FastAPI(title="AI Content Pro", version="1.3.0")
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
 
 
 class NotePromptRequest(BaseModel):
@@ -36,22 +41,13 @@ def build_note_prompt(theme: str, target: str, tone: str) -> str:
 """.strip()
 
 
-@app.get("/", response_class=HTMLResponse)
-def root():
-    return """
-    <!DOCTYPE html>
-    <html lang="ja">
-    <head>
-      <meta charset="UTF-8">
-      <title>AI Content Pro</title>
-    </head>
-    <body>
-      <h1>AI Content Pro</h1>
-      <p>最小動作確認ページです。</p>
-      <p><a href="/health">/health</a></p>
-    </body>
-    </html>
-    """
+@app.get("/")
+def root(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="index.html",
+        context={}
+    )
 
 
 @app.get("/health")
@@ -61,4 +57,6 @@ def health():
 
 @app.post("/api/note/prompt")
 def create_note_prompt(payload: NotePromptRequest):
-  return {"prompt": build_note_prompt(payload.theme, payload.target, payload.tone)}
+    return JSONResponse(
+        {"prompt": build_note_prompt(payload.theme, payload.target, payload.tone)}
+    )
