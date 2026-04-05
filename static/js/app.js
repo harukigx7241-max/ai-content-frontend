@@ -7,7 +7,7 @@ generateBtn.addEventListener("click", async () => {
   const tone = document.getElementById("tone").value.trim();
 
   if (!theme || !target || !tone) {
-    alert("テーマ・ターゲット・文体をすべて入力してください。");
+    alert("テーマ・ターゲット・文体を入力してください。");
     return;
   }
 
@@ -19,11 +19,7 @@ generateBtn.addEventListener("click", async () => {
       headers: {
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        theme,
-        target,
-        tone
-      })
+      body: JSON.stringify({ theme, target, tone })
     });
 
     if (!res.ok) {

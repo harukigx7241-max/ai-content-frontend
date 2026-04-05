@@ -8,11 +8,9 @@
 <body>
   <main class="container">
     <h1>AI Content Pro</h1>
-    <p class="lead">note用のプロンプト生成APIを最小構成で追加した画面です。</p>
+    <p class="lead">note用プロンプトを生成します。</p>
 
     <section class="card">
-      <h2>noteプロンプト生成</h2>
-
       <label for="theme">テーマ</label>
       <input id="theme" type="text" placeholder="例: AI副業の始め方">
 
@@ -22,12 +20,12 @@
       <label for="tone">文体・トーン</label>
       <input id="tone" type="text" placeholder="例: やさしく実践的">
 
-      <button id="generateBtn">プロンプトを生成</button>
+      <button id="generateBtn">プロンプト生成</button>
     </section>
 
     <section class="card">
-      <h2>生成結果</h2>
-      <textarea id="result" rows="20" readonly placeholder="ここに生成されたプロンプトが表示されます"></textarea>
+      <label for="result">生成結果</label>
+      <textarea id="result" rows="18" readonly></textarea>
     </section>
   </main>
 
