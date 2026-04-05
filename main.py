@@ -1,16 +1,15 @@
-cd /root/ai-content-pro
-
-cat > main.py <<'EOF'
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, Field
 
 app = FastAPI(title="AI Content Pro", version="1.2.0")
 
+
 class NotePromptRequest(BaseModel):
     theme: str = Field(..., min_length=1, max_length=200)
     target: str = Field(..., min_length=1, max_length=200)
     tone: str = Field(..., min_length=1, max_length=100)
+
 
 def build_note_prompt(theme: str, target: str, tone: str) -> str:
     return f"""
@@ -36,6 +35,7 @@ def build_note_prompt(theme: str, target: str, tone: str) -> str:
 - 最後にCTA案を出す
 """.strip()
 
+
 @app.get("/", response_class=HTMLResponse)
 def root():
     return """
@@ -47,17 +47,18 @@ def root():
     </head>
     <body>
       <h1>AI Content Pro</h1>
-      <p>本番デプロイ済みの最小動作確認ページです。</p>
+      <p>最小動作確認ページです。</p>
       <p><a href="/health">/health</a></p>
     </body>
     </html>
     """
 
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
 
+
 @app.post("/api/note/prompt")
 def create_note_prompt(payload: NotePromptRequest):
-    return {"prompt": build_note_prompt(payload.theme, payload.target, payload.tone)}
-EOF
+  return {"prompt": build_note_prompt(payload.theme, payload.target, payload.tone)}
