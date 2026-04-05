@@ -1,7 +1,3 @@
 fastapi
-uvicorn[standard]
-python-multipart
-httpx
-duckduckgo-search
+uvicorn
 jinja2
-pydantic
