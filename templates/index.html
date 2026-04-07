@@ -2,33 +2,1191 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <title>AI Content Pro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>副業AIプロンプトプロ</title>
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
-  <main class="container">
-    <h1>AI Content Pro</h1>
-    <p class="lead">note用プロンプトを生成します。</p>
 
-    <section class="card">
-      <label for="theme">テーマ</label>
-      <input id="theme" type="text" placeholder="例: AI副業の始め方">
+<!-- ═══ HEADER ═══ -->
+<header class="site-header">
+  <div class="header-inner">
+    <div class="logo">
+      <span class="logo-icon">✦</span>
+      <span class="logo-text">副業AIプロンプトプロ</span>
+    </div>
+    <nav class="tab-nav" role="tablist">
+      <button class="tab-btn active" data-tab="note" role="tab">
+        <span class="tab-icon">📝</span>
+        <span class="tab-label">有料コンテンツ</span>
+      </button>
+      <button class="tab-btn" data-tab="cw" role="tab">
+        <span class="tab-icon">💼</span>
+        <span class="tab-label">クラウドワークス</span>
+      </button>
+      <button class="tab-btn" data-tab="fortune" role="tab">
+        <span class="tab-icon">🔮</span>
+        <span class="tab-label">占い副業</span>
+      </button>
+      <button class="tab-btn" data-tab="sns" role="tab">
+        <span class="tab-icon">✨</span>
+        <span class="tab-label">SNS特化</span>
+      </button>
+    </nav>
+  </div>
+</header>
 
-      <label for="target">ターゲット</label>
-      <input id="target" type="text" placeholder="例: 副業初心者">
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="hero-eyebrow">AI PROMPT GENERATOR</div>
+  <h1 class="hero-title">
+    副業クリエイターの<br>
+    <span class="gradient-text">神プロンプト生成ツール</span>
+  </h1>
+  <p class="hero-sub">プロ専門家が代わりに考えた高精度プロンプトを生成。ChatGPT・Gemini・Claudeにコピーして即使える。</p>
+  <div class="hero-ai-badge">
+    🤖 生成したプロンプトを →
+    <a href="https://chat.openai.com" target="_blank" rel="noopener">ChatGPT</a> /
+    <a href="https://gemini.google.com" target="_blank" rel="noopener">Gemini</a> /
+    <a href="https://claude.ai" target="_blank" rel="noopener">Claude</a>
+    に貼り付けて使おう
+  </div>
+</section>
 
-      <label for="tone">文体・トーン</label>
-      <input id="tone" type="text" placeholder="例: やさしく実践的">
+<!-- ═══ MAIN CONTENT ═══ -->
+<main class="tab-content-area">
 
-      <button id="generateBtn">プロンプト生成</button>
-    </section>
+  <!-- ━━━ TAB: 有料コンテンツ ━━━ -->
+  <section id="tab-note" class="tab-panel active" data-tab="note">
 
-    <section class="card">
-      <label for="result">生成結果</label>
-      <textarea id="result" rows="18" readonly></textarea>
-    </section>
-  </main>
+    <!-- 収益シミュレーター -->
+    <div class="simulator-widget">
+      <h3>📊 副業収益シミュレーター</h3>
+      <div class="sim-inputs">
+        <div class="sim-field">
+          <label>価格（円）</label>
+          <input type="number" id="sim-price" value="980" min="0">
+        </div>
+        <div class="sim-field">
+          <label>月間販売数（件）</label>
+          <input type="number" id="sim-sales" value="30" min="0">
+        </div>
+        <div class="sim-field">
+          <label>月数</label>
+          <input type="number" id="sim-months" value="12" min="1">
+        </div>
+      </div>
+      <div class="sim-results">
+        <div class="sim-result-item">
+          <div class="sim-result-label">月収</div>
+          <div class="sim-result-value" id="sim-monthly">¥29,400</div>
+        </div>
+        <div class="sim-result-item">
+          <div class="sim-result-label">年収</div>
+          <div class="sim-result-value" id="sim-annual">¥352,800</div>
+        </div>
+        <div class="sim-result-item">
+          <div class="sim-result-label">累計（設定月数後）</div>
+          <div class="sim-result-value" id="sim-total">¥352,800</div>
+        </div>
+      </div>
+    </div>
 
-  <script src="/static/js/app.js"></script>
+    <!-- プロジェクトモード（一括生成） -->
+    <div class="bundle-banner">
+      <h3>🚀 プロジェクトモード — テーマ1つで全部まとめて生成</h3>
+      <div class="bundle-form">
+        <div class="field-group" style="flex:1;min-width:200px;">
+          <label>テーマ</label>
+          <input type="text" id="bundle-theme" placeholder="例: AI副業の始め方">
+        </div>
+        <div class="field-group" style="flex:1;min-width:180px;">
+          <label>ターゲット</label>
+          <input type="text" id="bundle-target" placeholder="例: 副業初心者の会社員">
+        </div>
+        <div class="field-group" style="min-width:140px;">
+          <label>使用AI</label>
+          <select id="bundle-ai">
+            <option value="ChatGPT">ChatGPT</option>
+            <option value="Gemini">Gemini</option>
+            <option value="Claude">Claude</option>
+          </select>
+        </div>
+        <button class="bundle-btn" id="bundleBtn">⚡ 一括生成</button>
+      </div>
+      <div class="bundle-results" id="bundleResults">
+        <div class="bundle-result-tabs" id="bundleResultTabs"></div>
+        <div class="result-header">
+          <span class="result-label">生成プロンプト</span>
+          <div class="result-actions">
+            <button class="copy-btn" id="bundleCopyBtn">コピー</button>
+          </div>
+        </div>
+        <div class="result-banner">
+          <strong>✦ このプロンプトをコピーして</strong>ChatGPT・Gemini・Claudeに貼り付けてください
+        </div>
+        <textarea class="result-textarea" id="bundleResultText" rows="12" readonly></textarea>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <div class="section-title">📝 有料コンテンツ専門プロンプト</div>
+      <div class="section-desc">note・tips・brainで売れる記事・コンテンツ用の高精度プロンプトを生成します</div>
+    </div>
+
+    <div class="tools-grid">
+
+      <!-- ツール1: 有料note記事 -->
+      <div class="card" data-endpoint="/api/note/article">
+        <div class="card-header">
+          <div class="card-icon">📖</div>
+          <div>
+            <div class="card-title">有料note記事プロンプト</div>
+            <div class="card-desc">無料/有料エリア区分・7セクション構成・Web検索深掘り指示付き</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="template-gallery">
+            <div class="template-gallery-label">✨ テンプレートから始める</div>
+            <div class="template-chips">
+              <span class="template-chip" data-fill='{"theme":"AI副業の始め方","situation":"会社員で副収入を得たい","concern":"何から始めればいいか分からない"}'>AI副業入門</span>
+              <span class="template-chip" data-fill='{"theme":"月5万円を稼ぐ副業術","situation":"育児中で時間が限られている","concern":"スキルがなくても稼げるか不安"}'>月5万円副業</span>
+              <span class="template-chip" data-fill='{"theme":"ゼロから始めるSNS運用","situation":"フォロワー0からスタートしたい","concern":"何を発信すれば良いか分からない"}'>SNS運用入門</span>
+              <span class="template-chip" data-fill='{"theme":"在宅ライターで稼ぐ方法","situation":"文章を書くのが好きな主婦","concern":"未経験でも案件を取れるか心配"}'>在宅ライター</span>
+            </div>
+          </div>
+          <div class="ai-mode-row">
+            <span class="ai-mode-label">最適化AI:</span>
+            <button class="ai-mode-btn active" data-ai="ChatGPT">ChatGPT</button>
+            <button class="ai-mode-btn" data-ai="Gemini">Gemini</button>
+            <button class="ai-mode-btn" data-ai="Claude">Claude</button>
+            <input type="hidden" name="ai_mode" value="ChatGPT" class="ai-mode-input">
+          </div>
+          <div class="quality-score">
+            <span class="quality-label">プロンプト品質:</span>
+            <span class="quality-stars">☆☆☆☆☆</span>
+            <span class="quality-hint">入力を充実させると精度UP</span>
+          </div>
+          <div class="field-group">
+            <label>テーマ *</label>
+            <input type="text" name="theme" placeholder="例: AI副業の始め方">
+          </div>
+          <div class="two-col">
+            <div class="field-group">
+              <label>ターゲット年齢層</label>
+              <select name="age_range">
+                <option value="20代">20代</option>
+                <option value="25〜35歳" selected>25〜35歳</option>
+                <option value="30〜40歳">30〜40歳</option>
+                <option value="40代以上">40代以上</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label>文体</label>
+              <select name="tone">
+                <option value="です・ます調" selected>です・ます調</option>
+                <option value="だ・である調">だ・である調</option>
+              </select>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>ターゲットの状況 *</label>
+            <input type="text" name="situation" placeholder="例: 会社員で副収入を得たいが時間がない">
+          </div>
+          <div class="field-group">
+            <label>ターゲットの悩み *</label>
+            <input type="text" name="concern" placeholder="例: 何から始めればいいか分からない">
+          </div>
+          <div class="two-col">
+            <div class="field-group">
+              <label>無料エリア文字数</label>
+              <select name="free_chars">
+                <option value="1000字">1000字</option>
+                <option value="2000字" selected>2000字</option>
+                <option value="3000字">3000字</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label>有料エリア文字数</label>
+              <select name="paid_chars">
+                <option value="3000字">3000字</option>
+                <option value="5000字" selected>5000字</option>
+                <option value="8000字">8000字</option>
+              </select>
+            </div>
+          </div>
+          <button class="generate-btn">✦ プロンプト生成</button>
+          <div class="result-area">
+            <div class="result-banner">
+              <strong>✦ コピーして貼り付けよう</strong> → ChatGPT・Gemini・Claude
+              <div class="ai-links">
+                <a class="ai-link" href="https://chat.openai.com" target="_blank">ChatGPT</a>
+                <a class="ai-link" href="https://gemini.google.com" target="_blank">Gemini</a>
+                <a class="ai-link" href="https://claude.ai" target="_blank">Claude</a>
+              </div>
+            </div>
+            <div class="result-header">
+              <span class="result-label">生成プロンプト</span>
+              <div class="result-actions">
+                <button class="save-btn">⭐ 保存</button>
+                <button class="copy-btn">コピー</button>
+              </div>
+            </div>
+            <textarea class="result-textarea" rows="14" readonly></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- ツール2: タイトル・見出し -->
+      <div class="card" data-endpoint="/api/note/titles">
+        <div class="card-header">
+          <div class="card-icon">🏷️</div>
+          <div>
+            <div class="card-title">タイトル・見出し生成</div>
+            <div class="card-desc">売れるタイトル5案+記事見出し構成+SEOキーワード戦略</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="template-gallery">
+            <div class="template-gallery-label">✨ テンプレート</div>
+            <div class="template-chips">
+              <span class="template-chip" data-fill='{"genre":"副業・お金","keyword":"AI副業","target":"20〜30代の会社員"}'>AI副業</span>
+              <span class="template-chip" data-fill='{"genre":"自己啓発","keyword":"習慣化","target":"なかなか継続できない人"}'>習慣化</span>
+              <span class="template-chip" data-fill='{"genre":"恋愛・婚活","keyword":"婚活成功","target":"30代独身女性"}'>婚活</span>
+            </div>
+          </div>
+          <div class="ai-mode-row">
+            <span class="ai-mode-label">最適化AI:</span>
+            <button class="ai-mode-btn active" data-ai="ChatGPT">ChatGPT</button>
+            <button class="ai-mode-btn" data-ai="Gemini">Gemini</button>
+            <button class="ai-mode-btn" data-ai="Claude">Claude</button>
+            <input type="hidden" name="ai_mode" value="ChatGPT" class="ai-mode-input">
+          </div>
+          <div class="field-group">
+            <label>ジャンル *</label>
+            <select name="genre">
+              <option value="副業・お金">副業・お金</option>
+              <option value="ビジネス・仕事術">ビジネス・仕事術</option>
+              <option value="自己啓発">自己啓発</option>
+              <option value="恋愛・婚活">恋愛・婚活</option>
+              <option value="健康・ダイエット">健康・ダイエット</option>
+              <option value="育児・子育て">育児・子育て</option>
+              <option value="スピリチュアル">スピリチュアル</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>メインキーワード *</label>
+            <input type="text" name="keyword" placeholder="例: AI副業、タロット占い">
+          </div>
+          <div class="field-group">
+            <label>ターゲット読者 *</label>
+            <input type="text" name="target" placeholder="例: 副業初心者の20〜30代会社員">
+          </div>
+          <button class="generate-btn">✦ プロンプト生成</button>
+          <div class="result-area">
+            <div class="result-banner">
+              <strong>✦ コピーして貼り付けよう</strong> → ChatGPT・Gemini・Claude
+              <div class="ai-links">
+                <a class="ai-link" href="https://chat.openai.com" target="_blank">ChatGPT</a>
+                <a class="ai-link" href="https://gemini.google.com" target="_blank">Gemini</a>
+                <a class="ai-link" href="https://claude.ai" target="_blank">Claude</a>
+              </div>
+            </div>
+            <div class="result-header">
+              <span class="result-label">生成プロンプト</span>
+              <div class="result-actions">
+                <button class="save-btn">⭐ 保存</button>
+                <button class="copy-btn">コピー</button>
+              </div>
+            </div>
+            <textarea class="result-textarea" rows="14" readonly></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- ツール3: tips/Brain商品説明文 -->
+      <div class="card" data-endpoint="/api/note/salescopy">
+        <div class="card-header">
+          <div class="card-icon">🛒</div>
+          <div>
+            <div class="card-title">tips・Brain 商品説明文</div>
+            <div class="card-desc">購買意欲を最大化するコピーライティングプロンプト</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="ai-mode-row">
+            <span class="ai-mode-label">最適化AI:</span>
+            <button class="ai-mode-btn active" data-ai="ChatGPT">ChatGPT</button>
+            <button class="ai-mode-btn" data-ai="Gemini">Gemini</button>
+            <button class="ai-mode-btn" data-ai="Claude">Claude</button>
+            <input type="hidden" name="ai_mode" value="ChatGPT" class="ai-mode-input">
+          </div>
+          <div class="two-col">
+            <div class="field-group">
+              <label>プラットフォーム</label>
+              <select name="platform">
+                <option value="tips">tips</option>
+                <option value="Brain">Brain</option>
+                <option value="note">note</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label>価格</label>
+              <select name="price">
+                <option value="300円">300円</option>
+                <option value="500円">500円</option>
+                <option value="980円">980円</option>
+                <option value="1,980円">1,980円</option>
+                <option value="3,000円">3,000円</option>
+                <option value="5,000円以上">5,000円以上</option>
+              </select>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>商品内容 *</label>
+            <input type="text" name="content" placeholder="例: AI副業で月10万円稼ぐためのノウハウまとめ">
+          </div>
+          <div class="field-group">
+            <label>ターゲット読者 *</label>
+            <input type="text" name="target" placeholder="例: 副業初心者・AIに興味ある会社員">
+          </div>
+          <button class="generate-btn">✦ プロンプト生成</button>
+          <div class="result-area">
+            <div class="result-banner">
+              <strong>✦ コピーして貼り付けよう</strong> → ChatGPT・Gemini・Claude
+              <div class="ai-links">
+                <a class="ai-link" href="https://chat.openai.com" target="_blank">ChatGPT</a>
+                <a class="ai-link" href="https://gemini.google.com" target="_blank">Gemini</a>
+                <a class="ai-link" href="https://claude.ai" target="_blank">Claude</a>
+              </div>
+            </div>
+            <div class="result-header">
+              <span class="result-label">生成プロンプト</span>
+              <div class="result-actions">
+                <button class="save-btn">⭐ 保存</button>
+                <button class="copy-btn">コピー</button>
+              </div>
+            </div>
+            <textarea class="result-textarea" rows="14" readonly></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- ツール4: 購入者向け特典 -->
+      <div class="card" data-endpoint="/api/note/gift">
+        <div class="card-header">
+          <div class="card-icon">🎁</div>
+          <div>
+            <div class="card-title">購入者向け特典プロンプト</div>
+            <div class="card-desc">AIで生成できる豪華特典を作るためのプロンプトを生成</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="ai-mode-row">
+            <span class="ai-mode-label">最適化AI:</span>
+            <button class="ai-mode-btn active" data-ai="ChatGPT">ChatGPT</button>
+            <button class="ai-mode-btn" data-ai="Gemini">Gemini</button>
+            <button class="ai-mode-btn" data-ai="Claude">Claude</button>
+            <input type="hidden" name="ai_mode" value="ChatGPT" class="ai-mode-input">
+          </div>
+          <div class="field-group">
+            <label>記事テーマ *</label>
+            <input type="text" name="theme" placeholder="例: AI副業で月10万円稼ぐ方法">
+          </div>
+          <div class="two-col">
+            <div class="field-group">
+              <label>特典の種類</label>
+              <select name="gift_type">
+                <option value="30日間行動計画書">30日間行動計画書</option>
+                <option value="実践チェックリスト">実践チェックリスト</option>
+                <option value="ワークシート">ワークシート</option>
+                <option value="SNS投稿テンプレ集">SNS投稿テンプレ集</option>
+                <option value="成功ロードマップ">成功ロードマップ</option>
+                <option value="よくある質問Q&A集">よくある質問Q&A集</option>
+                <option value="まとめシート">まとめシート</option>
+                <option value="Notionテンプレ">Notionテンプレ</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label>ボリューム</label>
+              <select name="volume">
+                <option value="簡易版（A4 1枚相当）">簡易版（A4 1枚）</option>
+                <option value="標準版（A4 3枚相当）" selected>標準版（A4 3枚）</option>
+                <option value="豪華版（A4 5枚以上）">豪華版（A4 5枚以上）</option>
+              </select>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>購入者の状況 *</label>
+            <input type="text" name="buyer_situation" placeholder="例: 副業初心者で右も左も分からない状態">
+          </div>
+          <button class="generate-btn">✦ プロンプト生成</button>
+          <div class="result-area">
+            <div class="result-banner">
+              <strong>🎁 特典用プロンプト</strong> — ChatGPT等で実行してPDFにして購入者へ渡そう！
+              <div class="ai-links">
+                <a class="ai-link" href="https://chat.openai.com" target="_blank">ChatGPT</a>
+                <a class="ai-link" href="https://gemini.google.com" target="_blank">Gemini</a>
+                <a class="ai-link" href="https://claude.ai" target="_blank">Claude</a>
+              </div>
+            </div>
+            <div class="result-header">
+              <span class="result-label">生成プロンプト</span>
+              <div class="result-actions">
+                <button class="save-btn">⭐ 保存</button>
+                <button class="copy-btn">コピー</button>
+              </div>
+            </div>
+            <textarea class="result-textarea" rows="14" readonly></textarea>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /tools-grid -->
+  </section>
+
+
+  <!-- ━━━ TAB: クラウドワークス ━━━ -->
+  <section id="tab-cw" class="tab-panel" data-tab="cw">
+    <div class="section-header">
+      <div class="section-title">💼 クラウドワークス副業専門プロンプト</div>
+      <div class="section-desc">採用率を高める提案文・プロフィール・単価交渉のプロ級プロンプト</div>
+    </div>
+    <div class="tools-grid">
+
+      <!-- ツール1: 提案文 -->
+      <div class="card" data-endpoint="/api/cw/proposal">
+        <div class="card-header">
+          <div class="card-icon">📨</div>
+          <div>
+            <div class="card-title">採用率UP 提案文プロンプト</div>
+            <div class="card-desc">クライアントの心をつかむ提案文・件名・差別化ポイント</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="template-gallery">
+            <div class="template-gallery-label">✨ テンプレート</div>
+            <div class="template-chips">
+              <span class="template-chip" data-fill='{"job_title":"ブログ記事ライティング（SEO）","skills":"SEOライター3年・月50記事執筆実績","appeal":"納期厳守・修正無制限・SEO知識あり","desired_rate":"文字単価3円〜"}'>SEOライター</span>
+              <span class="template-chip" data-fill='{"job_title":"LP・Webデザイン制作","skills":"Figma・Adobe XD使用可能・実績30件以上","appeal":"シンプルで高転換率なデザイン得意","desired_rate":"50,000円〜"}'>Webデザイン</span>
+              <span class="template-chip" data-fill='{"job_title":"データ入力・リサーチ業務","skills":"Excel上級・タイピング速度速い","appeal":"正確・丁寧・レスポンス早い","desired_rate":"時給1,200円〜"}'>データ入力</span>
+            </div>
+          </div>
+          <div class="ai-mode-row">
+            <span class="ai-mode-label">最適化AI:</span>
+            <button class="ai-mode-btn active" data-ai="ChatGPT">ChatGPT</button>
+            <button class="ai-mode-btn" data-ai="Gemini">Gemini</button>
+            <button class="ai-mode-btn" data-ai="Claude">Claude</button>
+            <input type="hidden" name="ai_mode" value="ChatGPT" class="ai-mode-input">
+          </div>
+          <div class="field-group">
+            <label>案件タイトル *</label>
+            <input type="text" name="job_title" placeholder="例: ブログ記事ライティング（SEO対応）">
+          </div>
+          <div class="field-group">
+            <label>自分のスキル・経歴 *</label>
+            <input type="text" name="skills" placeholder="例: SEOライター2年・月30記事執筆経験あり">
+          </div>
+          <div class="field-group">
+            <label>アピールポイント *</label>
+            <input type="text" name="appeal" placeholder="例: 納期厳守・修正対応迅速・コミュニケーション丁寧">
+          </div>
+          <div class="field-group">
+            <label>希望単価</label>
+            <input type="text" name="desired_rate" placeholder="例: 文字単価3円〜 / 時給1,500円〜">
+          </div>
+          <button class="generate-btn">✦ プロンプト生成</button>
+          <div class="result-area">
+            <div class="result-banner">
+              <strong>✦ コピーして貼り付けよう</strong> → ChatGPT・Gemini・Claude
+              <div class="ai-links">
+                <a class="ai-link" href="https://chat.openai.com" target="_blank">ChatGPT</a>
+                <a class="ai-link" href="https://gemini.google.com" target="_blank">Gemini</a>
+                <a class="ai-link" href="https://claude.ai" target="_blank">Claude</a>
+              </div>
+            </div>
+            <div class="result-header">
+              <span class="result-label">生成プロンプト</span>
+              <div class="result-actions">
+                <button class="save-btn">⭐ 保存</button>
+                <button class="copy-btn">コピー</button>
+              </div>
+            </div>
+            <textarea class="result-textarea" rows="14" readonly></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- ツール2: プロフィール -->
+      <div class="card" data-endpoint="/api/cw/profile">
+        <div class="card-header">
+          <div class="card-icon">👤</div>
+          <div>
+            <div class="card-title">プロフィール最適化プロンプト</div>
+            <div class="card-desc">「この人に頼みたい」と思わせるプロフィール文生成</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="ai-mode-row">
+            <span class="ai-mode-label">最適化AI:</span>
+            <button class="ai-mode-btn active" data-ai="ChatGPT">ChatGPT</button>
+            <button class="ai-mode-btn" data-ai="Gemini">Gemini</button>
+            <button class="ai-mode-btn" data-ai="Claude">Claude</button>
+            <input type="hidden" name="ai_mode" value="ChatGPT" class="ai-mode-input">
+          </div>
+          <div class="two-col">
+            <div class="field-group">
+              <label>職種</label>
+              <select name="job_type">
+                <option value="Webライター">Webライター</option>
+                <option value="Webデザイナー">Webデザイナー</option>
+                <option value="エンジニア・プログラマー">エンジニア</option>
+                <option value="動画編集者">動画編集者</option>
+                <option value="データ入力・事務">データ入力・事務</option>
+                <option value="翻訳・語学">翻訳・語学</option>
+                <option value="SNS運用代行">SNS運用代行</option>
+                <option value="その他">その他</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label>経験年数</label>
+              <select name="experience_years">
+                <option value="未経験〜6ヶ月">未経験〜6ヶ月</option>
+                <option value="6ヶ月〜1年">6ヶ月〜1年</option>
+                <option value="1〜3年">1〜3年</option>
+                <option value="3〜5年">3〜5年</option>
+                <option value="5年以上">5年以上</option>
+              </select>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>得意分野・専門 *</label>
+            <input type="text" name="specialty" placeholder="例: SEO記事・コピーライティング・不動産ジャンル">
+          </div>
+          <div class="field-group">
+            <label>実績・経験 *</label>
+            <input type="text" name="achievements" placeholder="例: 月30記事執筆・累計500記事以上・GoogleSEO1位実績">
+          </div>
+          <button class="generate-btn">✦ プロンプト生成</button>
+          <div class="result-area">
+            <div class="result-banner">
+              <strong>✦ コピーして貼り付けよう</strong> → ChatGPT・Gemini・Claude
+              <div class="ai-links">
+                <a class="ai-link" href="https://chat.openai.com" target="_blank">ChatGPT</a>
+                <a class="ai-link" href="https://gemini.google.com" target="_blank">Gemini</a>
+                <a class="ai-link" href="https://claude.ai" target="_blank">Claude</a>
+              </div>
+            </div>
+            <div class="result-header">
+              <span class="result-label">生成プロンプト</span>
+              <div class="result-actions">
+                <button class="save-btn">⭐ 保存</button>
+                <button class="copy-btn">コピー</button>
+              </div>
+            </div>
+            <textarea class="result-textarea" rows="14" readonly></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- ツール3: 単価交渉 -->
+      <div class="card" data-endpoint="/api/cw/pricing">
+        <div class="card-header">
+          <div class="card-icon">💰</div>
+          <div>
+            <div class="card-title">単価交渉メッセージプロンプト</div>
+            <div class="card-desc">関係を壊さず自然に単価UPできる交渉文の生成</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="ai-mode-row">
+            <span class="ai-mode-label">最適化AI:</span>
+            <button class="ai-mode-btn active" data-ai="ChatGPT">ChatGPT</button>
+            <button class="ai-mode-btn" data-ai="Gemini">Gemini</button>
+            <button class="ai-mode-btn" data-ai="Claude">Claude</button>
+            <input type="hidden" name="ai_mode" value="ChatGPT" class="ai-mode-input">
+          </div>
+          <div class="two-col">
+            <div class="field-group">
+              <label>現在の単価</label>
+              <input type="text" name="current_rate" placeholder="例: 文字単価1.5円">
+            </div>
+            <div class="field-group">
+              <label>希望単価</label>
+              <input type="text" name="desired_rate" placeholder="例: 文字単価3円">
+            </div>
+          </div>
+          <div class="field-group">
+            <label>根拠・実績 *</label>
+            <input type="text" name="evidence" placeholder="例: 半年間納期厳守・修正率5%以下・SEO上位実績あり">
+          </div>
+          <div class="field-group">
+            <label>トーン</label>
+            <select name="tone">
+              <option value="丁寧">丁寧（ビジネス向け）</option>
+              <option value="親しみやすい">親しみやすい（長期取引先）</option>
+              <option value="自信を持って積極的">積極的（自信あり）</option>
+            </select>
+          </div>
+          <button class="generate-btn">✦ プロンプト生成</button>
+          <div class="result-area">
+            <div class="result-banner">
+              <strong>✦ コピーして貼り付けよう</strong> → ChatGPT・Gemini・Claude
+              <div class="ai-links">
+                <a class="ai-link" href="https://chat.openai.com" target="_blank">ChatGPT</a>
+                <a class="ai-link" href="https://gemini.google.com" target="_blank">Gemini</a>
+                <a class="ai-link" href="https://claude.ai" target="_blank">Claude</a>
+              </div>
+            </div>
+            <div class="result-header">
+              <span class="result-label">生成プロンプト</span>
+              <div class="result-actions">
+                <button class="save-btn">⭐ 保存</button>
+                <button class="copy-btn">コピー</button>
+              </div>
+            </div>
+            <textarea class="result-textarea" rows="14" readonly></textarea>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ━━━ TAB: 占い副業 ━━━ -->
+  <section id="tab-fortune" class="tab-panel" data-tab="fortune">
+    <div class="section-header">
+      <div class="section-title">🔮 占い副業専門プロンプト</div>
+      <div class="section-desc">ココナラ・SNSで売れる占い師になるためのプロ級プロンプト</div>
+    </div>
+    <div class="tools-grid">
+
+      <!-- ツール1: 鑑定書 -->
+      <div class="card" data-endpoint="/api/fortune/reading">
+        <div class="card-header">
+          <div class="card-icon">🌙</div>
+          <div>
+            <div class="card-title">鑑定書テンプレートプロンプト</div>
+            <div class="card-desc">即納品できるプロ品質の鑑定書を生成するプロンプト</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="template-gallery">
+            <div class="template-gallery-label">✨ テンプレート</div>
+            <div class="template-chips">
+              <span class="template-chip" data-fill='{"divination_type":"タロット","category":"恋愛・復縁","direction":"ポジティブ・希望あり"}'>タロット恋愛</span>
+              <span class="template-chip" data-fill='{"divination_type":"西洋占星術","category":"仕事・転職","direction":"アドバイス重視"}'>占星術転職</span>
+              <span class="template-chip" data-fill='{"divination_type":"数秘術","category":"金運・副業","direction":"具体的な開運アドバイス"}'>数秘術金運</span>
+            </div>
+          </div>
+          <div class="ai-mode-row">
+            <span class="ai-mode-label">最適化AI:</span>
+            <button class="ai-mode-btn active" data-ai="ChatGPT">ChatGPT</button>
+            <button class="ai-mode-btn" data-ai="Gemini">Gemini</button>
+            <button class="ai-mode-btn" data-ai="Claude">Claude</button>
+            <input type="hidden" name="ai_mode" value="ChatGPT" class="ai-mode-input">
+          </div>
+          <div class="field-group">
+            <label>占術の種類</label>
+            <select name="divination_type">
+              <option value="タロット">タロット</option>
+              <option value="西洋占星術">西洋占星術</option>
+              <option value="数秘術">数秘術</option>
+              <option value="手相">手相</option>
+              <option value="四柱推命">四柱推命</option>
+              <option value="霊感・スピリチュアル">霊感・スピリチュアル</option>
+              <option value="姓名判断">姓名判断</option>
+              <option value="オラクルカード">オラクルカード</option>
+            </select>
+          </div>
+          <div class="two-col">
+            <div class="field-group">
+              <label>相談カテゴリ</label>
+              <select name="category">
+                <option value="恋愛・復縁">恋愛・復縁</option>
+                <option value="仕事・転職">仕事・転職</option>
+                <option value="人間関係">人間関係</option>
+                <option value="金運・副業">金運・副業</option>
+                <option value="健康・体調">健康・体調</option>
+                <option value="総合鑑定">総合鑑定</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label>鑑定の方向性</label>
+              <select name="direction">
+                <option value="ポジティブ・希望あり">ポジティブ・希望あり</option>
+                <option value="要注意・慎重に">要注意・慎重に</option>
+                <option value="アドバイス重視">アドバイス重視</option>
+                <option value="バランスよく">バランスよく</option>
+              </select>
+            </div>
+          </div>
+          <button class="generate-btn">✦ プロンプト生成</button>
+          <div class="result-area">
+            <div class="result-banner">
+              <strong>✦ コピーして貼り付けよう</strong> → ChatGPT・Gemini・Claude
+              <div class="ai-links">
+                <a class="ai-link" href="https://chat.openai.com" target="_blank">ChatGPT</a>
+                <a class="ai-link" href="https://gemini.google.com" target="_blank">Gemini</a>
+                <a class="ai-link" href="https://claude.ai" target="_blank">Claude</a>
+              </div>
+            </div>
+            <div class="result-header">
+              <span class="result-label">生成プロンプト</span>
+              <div class="result-actions">
+                <button class="save-btn">⭐ 保存</button>
+                <button class="copy-btn">コピー</button>
+              </div>
+            </div>
+            <textarea class="result-textarea" rows="14" readonly></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- ツール2: ココナラ商品ページ -->
+      <div class="card" data-endpoint="/api/fortune/coconala">
+        <div class="card-header">
+          <div class="card-icon">⭐</div>
+          <div>
+            <div class="card-title">ココナラ商品ページプロンプト</div>
+            <div class="card-desc">購入ボタンを押させる販売ページ説明文・タイトルを生成</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="template-gallery">
+            <div class="template-gallery-label">✨ テンプレート</div>
+            <div class="template-chips">
+              <span class="template-chip" data-fill='{"divination_type":"タロット","specialty":"恋愛・復縁・片思い","style":"テキスト鑑定","price_range":"3,000〜5,000円"}'>タロット恋愛</span>
+              <span class="template-chip" data-fill='{"divination_type":"数秘術","specialty":"仕事・金運・人生全般","style":"テキスト鑑定","price_range":"5,000〜10,000円"}'>数秘術総合</span>
+            </div>
+          </div>
+          <div class="ai-mode-row">
+            <span class="ai-mode-label">最適化AI:</span>
+            <button class="ai-mode-btn active" data-ai="ChatGPT">ChatGPT</button>
+            <button class="ai-mode-btn" data-ai="Gemini">Gemini</button>
+            <button class="ai-mode-btn" data-ai="Claude">Claude</button>
+            <input type="hidden" name="ai_mode" value="ChatGPT" class="ai-mode-input">
+          </div>
+          <div class="two-col">
+            <div class="field-group">
+              <label>占術の種類</label>
+              <select name="divination_type">
+                <option value="タロット">タロット</option>
+                <option value="西洋占星術">西洋占星術</option>
+                <option value="数秘術">数秘術</option>
+                <option value="手相">手相</option>
+                <option value="四柱推命">四柱推命</option>
+                <option value="霊感・スピリチュアル">霊感・スピリチュアル</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label>鑑定スタイル</label>
+              <select name="style">
+                <option value="テキスト鑑定">テキスト鑑定</option>
+                <option value="電話鑑定">電話鑑定</option>
+                <option value="ビデオ鑑定">ビデオ鑑定</option>
+                <option value="音声鑑定">音声鑑定</option>
+              </select>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>得意な相談内容 *</label>
+            <input type="text" name="specialty" placeholder="例: 恋愛・復縁・片思い・不倫">
+          </div>
+          <div class="field-group">
+            <label>価格帯</label>
+            <select name="price_range">
+              <option value="1,000〜3,000円">1,000〜3,000円（初心者向け）</option>
+              <option value="3,000〜5,000円">3,000〜5,000円（標準）</option>
+              <option value="5,000〜10,000円">5,000〜10,000円（中級）</option>
+              <option value="10,000円以上">10,000円以上（高額）</option>
+            </select>
+          </div>
+          <button class="generate-btn">✦ プロンプト生成</button>
+          <div class="result-area">
+            <div class="result-banner">
+              <strong>✦ コピーして貼り付けよう</strong> → ChatGPT・Gemini・Claude
+              <div class="ai-links">
+                <a class="ai-link" href="https://chat.openai.com" target="_blank">ChatGPT</a>
+                <a class="ai-link" href="https://gemini.google.com" target="_blank">Gemini</a>
+                <a class="ai-link" href="https://claude.ai" target="_blank">Claude</a>
+              </div>
+            </div>
+            <div class="result-header">
+              <span class="result-label">生成プロンプト</span>
+              <div class="result-actions">
+                <button class="save-btn">⭐ 保存</button>
+                <button class="copy-btn">コピー</button>
+              </div>
+            </div>
+            <textarea class="result-textarea" rows="14" readonly></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- ツール3: 占い師プロフィール -->
+      <div class="card" data-endpoint="/api/fortune/profile">
+        <div class="card-header">
+          <div class="card-icon">🌟</div>
+          <div>
+            <div class="card-title">占い師プロフィールプロンプト</div>
+            <div class="card-desc">「見てもらいたい！」と思わせる占い師ブランディング</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="ai-mode-row">
+            <span class="ai-mode-label">最適化AI:</span>
+            <button class="ai-mode-btn active" data-ai="ChatGPT">ChatGPT</button>
+            <button class="ai-mode-btn" data-ai="Gemini">Gemini</button>
+            <button class="ai-mode-btn" data-ai="Claude">Claude</button>
+            <input type="hidden" name="ai_mode" value="ChatGPT" class="ai-mode-input">
+          </div>
+          <div class="field-group">
+            <label>占術歴・経験 *</label>
+            <input type="text" name="experience" placeholder="例: タロット歴5年・独学→師匠に師事・鑑定数500件以上">
+          </div>
+          <div class="field-group">
+            <label>占いを始めたきっかけ *</label>
+            <input type="text" name="motivation" placeholder="例: 自分自身が辛い時期にタロットに救われた経験から">
+          </div>
+          <div class="field-group">
+            <label>強み・特徴 *</label>
+            <input type="text" name="strengths" placeholder="例: 優しく寄り添う・具体的なアドバイス・当たると評判">
+          </div>
+          <div class="field-group">
+            <label>ターゲット顧客層 *</label>
+            <input type="text" name="target" placeholder="例: 恋愛で悩む20〜30代女性">
+          </div>
+          <button class="generate-btn">✦ プロンプト生成</button>
+          <div class="result-area">
+            <div class="result-banner">
+              <strong>✦ コピーして貼り付けよう</strong> → ChatGPT・Gemini・Claude
+              <div class="ai-links">
+                <a class="ai-link" href="https://chat.openai.com" target="_blank">ChatGPT</a>
+                <a class="ai-link" href="https://gemini.google.com" target="_blank">Gemini</a>
+                <a class="ai-link" href="https://claude.ai" target="_blank">Claude</a>
+              </div>
+            </div>
+            <div class="result-header">
+              <span class="result-label">生成プロンプト</span>
+              <div class="result-actions">
+                <button class="save-btn">⭐ 保存</button>
+                <button class="copy-btn">コピー</button>
+              </div>
+            </div>
+            <textarea class="result-textarea" rows="14" readonly></textarea>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ━━━ TAB: SNS特化 ━━━ -->
+  <section id="tab-sns" class="tab-panel" data-tab="sns">
+    <div class="section-header">
+      <div class="section-title">✨ SNS特化プロンプト</div>
+      <div class="section-desc">X・Threads・Instagramでバズる投稿とプロフィールを最大化するプロンプト</div>
+    </div>
+    <div class="tools-grid">
+
+      <!-- ツール1: X投稿 -->
+      <div class="card" data-endpoint="/api/sns/twitter">
+        <div class="card-header">
+          <div class="card-icon">𝕏</div>
+          <div>
+            <div class="card-title">X（Twitter）バズ投稿プロンプト</div>
+            <div class="card-desc">エンゲージメント最大化・3パターン+スレッド展開案</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="template-gallery">
+            <div class="template-gallery-label">✨ テンプレート</div>
+            <div class="template-chips">
+              <span class="template-chip" data-fill='{"topic":"AIを使った副業の始め方","genre":"副業・ビジネス","style":"リスト","length":"280字"}'>AI副業告知</span>
+              <span class="template-chip" data-fill='{"topic":"朝活で人生が変わった体験談","genre":"自己啓発","style":"ストーリー","length":"280字"}'>朝活体験談</span>
+              <span class="template-chip" data-fill='{"topic":"タロット占いで気をつけること","genre":"スピリチュアル","style":"問いかけ","length":"140字"}'>占いTips</span>
+            </div>
+          </div>
+          <div class="ai-mode-row">
+            <span class="ai-mode-label">最適化AI:</span>
+            <button class="ai-mode-btn active" data-ai="ChatGPT">ChatGPT</button>
+            <button class="ai-mode-btn" data-ai="Gemini">Gemini</button>
+            <button class="ai-mode-btn" data-ai="Claude">Claude</button>
+            <input type="hidden" name="ai_mode" value="ChatGPT" class="ai-mode-input">
+          </div>
+          <div class="field-group">
+            <label>トピック *</label>
+            <input type="text" name="topic" placeholder="例: AIを使った副業の始め方">
+          </div>
+          <div class="two-col">
+            <div class="field-group">
+              <label>ジャンル</label>
+              <select name="genre">
+                <option value="副業・ビジネス">副業・ビジネス</option>
+                <option value="自己啓発">自己啓発</option>
+                <option value="恋愛・婚活">恋愛・婚活</option>
+                <option value="スピリチュアル">スピリチュアル</option>
+                <option value="ライフスタイル">ライフスタイル</option>
+                <option value="育児・子育て">育児・子育て</option>
+                <option value="健康・美容">健康・美容</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label>投稿スタイル</label>
+              <select name="style">
+                <option value="問いかけ">問いかけ型</option>
+                <option value="断言">断言型</option>
+                <option value="リスト">リスト型</option>
+                <option value="ストーリー">ストーリー型</option>
+              </select>
+            </div>
+          </div>
+          <div class="field-group">
+            <label>文字数目安</label>
+            <select name="length">
+              <option value="140字以内">140字以内（短め）</option>
+              <option value="280字以内" selected>280字以内（標準）</option>
+            </select>
+          </div>
+          <button class="generate-btn">✦ プロンプト生成</button>
+          <div class="result-area">
+            <div class="result-banner">
+              <strong>✦ コピーして貼り付けよう</strong> → ChatGPT・Gemini・Claude
+              <div class="ai-links">
+                <a class="ai-link" href="https://chat.openai.com" target="_blank">ChatGPT</a>
+                <a class="ai-link" href="https://gemini.google.com" target="_blank">Gemini</a>
+                <a class="ai-link" href="https://claude.ai" target="_blank">Claude</a>
+              </div>
+            </div>
+            <div class="result-header">
+              <span class="result-label">生成プロンプト</span>
+              <div class="result-actions">
+                <button class="save-btn">⭐ 保存</button>
+                <button class="copy-btn">コピー</button>
+              </div>
+            </div>
+            <textarea class="result-textarea" rows="14" readonly></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- ツール2: Threads -->
+      <div class="card" data-endpoint="/api/sns/threads">
+        <div class="card-header">
+          <div class="card-icon">🧵</div>
+          <div>
+            <div class="card-title">Threads 投稿文プロンプト</div>
+            <div class="card-desc">コメント・リポストを増やすThreads特化の投稿戦略</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="template-gallery">
+            <div class="template-gallery-label">✨ テンプレート</div>
+            <div class="template-chips">
+              <span class="template-chip" data-fill='{"theme":"副業で月5万円稼いだ話","mood":"カジュアル","audience":"副業に興味ある会社員"}'>副業体験談</span>
+              <span class="template-chip" data-fill='{"theme":"占いで人生が変わった瞬間","mood":"インスパイア","audience":"スピリチュアルに興味ある女性"}'>スピリチュアル</span>
+            </div>
+          </div>
+          <div class="ai-mode-row">
+            <span class="ai-mode-label">最適化AI:</span>
+            <button class="ai-mode-btn active" data-ai="ChatGPT">ChatGPT</button>
+            <button class="ai-mode-btn" data-ai="Gemini">Gemini</button>
+            <button class="ai-mode-btn" data-ai="Claude">Claude</button>
+            <input type="hidden" name="ai_mode" value="ChatGPT" class="ai-mode-input">
+          </div>
+          <div class="field-group">
+            <label>テーマ *</label>
+            <input type="text" name="theme" placeholder="例: 副業で月5万円稼いだ実体験">
+          </div>
+          <div class="field-group">
+            <label>雰囲気・トーン</label>
+            <select name="mood">
+              <option value="カジュアル">カジュアル・日常系</option>
+              <option value="インスパイア">インスパイア・感動系</option>
+              <option value="教育的・ためになる">教育的・ためになる</option>
+              <option value="本音・リアル">本音・リアル系</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>ターゲットフォロワー *</label>
+            <input type="text" name="audience" placeholder="例: 副業に興味ある20〜30代会社員">
+          </div>
+          <button class="generate-btn">✦ プロンプト生成</button>
+          <div class="result-area">
+            <div class="result-banner">
+              <strong>✦ コピーして貼り付けよう</strong> → ChatGPT・Gemini・Claude
+              <div class="ai-links">
+                <a class="ai-link" href="https://chat.openai.com" target="_blank">ChatGPT</a>
+                <a class="ai-link" href="https://gemini.google.com" target="_blank">Gemini</a>
+                <a class="ai-link" href="https://claude.ai" target="_blank">Claude</a>
+              </div>
+            </div>
+            <div class="result-header">
+              <span class="result-label">生成プロンプト</span>
+              <div class="result-actions">
+                <button class="save-btn">⭐ 保存</button>
+                <button class="copy-btn">コピー</button>
+              </div>
+            </div>
+            <textarea class="result-textarea" rows="14" readonly></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- ツール3: Instagram -->
+      <div class="card" data-endpoint="/api/sns/instagram">
+        <div class="card-header">
+          <div class="card-icon">📸</div>
+          <div>
+            <div class="card-title">Instagram キャプション＋ハッシュタグ</div>
+            <div class="card-desc">保存・フォロワー増加を最大化する30タグセット付き投稿文</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="ai-mode-row">
+            <span class="ai-mode-label">最適化AI:</span>
+            <button class="ai-mode-btn active" data-ai="ChatGPT">ChatGPT</button>
+            <button class="ai-mode-btn" data-ai="Gemini">Gemini</button>
+            <button class="ai-mode-btn" data-ai="Claude">Claude</button>
+            <input type="hidden" name="ai_mode" value="ChatGPT" class="ai-mode-input">
+          </div>
+          <div class="field-group">
+            <label>投稿内容 *</label>
+            <input type="text" name="content" placeholder="例: 副業で月5万円達成した方法を紹介">
+          </div>
+          <div class="two-col">
+            <div class="field-group">
+              <label>アカウントジャンル</label>
+              <select name="genre">
+                <option value="副業・お金">副業・お金</option>
+                <option value="美容・コスメ">美容・コスメ</option>
+                <option value="グルメ・カフェ">グルメ・カフェ</option>
+                <option value="ライフスタイル">ライフスタイル</option>
+                <option value="ビジネス">ビジネス</option>
+                <option value="スピリチュアル">スピリチュアル</option>
+                <option value="育児・子育て">育児・子育て</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label>投稿の目的</label>
+              <select name="goal">
+                <option value="認知拡大・リーチUP">認知拡大</option>
+                <option value="エンゲージメント（いいね・コメント）UP">エンゲージメントUP</option>
+                <option value="フォロワー獲得">フォロワー獲得</option>
+                <option value="商品・サービス宣伝">商品・サービス宣伝</option>
+                <option value="保存数UP・有益投稿">保存数UP</option>
+              </select>
+            </div>
+          </div>
+          <button class="generate-btn">✦ プロンプト生成</button>
+          <div class="result-area">
+            <div class="result-banner">
+              <strong>✦ コピーして貼り付けよう</strong> → ChatGPT・Gemini・Claude
+              <div class="ai-links">
+                <a class="ai-link" href="https://chat.openai.com" target="_blank">ChatGPT</a>
+                <a class="ai-link" href="https://gemini.google.com" target="_blank">Gemini</a>
+                <a class="ai-link" href="https://claude.ai" target="_blank">Claude</a>
+              </div>
+            </div>
+            <div class="result-header">
+              <span class="result-label">生成プロンプト</span>
+              <div class="result-actions">
+                <button class="save-btn">⭐ 保存</button>
+                <button class="copy-btn">コピー</button>
+              </div>
+            </div>
+            <textarea class="result-textarea" rows="14" readonly></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- ツール4: SNSプロフィール -->
+      <div class="card" data-endpoint="/api/sns/bio">
+        <div class="card-header">
+          <div class="card-icon">💎</div>
+          <div>
+            <div class="card-title">SNSプロフィール最適化プロンプト</div>
+            <div class="card-desc">X・Threads・Instagram別の「フォローされるプロフィール」生成</div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="ai-mode-row">
+            <span class="ai-mode-label">最適化AI:</span>
+            <button class="ai-mode-btn active" data-ai="ChatGPT">ChatGPT</button>
+            <button class="ai-mode-btn" data-ai="Gemini">Gemini</button>
+            <button class="ai-mode-btn" data-ai="Claude">Claude</button>
+            <input type="hidden" name="ai_mode" value="ChatGPT" class="ai-mode-input">
+          </div>
+          <div class="field-group">
+            <label>プラットフォーム</label>
+            <select name="platform">
+              <option value="X（Twitter）">X（Twitter）</option>
+              <option value="Threads">Threads</option>
+              <option value="Instagram">Instagram</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label>発信ジャンル *</label>
+            <input type="text" name="niche" placeholder="例: AI副業・在宅ワーク・フリーランス">
+          </div>
+          <div class="field-group">
+            <label>肩書き・強み *</label>
+            <input type="text" name="title" placeholder="例: AI副業コンサルタント・元サラリーマン">
+          </div>
+          <div class="field-group">
+            <label>ターゲットフォロワー *</label>
+            <input type="text" name="target" placeholder="例: 副業で月5万円以上稼ぎたい会社員">
+          </div>
+          <button class="generate-btn">✦ プロンプト生成</button>
+          <div class="result-area">
+            <div class="result-banner">
+              <strong>✦ コピーして貼り付けよう</strong> → ChatGPT・Gemini・Claude
+              <div class="ai-links">
+                <a class="ai-link" href="https://chat.openai.com" target="_blank">ChatGPT</a>
+                <a class="ai-link" href="https://gemini.google.com" target="_blank">Gemini</a>
+                <a class="ai-link" href="https://claude.ai" target="_blank">Claude</a>
+              </div>
+            </div>
+            <div class="result-header">
+              <span class="result-label">生成プロンプト</span>
+              <div class="result-actions">
+                <button class="save-btn">⭐ 保存</button>
+                <button class="copy-btn">コピー</button>
+              </div>
+            </div>
+            <textarea class="result-textarea" rows="14" readonly></textarea>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
+
+<!-- ═══ HISTORY PANEL ═══ -->
+<button class="history-toggle" id="historyToggle" title="プロンプト履歴">
+  📋
+  <span class="history-badge" id="historyBadge"></span>
+</button>
+<div class="history-panel" id="historyPanel">
+  <div class="history-panel-header">
+    <h3>📋 保存済みプロンプト</h3>
+    <button class="history-clear-btn" id="historyClearBtn">すべて削除</button>
+  </div>
+  <div class="history-list" id="historyList">
+    <div class="history-empty">まだ保存されたプロンプトがありません<br>⭐ 保存ボタンで追加しよう</div>
+  </div>
+</div>
+
+<!-- ═══ FOOTER ═══ -->
+<footer class="site-footer">
+  <p>副業AIプロンプトプロ — 生成したプロンプトを <strong>ChatGPT</strong> / <strong>Gemini</strong> / <strong>Claude</strong> に貼り付けて使おう ✦</p>
+</footer>
+
+<script src="/static/js/app.js"></script>
 </body>
 </html>
