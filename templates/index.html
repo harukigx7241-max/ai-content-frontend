@@ -8,6 +8,48 @@
 </head>
 <body>
 
+<!-- ═══ ANIMATED ORBS ═══ -->
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+<div class="orb orb-4"></div>
+
+<!-- ═══ TOAST CONTAINER ═══ -->
+<div id="toast-container"></div>
+
+<!-- ═══ FULLSCREEN MODAL ═══ -->
+<div class="fullscreen-overlay" id="fullscreenOverlay">
+  <div class="fullscreen-modal">
+    <div class="fullscreen-modal-header">
+      <span class="fullscreen-title" id="fullscreenTitle">✦ プロンプト全画面編集</span>
+      <div class="fullscreen-actions">
+        <button class="copy-btn" id="fullscreenCopyBtn">コピー</button>
+        <button class="save-btn" id="fullscreenSaveBtn" style="display:none">⭐ 保存</button>
+        <button class="fullscreen-close-btn" id="fullscreenClose">✕</button>
+      </div>
+    </div>
+    <div class="fullscreen-modal-body">
+      <textarea class="fullscreen-textarea" id="fullscreenTextarea" placeholder="プロンプトがここに表示されます..."></textarea>
+    </div>
+    <div class="fullscreen-modal-footer">
+      <span class="fullscreen-char-count" id="fullscreenCharCount">0字</span>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span style="font-size:0.72rem;color:var(--text-muted)"><kbd>Esc</kbd> で閉じる</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SHARED PROMPT BANNER ═══ -->
+<div class="shared-prompt-banner" id="sharedBanner">
+  <h4>🔗 共有されたプロンプト</h4>
+  <pre id="sharedPreview"></pre>
+  <div class="shared-banner-actions">
+    <button class="copy-btn" id="sharedCopyBtn" style="background:rgba(52,211,153,0.15);border:1px solid rgba(52,211,153,0.3);color:#34d399;">コピー</button>
+    <button onclick="document.getElementById('sharedBanner').classList.remove('show')" style="background:var(--glass-fill);border:1px solid var(--glass-border);color:var(--text-secondary);">閉じる</button>
+  </div>
+</div>
+
 <!-- ═══ HEADER ═══ -->
 <header class="site-header">
   <div class="header-inner">
@@ -125,7 +167,7 @@
         <div class="result-banner">
           <strong>✦ このプロンプトをコピーして</strong>ChatGPT・Gemini・Claudeに貼り付けてください
         </div>
-        <textarea class="result-textarea" id="bundleResultText" rows="12" readonly></textarea>
+        <textarea class="result-textarea" id="bundleResultText" rows="12"></textarea>
       </div>
     </div>
 
@@ -232,7 +274,7 @@
                 <button class="copy-btn">コピー</button>
               </div>
             </div>
-            <textarea class="result-textarea" rows="14" readonly></textarea>
+            <textarea class="result-textarea" rows="14"></textarea>
           </div>
         </div>
       </div>
@@ -299,7 +341,7 @@
                 <button class="copy-btn">コピー</button>
               </div>
             </div>
-            <textarea class="result-textarea" rows="14" readonly></textarea>
+            <textarea class="result-textarea" rows="14"></textarea>
           </div>
         </div>
       </div>
@@ -367,7 +409,7 @@
                 <button class="copy-btn">コピー</button>
               </div>
             </div>
-            <textarea class="result-textarea" rows="14" readonly></textarea>
+            <textarea class="result-textarea" rows="14"></textarea>
           </div>
         </div>
       </div>
@@ -437,7 +479,7 @@
                 <button class="copy-btn">コピー</button>
               </div>
             </div>
-            <textarea class="result-textarea" rows="14" readonly></textarea>
+            <textarea class="result-textarea" rows="14"></textarea>
           </div>
         </div>
       </div>
@@ -512,7 +554,7 @@
                 <button class="copy-btn">コピー</button>
               </div>
             </div>
-            <textarea class="result-textarea" rows="14" readonly></textarea>
+            <textarea class="result-textarea" rows="14"></textarea>
           </div>
         </div>
       </div>
@@ -584,7 +626,7 @@
                 <button class="copy-btn">コピー</button>
               </div>
             </div>
-            <textarea class="result-textarea" rows="14" readonly></textarea>
+            <textarea class="result-textarea" rows="14"></textarea>
           </div>
         </div>
       </div>
@@ -645,7 +687,7 @@
                 <button class="copy-btn">コピー</button>
               </div>
             </div>
-            <textarea class="result-textarea" rows="14" readonly></textarea>
+            <textarea class="result-textarea" rows="14"></textarea>
           </div>
         </div>
       </div>
@@ -739,7 +781,7 @@
                 <button class="copy-btn">コピー</button>
               </div>
             </div>
-            <textarea class="result-textarea" rows="14" readonly></textarea>
+            <textarea class="result-textarea" rows="14"></textarea>
           </div>
         </div>
       </div>
@@ -820,7 +862,7 @@
                 <button class="copy-btn">コピー</button>
               </div>
             </div>
-            <textarea class="result-textarea" rows="14" readonly></textarea>
+            <textarea class="result-textarea" rows="14"></textarea>
           </div>
         </div>
       </div>
@@ -875,7 +917,7 @@
                 <button class="copy-btn">コピー</button>
               </div>
             </div>
-            <textarea class="result-textarea" rows="14" readonly></textarea>
+            <textarea class="result-textarea" rows="14"></textarea>
           </div>
         </div>
       </div>
@@ -968,7 +1010,7 @@
                 <button class="copy-btn">コピー</button>
               </div>
             </div>
-            <textarea class="result-textarea" rows="14" readonly></textarea>
+            <textarea class="result-textarea" rows="14"></textarea>
           </div>
         </div>
       </div>
@@ -1031,7 +1073,7 @@
                 <button class="copy-btn">コピー</button>
               </div>
             </div>
-            <textarea class="result-textarea" rows="14" readonly></textarea>
+            <textarea class="result-textarea" rows="14"></textarea>
           </div>
         </div>
       </div>
@@ -1098,7 +1140,7 @@
                 <button class="copy-btn">コピー</button>
               </div>
             </div>
-            <textarea class="result-textarea" rows="14" readonly></textarea>
+            <textarea class="result-textarea" rows="14"></textarea>
           </div>
         </div>
       </div>
@@ -1157,7 +1199,7 @@
                 <button class="copy-btn">コピー</button>
               </div>
             </div>
-            <textarea class="result-textarea" rows="14" readonly></textarea>
+            <textarea class="result-textarea" rows="14"></textarea>
           </div>
         </div>
       </div>
