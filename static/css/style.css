@@ -1232,3 +1232,182 @@ kbd {
 .shared-prompt-banner pre { font-size: 0.78rem; color: var(--text-secondary); white-space: pre-wrap; max-height: 120px; overflow-y: auto; }
 .shared-banner-actions { display: flex; gap: 8px; margin-top: 10px; }
 .shared-banner-actions button { padding: 6px 14px; border-radius: 100px; font-size: 0.78rem; cursor: pointer; }
+
+/* ═══════════════════════════════════════════════════════════════════
+   Phase 1: プロンプト強化コンポーネント
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ─── 空欄補完ウィジェット ─── */
+.autocomplete-widget {
+  margin-bottom: 16px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(168,85,247,0.2);
+}
+.autocomplete-toggle-btn {
+  width: 100%;
+  padding: 10px 16px;
+  background: rgba(168,85,247,0.08);
+  border: none;
+  color: var(--accent-note);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.2s;
+  letter-spacing: 0.02em;
+}
+.autocomplete-toggle-btn:hover {
+  background: rgba(168,85,247,0.15);
+}
+.autocomplete-panel {
+  padding: 12px 14px;
+  background: rgba(168,85,247,0.04);
+  border-top: 1px solid rgba(168,85,247,0.15);
+}
+.autocomplete-hint-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid rgba(168,85,247,0.25);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  padding: 8px 12px;
+  resize: vertical;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+.autocomplete-hint-input:focus {
+  outline: none;
+  border-color: var(--accent-note);
+}
+.autocomplete-panel-footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+.autocomplete-run-btn {
+  padding: 7px 16px;
+  background: linear-gradient(135deg, rgba(168,85,247,0.7), rgba(124,58,237,0.7));
+  border: 1px solid rgba(168,85,247,0.4);
+  border-radius: 100px;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  white-space: nowrap;
+}
+.autocomplete-run-btn:hover:not(:disabled) { opacity: 0.85; }
+.autocomplete-run-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.autocomplete-hint-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+}
+.autocomplete-result {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(168,85,247,0.15);
+}
+.autocomplete-result-label {
+  font-size: 0.75rem;
+  color: var(--accent-note);
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+.autocomplete-result-textarea {
+  font-size: 0.78rem;
+}
+.autocomplete-copy-btn {
+  margin-top: 6px;
+  padding: 5px 14px;
+  font-size: 0.78rem;
+}
+
+/* ─── 強化パネル ─── */
+.enhance-panel {
+  margin-top: 16px;
+  padding: 14px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  animation: fadeInUp 0.25s ease;
+}
+.enhance-panel-header {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.enhance-panel-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.enhance-btn {
+  padding: 6px 14px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 100px;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  white-space: nowrap;
+}
+.enhance-btn:hover:not(:disabled) {
+  background: rgba(168,85,247,0.15);
+  border-color: rgba(168,85,247,0.4);
+  color: var(--accent-note);
+}
+.enhance-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ─── 画像プロンプト結果エリア ─── */
+.enhance-image-result {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  animation: fadeInUp 0.25s ease;
+}
+.enhance-image-result-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.enhance-result-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--accent-sns);
+}
+.enhance-image-options {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.enhance-image-platform,
+.enhance-image-type {
+  background: rgba(0,0,0,0.4);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  color: var(--text-primary);
+  font-size: 0.75rem;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+.enhance-image-platform:focus,
+.enhance-image-type:focus {
+  outline: none;
+  border-color: var(--accent-sns);
+}
+.enhance-image-textarea {
+  font-size: 0.78rem;
+}

@@ -12,7 +12,7 @@ from pydantic import ValidationError
 from app.core.config import settings
 from app.core.exceptions import general_exception_handler, validation_exception_handler
 from app.core.maintenance import maintenance_middleware
-from app.routers import note, cw, fortune, sns, project, remix, system
+from app.routers import note, cw, fortune, sns, project, remix, system, enhance
 
 # ── アプリ生成 ──────────────────────────────────────────────────────
 app = FastAPI(
@@ -50,6 +50,7 @@ app.include_router(fortune.router)  # /api/fortune/*
 app.include_router(sns.router)      # /api/sns/*
 app.include_router(project.router)  # /api/project/*
 app.include_router(remix.router)    # /api/remix
+app.include_router(enhance.router)  # /api/enhance/* (Phase 1)
 
 # TODO: Phase 1 - app.include_router(auth.router)
 # TODO: Phase 2 - app.include_router(admin.router)

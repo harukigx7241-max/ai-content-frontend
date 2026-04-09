@@ -25,6 +25,10 @@ class Settings:
     NOTICE_BANNER_TEXT: str = os.getenv("NOTICE_BANNER_TEXT", "")
     NOTICE_BANNER_LINK: str = os.getenv("NOTICE_BANNER_LINK", "")
 
+    # ── Phase 1 機能フラグ ───────────────────────────────────────────
+    # Phase 1 の強化機能を一括で無効化できるキルスイッチ
+    ENABLE_PHASE1_FEATURES: bool = os.getenv("ENABLE_PHASE1_FEATURES", "true").lower() == "true"
+
     # ── 将来機能フラグ（全て無効）──────────────────────────────────
     # TODO: Phase 1 - 認証システム
     ENABLE_AUTH_SYSTEM: bool = False
