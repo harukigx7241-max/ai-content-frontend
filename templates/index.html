@@ -5,8 +5,35 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>副業AIプロンプトプロ</title>
   <link rel="stylesheet" href="/static/css/style.css">
+
+  <!-- ═══ SERVER-SIDE CONFIG (機能フラグ・告知バー設定) ═══ -->
+  <!-- Jinja2 でサーバーサイドレンダリングされる。フロントで window.AppConfig として参照可能。 -->
+  <script>
+  window.AppConfig = {
+    maintenance: {{ maintenance_mode | tojson }},
+    noticeBanner: {
+      enabled: {{ notice_banner_enabled | tojson }},
+      text:    {{ notice_banner_text | tojson }},
+      link:    {{ notice_banner_link | tojson }},
+    },
+    features: {
+      auth_system:     false,
+      admin_dashboard: false,
+      community:       false,
+      gamification:    false,
+      invite_system:   false,
+    },
+  };
+  </script>
 </head>
 <body>
+
+<!-- ═══ NOTICE BANNER (告知バー: ENABLE_NOTICE_BANNER=true で表示) ═══ -->
+<div id="noticeBanner" class="notice-banner" style="display:none">
+  <span class="notice-banner-text"></span>
+  <a class="notice-banner-link" href="#" target="_blank" rel="noopener" style="display:none">詳細 →</a>
+  <button class="notice-banner-close" onclick="this.parentElement.style.display='none'" aria-label="閉じる">✕</button>
+</div>
 
 <!-- ═══ ANIMATED ORBS ═══ -->
 <div class="orb orb-1"></div>
@@ -1229,6 +1256,14 @@
   <p>副業AIプロンプトプロ — 生成したプロンプトを <strong>ChatGPT</strong> / <strong>Gemini</strong> / <strong>Claude</strong> に貼り付けて使おう ✦</p>
 </footer>
 
+<script src="/static/js/core/config.js"></script>
+<script src="/static/js/core/api.js"></script>
 <script src="/static/js/app.js"></script>
+<script>
+  // config.js で window.Config が設定された後に初期化
+  document.addEventListener('DOMContentLoaded', () => {
+    if (window.Config) window.Config.init();
+  });
+</script>
 </body>
 </html>
