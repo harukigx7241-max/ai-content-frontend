@@ -17,7 +17,7 @@
       link:    {{ notice_banner_link | tojson }},
     },
     features: {
-      auth_system:     false,
+      auth_system:     {{ auth_system_enabled | tojson }},
       admin_dashboard: false,
       community:       false,
       gamification:    false,
@@ -102,6 +102,8 @@
         <span class="tab-label">SNS特化</span>
       </button>
     </nav>
+    <!-- 認証ナビ (ENABLE_AUTH_SYSTEM=true 時に JS で動的に挿入) -->
+    <div class="auth-nav" id="authNav"></div>
   </div>
 </header>
 
@@ -1267,6 +1269,41 @@
   document.addEventListener('DOMContentLoaded', () => {
     if (window.Config) window.Config.init();
   });
+</script>
+<script>
+// 認証ナビゲーション (ENABLE_AUTH_SYSTEM=true の場合のみ動作)
+(function() {
+  if (!window.AppConfig || !window.AppConfig.features.auth_system) return;
+
+  const nav = document.getElementById('authNav');
+  if (!nav) return;
+
+  fetch('/api/auth/me', { credentials: 'include' })
+    .then(r => r.ok ? r.json() : null)
+    .then(user => {
+      if (user) {
+        const isAdmin = user.role === 'admin';
+        nav.innerHTML =
+          `<span class="auth-user-name">${esc(user.display_name)}</span>` +
+          `<a href="/mypage" class="auth-nav-btn outline">マイページ</a>` +
+          (isAdmin ? `<a href="/admin" class="auth-nav-btn outline" style="color:var(--accent-gold);border-color:rgba(251,191,36,0.4)">管理</a>` : '') +
+          `<button class="auth-nav-btn outline" id="indexLogoutBtn">ログアウト</button>`;
+        document.getElementById('indexLogoutBtn').addEventListener('click', async () => {
+          await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+          location.reload();
+        });
+      } else {
+        nav.innerHTML =
+          `<a href="/login" class="auth-nav-btn outline">ログイン</a>` +
+          `<a href="/register" class="auth-nav-btn primary">新規登録</a>`;
+      }
+    })
+    .catch(() => {}); // 非ログイン状態は無視
+
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+})();
 </script>
 </body>
 </html>

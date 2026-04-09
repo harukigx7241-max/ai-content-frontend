@@ -4,6 +4,8 @@ FastAPI アプリケーションのエントリポイント。
 ここは薄く保つ: アプリ生成・ミドルウェア登録・ルーター include のみ。
 重い処理は routers / prompts / core に委譲する。
 """
+import os
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -52,8 +54,24 @@ app.include_router(project.router)  # /api/project/*
 app.include_router(remix.router)    # /api/remix
 app.include_router(enhance.router)  # /api/enhance/* (Phase 1)
 
-# TODO: Phase 1 - app.include_router(auth.router)
-# TODO: Phase 2 - app.include_router(admin.router)
+# ── Phase 2: 認証システム (ENABLE_AUTH_SYSTEM=false で即時無効化可能) ──
+if settings.ENABLE_AUTH_SYSTEM:
+    os.makedirs("data", exist_ok=True)
+
+    from app.db.base import Base
+    from app.db.session import engine
+    from app.db import models as _db_models  # noqa: F401 — User モデルを Base.metadata に登録
+
+    Base.metadata.create_all(bind=engine)
+
+    from app.auth.router import router as auth_router
+    from app.admin.router import router as admin_router
+    from app.routers.pages import router as pages_router
+
+    app.include_router(auth_router)   # /api/auth/*
+    app.include_router(admin_router)  # /api/admin/*
+    app.include_router(pages_router)  # /login, /register, /mypage, /admin
+
 # TODO: Phase 3 - app.include_router(community.router)
 # TODO: Phase 4 - app.include_router(gamification.router)
 # TODO: Phase 5 - app.include_router(invite.router)

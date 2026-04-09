@@ -27,6 +27,7 @@ def root(request: Request):
             "notice_banner_enabled": flags.NOTICE_BANNER,
             "notice_banner_text": settings.NOTICE_BANNER_TEXT,
             "notice_banner_link": settings.NOTICE_BANNER_LINK,
+            "auth_system_enabled": flags.AUTH_SYSTEM,
         },
     )
 

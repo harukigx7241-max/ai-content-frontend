@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>マイページ — 副業AIプロンプトプロ</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="/" class="logo" style="text-decoration:none">
+      <span class="logo-icon">✦</span>
+      <span class="logo-text">副業AIプロンプトプロ</span>
+    </a>
+    <div class="auth-nav">
+      <span class="auth-user-name">{{ user.display_name }}</span>
+      <a href="/" class="auth-nav-btn outline">生成ツール</a>
+      {% if user.role == 'admin' %}
+      <a href="/admin" class="auth-nav-btn outline" style="color:var(--accent-gold);border-color:rgba(251,191,36,0.4)">管理</a>
+      {% endif %}
+      <button class="auth-nav-btn outline" id="logoutBtn">ログアウト</button>
+    </div>
+  </div>
+</header>
+
+<main class="mypage-container">
+  <div class="mypage-header">
+    <h1 class="mypage-title">マイページ</h1>
+    <p style="color:var(--text-secondary);font-size:0.85rem">プロフィール情報とアカウント設定</p>
+  </div>
+
+  <!-- ── プロフィール情報 ── -->
+  <div class="mypage-card">
+    <div class="mypage-section-title">プロフィール</div>
+    <div class="mypage-info-grid">
+      <div class="mypage-info-item">
+        <label>表示名</label>
+        <span>{{ user.display_name }}</span>
+      </div>
+      <div class="mypage-info-item">
+        <label>SNSプラットフォーム</label>
+        <span>{{ user.sns_platform }}</span>
+      </div>
+      <div class="mypage-info-item">
+        <label>SNSアカウント名</label>
+        <span>{{ user.sns_handle }}</span>
+      </div>
+      <div class="mypage-info-item">
+        <label>ステータス</label>
+        <span class="status-badge {{ user.status }}">
+          {{ {"pending": "承認待ち", "approved": "承認済み", "rejected": "却下", "suspended": "停止中"}.get(user.status, user.status) }}
+        </span>
+      </div>
+      <div class="mypage-info-item">
+        <label>登録日</label>
+        <span>{{ user.created_at.strftime('%Y年%m月%d日') }}</span>
+      </div>
+      {% if user.profile_url %}
+      <div class="mypage-info-item" style="grid-column:1/-1">
+        <label>プロフィールURL</label>
+        <a href="{{ user.profile_url }}" target="_blank" rel="noopener"
+           style="color:var(--accent-note);font-size:0.88rem;word-break:break-all">
+          {{ user.profile_url }}
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- TODO: Phase 3+ プロンプト生成履歴・お気に入り表示 -->
+  <!-- TODO: Phase 4+ XP・レベル・バッジ表示 -->
+  <!-- TODO: Phase 5+ 招待コード表示 -->
+
+  <!-- ── パスワード変更 ── -->
+  <div class="mypage-card">
+    <div class="mypage-section-title">パスワード変更</div>
+    <div id="pwError" class="auth-error" style="display:none"></div>
+    <div id="pwSuccess" class="auth-success" style="display:none"></div>
+    <form id="pwForm" class="auth-form" novalidate style="max-width:420px">
+      <div class="field-group">
+        <label class="field-label" for="current_password">現在のパスワード</label>
+        <input id="current_password" type="password" name="current_password" class="field-input"
+               placeholder="現在のパスワード" required autocomplete="current-password">
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="new_password">新しいパスワード（8文字以上）</label>
+        <input id="new_password" type="password" name="new_password" class="field-input"
+               placeholder="新しいパスワード" required minlength="8" autocomplete="new-password">
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="new_password_confirm">新しいパスワード（確認）</label>
+        <input id="new_password_confirm" type="password" name="new_password_confirm" class="field-input"
+               placeholder="もう一度入力" required autocomplete="new-password">
+      </div>
+      <button type="submit" class="auth-submit-btn" id="pwBtn" style="max-width:180px">変更する</button>
+    </form>
+    <!-- TODO: Phase 3+ パスワードリセット（メール経由）リンクを追加 -->
+  </div>
+</main>
+
+<script>
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  await fetch('/api/auth/logout', { method: 'POST' });
+  location.href = '/';
+});
+
+document.getElementById('pwForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('pwBtn');
+  const errEl = document.getElementById('pwError');
+  const sucEl = document.getElementById('pwSuccess');
+  errEl.style.display = 'none';
+  sucEl.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = '変更中...';
+
+  const fd = new FormData(e.target);
+  const body = Object.fromEntries(fd.entries());
+
+  try {
+    const res = await fetch('/api/auth/change_password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      errEl.textContent = data.detail || 'パスワード変更に失敗しました';
+      errEl.style.display = 'block';
+      return;
+    }
+    sucEl.textContent = 'パスワードを変更しました';
+    sucEl.style.display = 'block';
+    e.target.reset();
+  } catch {
+    errEl.textContent = 'サーバーエラーが発生しました';
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '変更する';
+  }
+});
+</script>
+</body>
+</html>

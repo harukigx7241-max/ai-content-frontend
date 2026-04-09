@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>新規登録 — 副業AIプロンプトプロ</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="/" class="logo" style="text-decoration:none">
+      <span class="logo-icon">✦</span>
+      <span class="logo-text">副業AIプロンプトプロ</span>
+    </a>
+  </div>
+</header>
+
+<main class="auth-main">
+  <div class="auth-card" style="max-width:540px">
+    <div id="successView" style="display:none;text-align:center;padding:20px 0">
+      <div style="font-size:2.5rem;margin-bottom:16px">🎉</div>
+      <h2 style="color:var(--text-primary);margin-bottom:12px">登録完了しました！</h2>
+      <p id="successMsg" style="color:var(--text-secondary);margin-bottom:28px;line-height:1.6"></p>
+      <a href="/login" class="auth-submit-btn" style="display:inline-block;padding:12px 32px;text-decoration:none;width:auto">
+        ログインページへ
+      </a>
+    </div>
+
+    <div id="formView">
+      <h1 class="auth-title">新規登録</h1>
+      <p class="auth-desc">SNSアカウント情報で会員登録できます</p>
+
+      <div id="authError" class="auth-error" style="display:none"></div>
+
+      <form id="registerForm" class="auth-form" novalidate>
+        <div class="field-group">
+          <label class="field-label" for="sns_platform">SNSプラットフォーム <span style="color:#f87171">*</span></label>
+          <select id="sns_platform" name="sns_platform" class="field-select" required>
+            <option value="">選択してください</option>
+            <option value="X">X (旧 Twitter)</option>
+            <option value="Threads">Threads</option>
+            <option value="Instagram">Instagram</option>
+            <option value="note">note</option>
+            <option value="TikTok">TikTok</option>
+            <option value="YouTube">YouTube</option>
+            <option value="ブログ">ブログ</option>
+            <option value="その他">その他</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="sns_handle">SNSアカウント名 <span style="color:#f87171">*</span></label>
+          <input id="sns_handle" type="text" name="sns_handle" class="field-input"
+                 placeholder="@username（@は省略可）" required autocomplete="username">
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="display_name">表示名 <span style="color:#f87171">*</span></label>
+          <input id="display_name" type="text" name="display_name" class="field-input"
+                 placeholder="マイページや将来の投稿に表示される名前" required maxlength="100">
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="password">パスワード <span style="color:#f87171">*</span></label>
+          <input id="password" type="password" name="password" class="field-input"
+                 placeholder="8文字以上" required minlength="8" autocomplete="new-password">
+        </div>
+
+        <div class="field-group">
+          <label class="field-label" for="profile_url">プロフィールURL <span style="color:var(--text-muted);font-size:0.75rem">任意</span></label>
+          <input id="profile_url" type="url" name="profile_url" class="field-input"
+                 placeholder="https://x.com/username">
+        </div>
+
+        <!-- TODO: Phase 3+ メールアドレス入力欄を追加 -->
+
+        <button type="submit" class="auth-submit-btn" id="registerBtn">登録する</button>
+      </form>
+
+      <div class="auth-footer">
+        <p>すでにアカウントをお持ちの方は <a href="/login">ログイン</a></p>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+document.getElementById('registerForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('registerBtn');
+  const errEl = document.getElementById('authError');
+  errEl.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = '登録中...';
+
+  const fd = new FormData(e.target);
+  const body = {};
+  fd.forEach((v, k) => { if (v !== '') body[k] = v; }); // 空欄は除外
+
+  try {
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      let msg = data.detail || '登録に失敗しました';
+      // Pydantic validation error の配列対応
+      if (Array.isArray(msg)) msg = msg.map(e => e.msg || JSON.stringify(e)).join(' / ');
+      errEl.textContent = msg;
+      errEl.style.display = 'block';
+      return;
+    }
+
+    // 成功: フォームを隠して完了メッセージ表示
+    document.getElementById('formView').style.display = 'none';
+    document.getElementById('successMsg').textContent = data.message;
+    document.getElementById('successView').style.display = 'block';
+
+    // 自動承認された場合は /login へリダイレクト
+    if (data.auto_approved) {
+      setTimeout(() => { location.href = '/login'; }, 2000);
+    }
+  } catch {
+    errEl.textContent = 'サーバーエラーが発生しました。しばらく経ってから再試行してください';
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '登録する';
+  }
+});
+</script>
+</body>
+</html>
