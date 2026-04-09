@@ -8,20 +8,24 @@ from app.prompts.builders.cw import (
     build_cw_profile_prompt,
     build_cw_pricing_prompt,
 )
+from app.services.generate_service import dispatch
 
 router = APIRouter(prefix="/api/cw", tags=["crowdworks"])
 
 
 @router.post("/proposal")
 def cw_proposal(p: CwProposalRequest):
-    return JSONResponse({"prompt": build_cw_proposal_prompt(p)})
+    prompt, meta = dispatch(p, build_cw_proposal_prompt)
+    return JSONResponse({"prompt": prompt, "meta": meta})
 
 
 @router.post("/profile")
 def cw_profile(p: CwProfileRequest):
-    return JSONResponse({"prompt": build_cw_profile_prompt(p)})
+    prompt, meta = dispatch(p, build_cw_profile_prompt)
+    return JSONResponse({"prompt": prompt, "meta": meta})
 
 
 @router.post("/pricing")
 def cw_pricing(p: CwPricingRequest):
-    return JSONResponse({"prompt": build_cw_pricing_prompt(p)})
+    prompt, meta = dispatch(p, build_cw_pricing_prompt)
+    return JSONResponse({"prompt": prompt, "meta": meta})

@@ -13,10 +13,11 @@ from app.schemas.enhance import (
     ImagePromptRequest,
     NoteFormatRequest,
 )
-from app.prompts.builders.enhance import build_autocomplete_prompt, build_image_prompt
+from app.prompts.builders.enhance import build_autocomplete_prompt
 from app.prompts.modifiers.ai_optimize import apply_ai_optimize
 from app.prompts.modifiers.direct_output import apply_direct_output
-from app.prompts.modifiers.note_format import apply_note_format
+from app.services.note_format_service import apply_note_format_service
+from app.services.image_prompt_service import ImagePromptService
 
 router = APIRouter(prefix="/api/enhance", tags=["enhance"])
 
@@ -29,8 +30,8 @@ def enhance_direct_output(p: DirectOutputRequest):
 
 @router.post("/note_format")
 def enhance_note_format(p: NoteFormatRequest):
-    """note.com 装飾モード: 元のプロンプトに note 向け装飾指示を追加して返す。"""
-    return JSONResponse({"prompt": apply_note_format(p.prompt)})
+    """note.com 装飾モード: note_format_service 経由でフォーマット指示を追加して返す。"""
+    return JSONResponse({"prompt": apply_note_format_service(p.prompt)})
 
 
 @router.post("/ai_optimize")
@@ -49,5 +50,5 @@ def enhance_autocomplete(p: AutocompleteRequest):
 
 @router.post("/image_prompt")
 def enhance_image_prompt(p: ImagePromptRequest):
-    """画像生成プロンプト生成: 記事テーマから画像 AI 向けプロンプトを返す。"""
-    return JSONResponse({"prompt": build_image_prompt(p)})
+    """画像生成プロンプト生成: ImagePromptService 経由で画像 AI 向けプロンプトを返す。"""
+    return JSONResponse({"prompt": ImagePromptService.from_request(p).build()})

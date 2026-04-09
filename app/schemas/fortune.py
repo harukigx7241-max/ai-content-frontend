@@ -1,5 +1,7 @@
 """app/schemas/fortune.py — Tab3: 占い副業系リクエストモデル"""
+from typing import Optional
 from pydantic import BaseModel, Field
+from app.schemas.options import GenerateOptions
 
 
 class FortuneReadingRequest(BaseModel):
@@ -7,6 +9,7 @@ class FortuneReadingRequest(BaseModel):
     category: str = Field(..., max_length=50)
     direction: str = Field(..., max_length=50)
     ai_mode: str = Field(default="ChatGPT", max_length=20)
+    options: Optional[GenerateOptions] = None
 
 
 class FortuneCoconalaRequest(BaseModel):
@@ -15,6 +18,7 @@ class FortuneCoconalaRequest(BaseModel):
     style: str = Field(..., max_length=50)
     price_range: str = Field(..., max_length=50)
     ai_mode: str = Field(default="ChatGPT", max_length=20)
+    options: Optional[GenerateOptions] = None
 
 
 class FortuneProfileRequest(BaseModel):
@@ -23,3 +27,4 @@ class FortuneProfileRequest(BaseModel):
     strengths: str = Field(..., min_length=1, max_length=300)
     target: str = Field(..., min_length=1, max_length=200)
     ai_mode: str = Field(default="ChatGPT", max_length=20)
+    options: Optional[GenerateOptions] = None

@@ -257,6 +257,7 @@ const App = {
       resultArea.classList.add('show');
       await this.typewriterEffect(textarea, text);
       card.dispatchEvent(new CustomEvent('promptReady', { bubbles: false })); // Phase 1: enhance panel trigger
+      if (window.Storage && text) window.Storage.addHistory(endpoint, text); // Phase 1: auto history
 
       // Update char count
       const cc = card.querySelector('.char-count');
@@ -793,6 +794,7 @@ const App = {
     this.initBundle();
     this.renderHistory();
     if (window.Enhance) window.Enhance.init(); // Phase 1: enhance panel
+    if (window.Storage) window.Storage.init(); // Phase 1: form auto-save
   }
 };
 

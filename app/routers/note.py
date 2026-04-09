@@ -14,25 +14,30 @@ from app.prompts.builders.note import (
     build_note_salescopy_prompt,
     build_note_titles_prompt,
 )
+from app.services.generate_service import dispatch
 
 router = APIRouter(prefix="/api/note", tags=["note"])
 
 
 @router.post("/article")
 def note_article(p: NoteArticleRequest):
-    return JSONResponse({"prompt": build_note_article_prompt(p)})
+    prompt, meta = dispatch(p, build_note_article_prompt)
+    return JSONResponse({"prompt": prompt, "meta": meta})
 
 
 @router.post("/titles")
 def note_titles(p: NoteTitlesRequest):
-    return JSONResponse({"prompt": build_note_titles_prompt(p)})
+    prompt, meta = dispatch(p, build_note_titles_prompt)
+    return JSONResponse({"prompt": prompt, "meta": meta})
 
 
 @router.post("/salescopy")
 def note_salescopy(p: NoteSalesCopyRequest):
-    return JSONResponse({"prompt": build_note_salescopy_prompt(p)})
+    prompt, meta = dispatch(p, build_note_salescopy_prompt)
+    return JSONResponse({"prompt": prompt, "meta": meta})
 
 
 @router.post("/gift")
 def note_gift(p: NoteGiftRequest):
-    return JSONResponse({"prompt": build_note_gift_prompt(p)})
+    prompt, meta = dispatch(p, build_note_gift_prompt)
+    return JSONResponse({"prompt": prompt, "meta": meta})

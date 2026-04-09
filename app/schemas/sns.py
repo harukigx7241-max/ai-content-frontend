@@ -1,5 +1,7 @@
 """app/schemas/sns.py — Tab4: SNS特化系リクエストモデル"""
+from typing import Optional
 from pydantic import BaseModel, Field
+from app.schemas.options import GenerateOptions
 
 
 class SnsTweetRequest(BaseModel):
@@ -8,6 +10,7 @@ class SnsTweetRequest(BaseModel):
     style: str = Field(default="問いかけ", max_length=30)
     length: str = Field(default="140字", max_length=20)
     ai_mode: str = Field(default="ChatGPT", max_length=20)
+    options: Optional[GenerateOptions] = None
 
 
 class SnsThreadsRequest(BaseModel):
@@ -15,6 +18,7 @@ class SnsThreadsRequest(BaseModel):
     mood: str = Field(default="カジュアル", max_length=30)
     audience: str = Field(..., min_length=1, max_length=200)
     ai_mode: str = Field(default="ChatGPT", max_length=20)
+    options: Optional[GenerateOptions] = None
 
 
 class SnsInstagramRequest(BaseModel):
@@ -22,6 +26,7 @@ class SnsInstagramRequest(BaseModel):
     genre: str = Field(..., max_length=50)
     goal: str = Field(default="エンゲージメント", max_length=50)
     ai_mode: str = Field(default="ChatGPT", max_length=20)
+    options: Optional[GenerateOptions] = None
 
 
 class SnsBioRequest(BaseModel):
@@ -30,3 +35,4 @@ class SnsBioRequest(BaseModel):
     title: str = Field(..., min_length=1, max_length=200)
     target: str = Field(..., min_length=1, max_length=200)
     ai_mode: str = Field(default="ChatGPT", max_length=20)
+    options: Optional[GenerateOptions] = None

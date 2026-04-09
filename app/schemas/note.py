@@ -1,5 +1,7 @@
 """app/schemas/note.py — Tab1: 有料コンテンツ系リクエストモデル"""
+from typing import Optional
 from pydantic import BaseModel, Field
+from app.schemas.options import GenerateOptions
 
 
 class NoteArticleRequest(BaseModel):
@@ -11,6 +13,7 @@ class NoteArticleRequest(BaseModel):
     free_chars: str = Field(default="2000字", max_length=20)
     paid_chars: str = Field(default="5000字", max_length=20)
     ai_mode: str = Field(default="ChatGPT", max_length=20)
+    options: Optional[GenerateOptions] = None
 
 
 class NoteTitlesRequest(BaseModel):
@@ -18,6 +21,7 @@ class NoteTitlesRequest(BaseModel):
     keyword: str = Field(..., min_length=1, max_length=200)
     target: str = Field(..., min_length=1, max_length=200)
     ai_mode: str = Field(default="ChatGPT", max_length=20)
+    options: Optional[GenerateOptions] = None
 
 
 class NoteSalesCopyRequest(BaseModel):
@@ -26,6 +30,7 @@ class NoteSalesCopyRequest(BaseModel):
     target: str = Field(..., min_length=1, max_length=200)
     price: str = Field(..., max_length=50)
     ai_mode: str = Field(default="ChatGPT", max_length=20)
+    options: Optional[GenerateOptions] = None
 
 
 class NoteGiftRequest(BaseModel):
@@ -34,3 +39,4 @@ class NoteGiftRequest(BaseModel):
     volume: str = Field(default="標準版（A4 3枚相当）", max_length=50)
     buyer_situation: str = Field(..., min_length=1, max_length=300)
     ai_mode: str = Field(default="ChatGPT", max_length=20)
+    options: Optional[GenerateOptions] = None
