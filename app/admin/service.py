@@ -5,14 +5,17 @@ app/admin/service.py — 管理者サービス
 router は薄く保ち、重いロジックはこのモジュールに寄せる。
 
 Phase 9: 重要な管理操作は audit_log に記録する。
-  記録パターン: try: log_audit(...) except: pass
+  記録パターン: try: log_audit(...) except Exception as e: logger.warning(...)
   失敗しても本処理に影響させない。
 """
+import logging
 from datetime import datetime, timedelta, timezone
 from typing import Optional
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
+
+logger = logging.getLogger(__name__)
 
 from app.core import runtime_config as rc
 from app.core.config import settings
@@ -63,15 +66,15 @@ def approve_user(db: Session, user_id: int, admin_id: int) -> User:
             ).first()
             if not already:
                 _gami.try_award(db, user.invited_by_user_id, _XPE.INVITE_APPROVED, ref_id=user.id)
-        except Exception:
-            pass  # XP 付与の失敗は承認処理に影響させない
+        except Exception as e:
+            logger.warning("XP付与失敗 (approve_user user_id=%s): %s", user_id, e)
 
     # Phase 9: 監査ログ
     try:
         from app.analytics.service import log_audit
         log_audit(db, admin_id, "approve_user", "user", user_id)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("audit_log失敗 (approve_user user_id=%s): %s", user_id, e)
 
     return user
 
@@ -90,8 +93,8 @@ def reject_user(db: Session, user_id: int, admin_id: int) -> User:
     try:
         from app.analytics.service import log_audit
         log_audit(db, admin_id, "reject_user", "user", user_id)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("audit_log失敗 (reject_user user_id=%s): %s", user_id, e)
 
     return user
 
@@ -111,8 +114,8 @@ def suspend_user(db: Session, user_id: int, admin_id: int) -> User:
     try:
         from app.analytics.service import log_audit
         log_audit(db, admin_id, "suspend_user", "user", user_id)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("audit_log失敗 (suspend_user user_id=%s): %s", user_id, e)
 
     return user
 
@@ -131,8 +134,8 @@ def restore_user(db: Session, user_id: int, admin_id: int) -> User:
     try:
         from app.analytics.service import log_audit
         log_audit(db, admin_id, "restore_user", "user", user_id)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("audit_log失敗 (restore_user user_id=%s): %s", user_id, e)
 
     return user
 
@@ -215,7 +218,7 @@ def update_settings(db: Session, data: dict, admin_id: int) -> dict:
         from app.analytics.service import log_audit
         changed = {k: v for k, v in data.items() if v is not None}
         log_audit(db, admin_id, "update_settings", detail=_json.dumps(changed, ensure_ascii=False))
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("audit_log失敗 (update_settings): %s", e)
 
     return get_settings(db)

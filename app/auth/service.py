@@ -6,10 +6,13 @@ app/auth/service.py — 認証ビジネスロジック
   - DB 操作を含む。router からは本 service の関数だけを呼ぶ。
   - パスワードハッシュ / JWT 生成は core/security.py に委譲。
 """
+import logging
 from datetime import datetime, timezone
 
 from fastapi import HTTPException
 from sqlalchemy.orm import Session
+
+logger = logging.getLogger(__name__)
 
 from app.core.config import settings
 from app.core.security import hash_password, timing_safe_verify, create_access_token
@@ -75,8 +78,8 @@ def register_user(db: Session, data: RegisterRequest) -> User:
         try:
             from app.invite import service as _invite_svc
             _invite_svc.record_code_use(db, invite_code_obj, user.id)
-        except Exception:
-            pass  # 招待記録の失敗は登録に影響させない
+        except Exception as e:
+            logger.warning("招待記録失敗 (user_id=%s): %s", user.id, e)
 
     return user
 

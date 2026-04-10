@@ -9,7 +9,7 @@ import secrets  # noqa: F401 (used for future token generation helpers)
 
 class Settings:
     # ── アプリ基本情報 ──────────────────────────────────────────────
-    APP_NAME: str = os.getenv("APP_NAME", "副業AIプロンプトプロ")
+    APP_NAME: str = os.getenv("APP_NAME", "プロンプトギルド")
     APP_VERSION: str = "2.0.0"
 
     # ── メンテナンスモード ──────────────────────────────────────────
@@ -30,14 +30,14 @@ class Settings:
     # Phase 1 の強化機能を一括で無効化できるキルスイッチ
     ENABLE_PHASE1_FEATURES: bool = os.getenv("ENABLE_PHASE1_FEATURES", "true").lower() == "true"
 
-    # ── 将来機能フラグ（全て無効）──────────────────────────────────
+    # ── 機能フラグ（デフォルト有効、env で無効化可能）────────────────
     # Phase 3 - 管理ダッシュボード
     ENABLE_ADMIN_DASHBOARD: bool = os.getenv("ENABLE_ADMIN_DASHBOARD", "true").lower() == "true"
     # Phase 5 - コミュニティ（公開広場）ENABLE_COMMUNITY=false で無効化可能
     ENABLE_COMMUNITY: bool = os.getenv("ENABLE_COMMUNITY", "true").lower() == "true"
     # Phase 7 - ゲーミフィケーション（XP/バッジ）ENABLE_GAMIFICATION=false で無効化可能
     ENABLE_GAMIFICATION: bool = os.getenv("ENABLE_GAMIFICATION", "true").lower() == "true"
-    # TODO: Phase 5 - 招待コードシステム
+    # 招待コードシステム: 現時点では無効固定（将来 env-driven に変更予定）
     ENABLE_INVITE_SYSTEM: bool = False
 
     # ── CORS ────────────────────────────────────────────────────────────
@@ -45,7 +45,7 @@ class Settings:
     # 例: BACKEND_CORS_ORIGINS=https://example.com,https://app.example.com
     # 未設定の場合は ["*"] (開発用デフォルト)。本番では必ず明示すること。
     _cors_raw: str = os.getenv("BACKEND_CORS_ORIGINS", "")
-    BACKEND_CORS_ORIGINS: list = (
+    BACKEND_CORS_ORIGINS: list[str] = (
         [o.strip() for o in _cors_raw.split(",") if o.strip()]
         if _cors_raw.strip()
         else ["*"]
