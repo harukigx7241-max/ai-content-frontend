@@ -33,8 +33,8 @@ class Settings:
     # ── 将来機能フラグ（全て無効）──────────────────────────────────
     # Phase 3 - 管理ダッシュボード
     ENABLE_ADMIN_DASHBOARD: bool = os.getenv("ENABLE_ADMIN_DASHBOARD", "true").lower() == "true"
-    # TODO: Phase 3 - コミュニティ（公開広場）
-    ENABLE_COMMUNITY: bool = False
+    # Phase 5 - コミュニティ（公開広場）ENABLE_COMMUNITY=false で無効化可能
+    ENABLE_COMMUNITY: bool = os.getenv("ENABLE_COMMUNITY", "true").lower() == "true"
     # TODO: Phase 4 - ゲーミフィケーション（XP/バッジ）
     ENABLE_GAMIFICATION: bool = False
     # TODO: Phase 5 - 招待コードシステム

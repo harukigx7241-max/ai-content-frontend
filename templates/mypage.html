@@ -231,17 +231,25 @@
       </div>
     </div>
 
-    <!-- 投稿管理 (stub) -->
-    <div class="mypage-stub-card" aria-label="準備中">
-      <div class="mypage-stub-header">
-        <span class="mypage-stub-icon">📝</span>
-        <span class="mypage-stub-title">投稿管理</span>
-        <span class="mypage-stub-badge">近日公開</span>
+    <!-- 投稿管理 (Phase 5: 公開広場へのリンク) -->
+    <div class="mypage-card" style="background:linear-gradient(135deg,rgba(192,132,252,0.08),rgba(52,211,153,0.06))">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <div>
+          <div class="mypage-section-title" style="margin-bottom:4px">📝 公開広場</div>
+          <p style="font-size:0.82rem;color:var(--text-secondary)">
+            生成したプロンプトを広場に投稿して、他のユーザーと共有できます。
+          </p>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <a href="/square" class="auth-nav-btn outline" style="font-size:0.78rem;text-decoration:none">
+            広場を見る
+          </a>
+          <a href="/square/new" class="auth-nav-btn primary" style="font-size:0.78rem;text-decoration:none">
+            ✦ 投稿する
+          </a>
+        </div>
       </div>
-      <div class="mypage-stub-body">
-        <p class="mypage-stub-desc">生成したプロンプトを公開広場でシェアできるようになります。</p>
-        <!-- TODO: Phase N+ 投稿一覧・公開/非公開切替 -->
-      </div>
+      <!-- TODO: Phase N+ 自分の投稿一覧をここに表示 (/api/community/posts/mine) -->
     </div>
 
   </section>

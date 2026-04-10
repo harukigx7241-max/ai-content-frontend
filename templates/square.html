@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>公開広場 — 副業AIプロンプトプロ</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="/" class="logo" style="text-decoration:none">
+      <span class="logo-icon">✦</span>
+      <span class="logo-text">副業AIプロンプトプロ</span>
+    </a>
+    <div class="auth-nav">
+      {% if user %}
+        <span class="auth-user-name">{{ user.display_name }}</span>
+        <a href="/" class="auth-nav-btn outline">生成ツール</a>
+        <a href="/mypage" class="auth-nav-btn outline">マイページ</a>
+        {% if user.role in ('admin',) %}
+          <a href="/admin" class="auth-nav-btn outline" style="color:var(--accent-gold);border-color:rgba(251,191,36,0.4)">管理</a>
+        {% endif %}
+        <button class="auth-nav-btn outline" id="logoutBtn">ログアウト</button>
+      {% else %}
+        <a href="/" class="auth-nav-btn outline">生成ツール</a>
+        <a href="/login" class="auth-nav-btn outline">ログイン</a>
+        <a href="/register" class="auth-nav-btn primary">新規登録</a>
+      {% endif %}
+    </div>
+  </div>
+</header>
+
+<main class="sq-container">
+
+  <!-- ── ヒーロー ─────────────────────────────────────────────── -->
+  <div class="sq-hero">
+    <div>
+      <h1 class="sq-hero-title">公開広場</h1>
+      <p class="sq-hero-sub">みんなのプロンプトを探して、副業に活かそう</p>
+    </div>
+    {% if user %}
+      <a href="/square/new" class="auth-nav-btn primary sq-post-btn">✦ プロンプトを投稿</a>
+    {% else %}
+      <a href="/login?next=/square/new" class="auth-nav-btn outline sq-post-btn">ログインして投稿</a>
+    {% endif %}
+  </div>
+
+  <!-- ── 検索・フィルター ──────────────────────────────────────── -->
+  <div class="mypage-card sq-search-card">
+    <div class="sq-search-row">
+      <input type="text" id="searchQ" class="field-input sq-search-input"
+             placeholder="キーワードで検索 (タイトル・説明・タグ)" maxlength="100">
+      <button class="auth-nav-btn primary" id="searchBtn" style="padding:10px 22px;flex-shrink:0">検索</button>
+    </div>
+    <div class="sq-filter-row">
+      <select id="filterCategory" class="field-input sq-filter-select">
+        <option value="">カテゴリ: すべて</option>
+        <option value="note">📝 note記事</option>
+        <option value="sns">✨ SNS投稿</option>
+        <option value="cw">💼 クラウドワークス</option>
+        <option value="fortune">🔮 占い</option>
+        <option value="image">🖼️ 画像生成</option>
+        <option value="other">その他</option>
+      </select>
+      <select id="filterPurpose" class="field-input sq-filter-select">
+        <option value="">目的: すべて</option>
+        <option value="article">記事</option>
+        <option value="sales">販売ページ</option>
+        <option value="proposal">提案文</option>
+        <option value="profile">プロフィール</option>
+        <option value="post">投稿文</option>
+        <option value="research">リサーチ</option>
+        <option value="image">画像生成</option>
+      </select>
+      <select id="filterPlatform" class="field-input sq-filter-select">
+        <option value="">媒体: すべて</option>
+        <option value="note">note</option>
+        <option value="x">X (Twitter)</option>
+        <option value="threads">Threads</option>
+        <option value="instagram">Instagram</option>
+        <option value="brain">Brain</option>
+        <option value="tips">tips</option>
+        <option value="blog">ブログ</option>
+        <option value="generic">汎用</option>
+      </select>
+      <button class="auth-nav-btn outline" id="clearFilterBtn" style="font-size:0.78rem;padding:8px 14px;flex-shrink:0">
+        リセット
+      </button>
+    </div>
+  </div>
+
+  <!-- ── 結果カウント + ソート情報 ────────────────────────────── -->
+  <div class="sq-result-bar" id="resultBar" style="display:none">
+    <span id="resultCount" class="sq-result-count"></span>
+    <span class="sq-result-order">新着順</span>
+  </div>
+
+  <!-- ── 投稿リスト ────────────────────────────────────────────── -->
+  <div id="postList" class="sq-grid"></div>
+
+  <!-- ローディング -->
+  <div id="loadingEl" class="sq-loading">
+    <div class="sq-loading-spinner"></div>
+    <span>読み込み中...</span>
+  </div>
+
+  <!-- 空状態 -->
+  <div id="emptyEl" class="sq-empty" style="display:none">
+    <div class="sq-empty-icon">🔍</div>
+    <p class="sq-empty-text">投稿が見つかりませんでした</p>
+    <p class="sq-empty-sub">検索条件を変えてみてください</p>
+  </div>
+
+  <!-- ── ページネーション ──────────────────────────────────────── -->
+  <div id="pagination" class="sq-pagination" style="display:none"></div>
+
+</main>
+
+<script>
+// ── 状態管理 ─────────────────────────────────────────────────────
+let currentPage = 1;
+const perPage = 20;
+
+// ── ラベル定数 ────────────────────────────────────────────────────
+const CAT_LABEL = {
+  note:'📝 note記事', sns:'✨ SNS投稿', cw:'💼 CW',
+  fortune:'🔮 占い', image:'🖼️ 画像', other:'その他'
+};
+const PURPOSE_LABEL = {
+  article:'記事', sales:'販売', proposal:'提案', profile:'プロフィール',
+  post:'投稿', research:'リサーチ', image:'画像'
+};
+const PLATFORM_LABEL = {
+  note:'note', x:'X', threads:'Threads', instagram:'Instagram',
+  brain:'Brain', tips:'tips', blog:'ブログ', generic:'汎用'
+};
+
+// ── API フェッチ ──────────────────────────────────────────────────
+async function fetchPosts(page) {
+  const q        = document.getElementById('searchQ').value.trim();
+  const cat      = document.getElementById('filterCategory').value;
+  const purpose  = document.getElementById('filterPurpose').value;
+  const platform = document.getElementById('filterPlatform').value;
+
+  const params = new URLSearchParams({ page, per_page: perPage });
+  if (q)        params.set('q', q);
+  if (cat)      params.set('category', cat);
+  if (purpose)  params.set('purpose', purpose);
+  if (platform) params.set('target_platform', platform);
+
+  showLoading(true);
+  try {
+    const res = await fetch('/api/community/posts?' + params);
+    if (!res.ok) throw new Error('API error');
+    const data = await res.json();
+    renderPosts(data);
+  } catch {
+    showError();
+  } finally {
+    showLoading(false);
+  }
+}
+
+// ── 描画 ─────────────────────────────────────────────────────────
+function renderPosts(data) {
+  const list = document.getElementById('postList');
+  const empty = document.getElementById('emptyEl');
+  const pager = document.getElementById('pagination');
+  const bar   = document.getElementById('resultBar');
+
+  if (!data.posts.length) {
+    list.innerHTML  = '';
+    empty.style.display = '';
+    pager.style.display = 'none';
+    bar.style.display   = 'none';
+    return;
+  }
+
+  empty.style.display = 'none';
+  bar.style.display   = '';
+  document.getElementById('resultCount').textContent =
+    `${data.total} 件中 ${(data.page - 1) * data.per_page + 1}〜${Math.min(data.page * data.per_page, data.total)} 件`;
+
+  list.innerHTML = data.posts.map(p => postCard(p)).join('');
+
+  // ページネーション
+  if (data.total <= perPage) {
+    pager.style.display = 'none';
+  } else {
+    pager.style.display = 'flex';
+    const totalPages = Math.ceil(data.total / perPage);
+    pager.innerHTML = paginationHTML(data.page, totalPages);
+    pager.querySelectorAll('[data-page]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentPage = parseInt(btn.dataset.page);
+        fetchPosts(currentPage);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    });
+  }
+}
+
+function postCard(p) {
+  const tags = p.tags ? p.tags.split(',').map(t =>
+    `<span class="sq-tag">${esc(t.trim())}</span>`).join('') : '';
+  const catLabel  = CAT_LABEL[p.category] || p.category;
+  const platLabel = p.target_platform ? (PLATFORM_LABEL[p.target_platform] || p.target_platform) : '';
+  const ownBadge  = p.is_own
+    ? `<span class="sq-own-badge">${p.visibility === 'private' ? '🔒 非公開' : '自分の投稿'}</span>`
+    : '';
+  const desc = p.description
+    ? `<p class="sq-card-desc">${esc(p.description.slice(0, 100))}${p.description.length > 100 ? '…' : ''}</p>`
+    : '';
+  const views = `<span class="sq-card-views">👁 ${p.view_count || 0}</span>`;
+  const date  = new Date(p.created_at).toLocaleDateString('ja-JP');
+
+  return `
+<a href="/square/${p.id}" class="sq-card" style="text-decoration:none;display:block">
+  <div class="sq-card-head">
+    <span class="sq-cat-badge" data-cat="${esc(p.category)}">${esc(catLabel)}</span>
+    ${platLabel ? `<span class="sq-plat-label">${esc(platLabel)}</span>` : ''}
+    ${ownBadge}
+    <span class="sq-card-date">${date}</span>
+    ${views}
+  </div>
+  <h3 class="sq-card-title">${esc(p.title)}</h3>
+  ${desc}
+  <div class="sq-card-foot">
+    <span class="sq-author">by ${esc(p.author_name)}</span>
+    <div class="sq-tag-row">${tags}</div>
+  </div>
+</a>`;
+}
+
+function paginationHTML(current, total) {
+  let html = '';
+  if (current > 1) {
+    html += `<button class="sq-page-btn" data-page="${current - 1}">← 前へ</button>`;
+  }
+  // 現在±2 ページを表示
+  for (let i = Math.max(1, current - 2); i <= Math.min(total, current + 2); i++) {
+    html += `<button class="sq-page-btn ${i === current ? 'active' : ''}" data-page="${i}">${i}</button>`;
+  }
+  if (current < total) {
+    html += `<button class="sq-page-btn" data-page="${current + 1}">次へ →</button>`;
+  }
+  return html;
+}
+
+// ── ユーティリティ ────────────────────────────────────────────────
+function showLoading(show) {
+  document.getElementById('loadingEl').style.display = show ? '' : 'none';
+  document.getElementById('postList').style.opacity  = show ? '0.4' : '1';
+}
+function showError() {
+  document.getElementById('postList').innerHTML =
+    '<p style="color:var(--text-muted);text-align:center;padding:40px">読み込みに失敗しました。ページを再読み込みしてください。</p>';
+}
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── イベント ──────────────────────────────────────────────────────
+document.getElementById('searchBtn').addEventListener('click', () => {
+  currentPage = 1;
+  fetchPosts(1);
+});
+document.getElementById('searchQ').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { currentPage = 1; fetchPosts(1); }
+});
+['filterCategory', 'filterPurpose', 'filterPlatform'].forEach(id => {
+  document.getElementById(id).addEventListener('change', () => {
+    currentPage = 1;
+    fetchPosts(1);
+  });
+});
+document.getElementById('clearFilterBtn').addEventListener('click', () => {
+  document.getElementById('searchQ').value          = '';
+  document.getElementById('filterCategory').value   = '';
+  document.getElementById('filterPurpose').value    = '';
+  document.getElementById('filterPlatform').value   = '';
+  currentPage = 1;
+  fetchPosts(1);
+});
+
+{% if user %}
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  await fetch('/api/auth/logout', { method: 'POST' });
+  location.href = '/';
+});
+{% endif %}
+
+// ── 初回ロード ────────────────────────────────────────────────────
+fetchPosts(1);
+</script>
+</body>
+</html>

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>プロンプトを投稿 — 副業AIプロンプトプロ</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="/" class="logo" style="text-decoration:none">
+      <span class="logo-icon">✦</span>
+      <span class="logo-text">副業AIプロンプトプロ</span>
+    </a>
+    <div class="auth-nav">
+      <span class="auth-user-name">{{ user.display_name }}</span>
+      <a href="/square" class="auth-nav-btn outline">← 広場に戻る</a>
+      <button class="auth-nav-btn outline" id="logoutBtn">ログアウト</button>
+    </div>
+  </div>
+</header>
+
+<main class="mypage-container">
+
+  <div class="mypage-hero" style="margin-bottom:16px">
+    <div>
+      <h1 class="mypage-title">プロンプトを投稿</h1>
+      <p style="font-size:0.85rem;color:var(--text-muted);margin-top:4px">
+        公開設定を「公開」にすると広場に表示されます
+      </p>
+    </div>
+    <a href="/square" class="auth-nav-btn outline" style="font-size:0.82rem;text-decoration:none">
+      ← 広場に戻る
+    </a>
+  </div>
+
+  <div class="mypage-card" style="max-width:680px">
+    <div id="postError"   class="auth-error"   style="display:none;margin-bottom:14px"></div>
+    <div id="postSuccess" class="auth-success" style="display:none;margin-bottom:14px"></div>
+
+    <form id="postForm" class="auth-form" novalidate>
+
+      <!-- タイトル -->
+      <div class="field-group">
+        <label class="field-label" for="title">
+          タイトル <span style="color:#f87171">*</span>
+        </label>
+        <input id="title" name="title" type="text" class="field-input"
+               placeholder="例: クラウドワークス採用率アップ提案文テンプレート"
+               required maxlength="200">
+        <div style="text-align:right;font-size:0.72rem;color:var(--text-muted);margin-top:4px">
+          <span id="titleCount">0</span>/200
+        </div>
+      </div>
+
+      <!-- 説明 -->
+      <div class="field-group">
+        <label class="field-label" for="description">
+          説明 <span style="color:var(--text-muted);font-size:0.75rem">任意</span>
+        </label>
+        <textarea id="description" name="description" class="field-input" rows="2"
+                  placeholder="このプロンプトの使い方や特徴を簡単に説明" maxlength="1000"></textarea>
+        <div style="text-align:right;font-size:0.72rem;color:var(--text-muted);margin-top:4px">
+          <span id="descCount">0</span>/1000
+        </div>
+      </div>
+
+      <!-- プロンプト本文 -->
+      <div class="field-group">
+        <label class="field-label" for="prompt_body">
+          プロンプト本文 <span style="color:#f87171">*</span>
+        </label>
+        <textarea id="prompt_body" name="prompt_body" class="field-input sq-prompt-textarea" rows="10"
+                  placeholder="あなたは〇〇の専門家です。以下の条件でプロンプトを作成してください..."
+                  required maxlength="10000"></textarea>
+        <div style="text-align:right;font-size:0.72rem;color:var(--text-muted);margin-top:4px">
+          <span id="bodyCount">0</span>/10000
+        </div>
+      </div>
+
+      <!-- カテゴリ・目的・媒体 -->
+      <div class="sq-meta-grid">
+        <div class="field-group" style="margin-bottom:0">
+          <label class="field-label" for="category">カテゴリ</label>
+          <select id="category" name="category" class="field-input">
+            <option value="note">📝 note記事</option>
+            <option value="sns">✨ SNS投稿</option>
+            <option value="cw">💼 クラウドワークス</option>
+            <option value="fortune">🔮 占い</option>
+            <option value="image">🖼️ 画像生成</option>
+            <option value="other" selected>その他</option>
+          </select>
+        </div>
+        <div class="field-group" style="margin-bottom:0">
+          <label class="field-label" for="purpose">目的 <span style="color:var(--text-muted);font-size:0.75rem">任意</span></label>
+          <select id="purpose" name="purpose" class="field-input">
+            <option value="">選択しない</option>
+            <option value="article">記事</option>
+            <option value="sales">販売ページ</option>
+            <option value="proposal">提案文</option>
+            <option value="profile">プロフィール</option>
+            <option value="post">投稿文</option>
+            <option value="research">リサーチ</option>
+            <option value="image">画像生成</option>
+          </select>
+        </div>
+        <div class="field-group" style="margin-bottom:0">
+          <label class="field-label" for="target_platform">対象媒体 <span style="color:var(--text-muted);font-size:0.75rem">任意</span></label>
+          <select id="target_platform" name="target_platform" class="field-input">
+            <option value="">選択しない</option>
+            <option value="note">note</option>
+            <option value="x">X (Twitter)</option>
+            <option value="threads">Threads</option>
+            <option value="instagram">Instagram</option>
+            <option value="brain">Brain</option>
+            <option value="tips">tips</option>
+            <option value="blog">ブログ</option>
+            <option value="generic">汎用</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- タグ -->
+      <div class="field-group">
+        <label class="field-label" for="tags">
+          タグ <span style="color:var(--text-muted);font-size:0.75rem">任意・カンマ区切り・最大10個</span>
+        </label>
+        <input id="tags" name="tags" type="text" class="field-input"
+               placeholder="例: 副業, note, 初心者向け" maxlength="200">
+      </div>
+
+      <!-- 公開設定 -->
+      <div class="field-group">
+        <label class="field-label">公開設定</label>
+        <div class="sq-vis-row">
+          <label class="sq-vis-option">
+            <input type="radio" name="visibility" value="public" checked>
+            <span class="sq-vis-card">
+              <span class="sq-vis-icon">🌐</span>
+              <span>
+                <strong>公開</strong>
+                <small>広場に表示されます</small>
+              </span>
+            </span>
+          </label>
+          <label class="sq-vis-option">
+            <input type="radio" name="visibility" value="private">
+            <span class="sq-vis-card">
+              <span class="sq-vis-icon">🔒</span>
+              <span>
+                <strong>非公開</strong>
+                <small>自分だけ見られます</small>
+              </span>
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <!-- 送信ボタン -->
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px">
+        <button type="submit" class="auth-submit-btn" id="submitBtn" style="max-width:200px">
+          投稿する
+        </button>
+        <a href="/square" class="auth-nav-btn outline" style="padding:10px 22px;text-decoration:none">
+          キャンセル
+        </a>
+      </div>
+
+    </form>
+  </div>
+
+</main>
+
+<script>
+// ── 文字数カウンター ─────────────────────────────────────────────
+[
+  ['title',       'titleCount'],
+  ['description', 'descCount'],
+  ['prompt_body', 'bodyCount'],
+].forEach(([inputId, countId]) => {
+  const el = document.getElementById(inputId);
+  const ct = document.getElementById(countId);
+  el.addEventListener('input', () => { ct.textContent = el.value.length; });
+});
+
+// ── フォーム送信 ─────────────────────────────────────────────────
+document.getElementById('postForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn    = document.getElementById('submitBtn');
+  const errEl  = document.getElementById('postError');
+  const sucEl  = document.getElementById('postSuccess');
+  errEl.style.display = 'none';
+  sucEl.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = '投稿中...';
+
+  const fd   = new FormData(e.target);
+  const body = {};
+  fd.forEach((v, k) => { body[k] = v.trim() === '' ? null : v.trim(); });
+  // visibility は必須 (ラジオボタンなので常に存在する)
+  body.visibility = fd.get('visibility') || 'public';
+
+  // バリデーション
+  if (!body.title) {
+    errEl.textContent = 'タイトルは必須です';
+    errEl.style.display = '';
+    btn.disabled = false;
+    btn.textContent = '投稿する';
+    return;
+  }
+  if (!body.prompt_body) {
+    errEl.textContent = 'プロンプト本文は必須です';
+    errEl.style.display = '';
+    btn.disabled = false;
+    btn.textContent = '投稿する';
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/community/posts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      errEl.textContent = data.detail || '投稿に失敗しました';
+      errEl.style.display = '';
+      return;
+    }
+    sucEl.textContent = '投稿しました！ 詳細ページに移動します…';
+    sucEl.style.display = '';
+    setTimeout(() => { location.href = `/square/${data.id}`; }, 1000);
+  } catch {
+    errEl.textContent = 'サーバーエラーが発生しました';
+    errEl.style.display = '';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '投稿する';
+  }
+});
+
+// ── ログアウト ────────────────────────────────────────────────────
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  await fetch('/api/auth/logout', { method: 'POST' });
+  location.href = '/';
+});
+</script>
+</body>
+</html>

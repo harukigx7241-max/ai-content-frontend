@@ -89,6 +89,13 @@ if settings.ENABLE_AUTH_SYSTEM:
     app.include_router(user_router)   # /api/user/*  (Phase 4)
     app.include_router(pages_router)  # /login, /register, /mypage, /admin
 
-# TODO: Phase 4 - app.include_router(community.router)
-# TODO: Phase 4 - app.include_router(gamification.router)
-# TODO: Phase 5 - app.include_router(invite.router)
+    # ── Phase 5: 公開広場 (ENABLE_COMMUNITY=false で即時無効化可能) ──
+    if settings.ENABLE_COMMUNITY:
+        from app.community.router import router as community_router
+        from app.community.pages import router as community_pages_router
+
+        app.include_router(community_router)        # /api/community/*
+        app.include_router(community_pages_router)  # /square, /square/new, /square/{id}
+
+# TODO: Phase N+ - app.include_router(gamification.router)
+# TODO: Phase N+ - app.include_router(invite.router)
