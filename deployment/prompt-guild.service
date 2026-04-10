@@ -1,0 +1,23 @@
+[Unit]
+Description=プロンプトギルド (FastAPI)
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/prompt-guild
+# venv を使っている場合は ExecStart のパスを /root/prompt-guild/.venv/bin/uvicorn に変更する
+ExecStart=/usr/local/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 2
+Restart=always
+RestartSec=5
+
+# 環境変数ファイル (リポジトリには含まれない実ファイル)
+EnvironmentFile=/root/prompt-guild/.env
+
+# ログ
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=prompt-guild
+
+[Install]
+WantedBy=multi-user.target
