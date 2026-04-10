@@ -7,7 +7,9 @@ Type=simple
 User=root
 WorkingDirectory=/root/prompt-guild
 # venv を使っている場合は ExecStart のパスを /root/prompt-guild/.venv/bin/uvicorn に変更する
-ExecStart=/usr/local/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 2
+# SQLite を使う場合は --workers 1 のままにすること (複数ワーカーは書き込み競合の原因になる)
+# PostgreSQL に移行した場合は --workers 2 以上に増やせる
+ExecStart=/usr/local/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 1
 Restart=always
 RestartSec=5
 
