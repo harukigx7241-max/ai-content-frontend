@@ -40,6 +40,17 @@ class Settings:
     # TODO: Phase 5 - 招待コードシステム
     ENABLE_INVITE_SYSTEM: bool = False
 
+    # ── CORS ────────────────────────────────────────────────────────────
+    # BACKEND_CORS_ORIGINS: カンマ区切りで許可オリジンを列挙する
+    # 例: BACKEND_CORS_ORIGINS=https://example.com,https://app.example.com
+    # 未設定の場合は ["*"] (開発用デフォルト)。本番では必ず明示すること。
+    _cors_raw: str = os.getenv("BACKEND_CORS_ORIGINS", "")
+    BACKEND_CORS_ORIGINS: list = (
+        [o.strip() for o in _cors_raw.split(",") if o.strip()]
+        if _cors_raw.strip()
+        else ["*"]
+    )
+
     # ── Phase 2: 認証システム設定 ────────────────────────────────────────
     # ENABLE_AUTH_SYSTEM は以下で上書き (上の False 定義を env-driven に変更)
     ENABLE_AUTH_SYSTEM: bool = os.getenv("ENABLE_AUTH_SYSTEM", "true").lower() == "true"  # type: ignore[assignment]
