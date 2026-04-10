@@ -2376,3 +2376,99 @@ kbd {
   .sq-ai-btn-row { flex-direction: column; }
   .sq-detail-views { margin-left: 0; }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   Phase 7: ゲーミフィケーション スタイル
+═══════════════════════════════════════════════════════════════ */
+
+/* ── レベルバッジ ─────────────────────────────────────────────── */
+.gami-level-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--accent-gold);
+  background: rgba(251,191,36,0.12);
+  border: 1px solid rgba(251,191,36,0.35);
+  border-radius: 20px;
+  padding: 3px 12px;
+  letter-spacing: 0.03em;
+}
+
+/* ── 称号 + XP テキスト ──────────────────────────────────────── */
+.gami-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.gami-title-text {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.gami-xp-text {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+/* ── XP プログレスバー ───────────────────────────────────────── */
+.gami-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.gami-bar-track {
+  flex: 1;
+  height: 8px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.gami-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-gold), #f59e0b);
+  border-radius: 4px;
+  transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 0 8px rgba(251,191,36,0.4);
+}
+.gami-next-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── バッジグリッド ───────────────────────────────────────────── */
+.gami-badge-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.gami-badge-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: var(--radius-sm);
+  cursor: default;
+  transition: background var(--transition), border-color var(--transition);
+  min-width: 72px;
+}
+.gami-badge-item:hover {
+  background: rgba(251,191,36,0.06);
+  border-color: rgba(251,191,36,0.25);
+}
+.gami-badge-icon {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+.gami-badge-name {
+  font-size: 0.68rem;
+  color: var(--text-secondary);
+  text-align: center;
+  white-space: nowrap;
+}

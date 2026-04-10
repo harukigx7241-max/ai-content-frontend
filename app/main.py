@@ -64,14 +64,20 @@ if settings.ENABLE_AUTH_SYSTEM:
 
     Base.metadata.create_all(bind=engine)
 
-    # Phase 4 delta: bio カラムが無い旧 DB へのオンライン追加
+    # Phase 4 delta / Phase 7 delta: 旧 DB へのオンラインカラム追加
     from sqlalchemy import text as _sql_text
+    _migrations = [
+        "ALTER TABLE users ADD COLUMN bio   TEXT",
+        "ALTER TABLE users ADD COLUMN xp    INTEGER NOT NULL DEFAULT 0",
+        "ALTER TABLE users ADD COLUMN level INTEGER NOT NULL DEFAULT 1",
+    ]
     with engine.connect() as _conn:
-        try:
-            _conn.execute(_sql_text("ALTER TABLE users ADD COLUMN bio TEXT"))
-            _conn.commit()
-        except Exception:
-            pass  # すでに存在する場合は無視
+        for _stmt in _migrations:
+            try:
+                _conn.execute(_sql_text(_stmt))
+                _conn.commit()
+            except Exception:
+                pass  # すでに存在する場合は無視
 
     # 起動時に DB のシステム設定を runtime_config に読み込む
     from app.core import runtime_config
@@ -97,5 +103,9 @@ if settings.ENABLE_AUTH_SYSTEM:
         app.include_router(community_router)        # /api/community/*
         app.include_router(community_pages_router)  # /square, /square/new, /square/{id}
 
-# TODO: Phase N+ - app.include_router(gamification.router)
+    # ── Phase 7: ゲーミフィケーション (ENABLE_GAMIFICATION=false で即時無効化可能) ──
+    if settings.ENABLE_GAMIFICATION:
+        from app.gamification.router import router as gami_router
+        app.include_router(gami_router)             # /api/gamification/*
+
 # TODO: Phase N+ - app.include_router(invite.router)

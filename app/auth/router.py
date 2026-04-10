@@ -45,6 +45,11 @@ def login(p: LoginRequest, response: Response, db: Session = Depends(get_db)):
     pending / rejected / suspended は 403 + ステータス別メッセージ。
     """
     user, token = auth_service.login_user(db, p)
+    # Phase 7: 日次ログイン XP 付与 (失敗しても login 本体に影響しない)
+    if settings.ENABLE_GAMIFICATION:
+        from app.gamification import service as _gami
+        from app.gamification.constants import XPEvent as _XPE
+        _gami.try_award(db, user.id, _XPE.LOGIN)
     response.set_cookie(
         key=_COOKIE_NAME,
         value=token,

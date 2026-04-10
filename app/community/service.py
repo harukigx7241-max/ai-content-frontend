@@ -240,10 +240,14 @@ def increment_view(db: Session, post_id: int) -> None:
 
 # ── コピーアクション受け皿 ────────────────────────────────────────
 
-def record_copy(db: Session, post_id: int) -> None:
+def record_copy(db: Session, post_id: int) -> Optional[int]:
     """
-    コピーアクションの受け皿。現在は何もしない。
+    コピーアクションの受け皿。投稿作者の user_id を返す (XP 付与などに利用)。
+    存在しない / 非公開の投稿は None を返す。
     TODO: Phase N+ use_count インクリメント
     TODO: Phase N+ CopyLog テーブルへのイベント記録 (ユーザー・日時)
     """
-    pass
+    post = db.get(CommunityPost, post_id)
+    if post and post.visibility == "public":
+        return post.user_id
+    return None

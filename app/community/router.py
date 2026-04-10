@@ -19,6 +19,7 @@ from fastapi import APIRouter, Depends, Query
 from fastapi.responses import JSONResponse, Response
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.auth.dependencies import get_current_user, get_current_user_soft
 from app.community import service as community_service
 from app.community.schemas import (
@@ -41,6 +42,12 @@ def create_post(
 ):
     """投稿を作成する。認証必須。承認済みユーザーのみ。"""
     post = community_service.create_post(db, current_user.id, data)
+    # Phase 7: 投稿 XP 付与 (public/private で付与量が異なる)
+    if settings.ENABLE_GAMIFICATION:
+        from app.gamification import service as _gami
+        from app.gamification.constants import XPEvent as _XPE
+        _event = _XPE.POST_PUBLIC if data.visibility == "public" else _XPE.POST_PRIVATE
+        _gami.try_award(db, current_user.id, _event, ref_id=post["id"])
     return JSONResponse(
         PostResponse.model_validate(post).model_dump(mode="json"),
         status_code=201,
@@ -118,8 +125,13 @@ def copy_post(
     db: Session = Depends(get_db),
 ):
     """
-    コピーアクションの受け皿。現在は OK を返すのみ。
+    コピーアクションの受け皿。投稿作者に COPY_RECEIVED XP を付与する。
     TODO: Phase N+ use_count インクリメント + ログ記録
     """
-    community_service.record_copy(db, post_id)
+    author_id = community_service.record_copy(db, post_id)
+    # Phase 7: コピーされた投稿の作者に XP 付与
+    if author_id and settings.ENABLE_GAMIFICATION:
+        from app.gamification import service as _gami
+        from app.gamification.constants import XPEvent as _XPE
+        _gami.try_award(db, author_id, _XPE.COPY_RECEIVED, ref_id=post_id)
     return {"ok": True}

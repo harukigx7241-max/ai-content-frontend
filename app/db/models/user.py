@@ -42,6 +42,10 @@ class User(Base):
     approved_at = Column(DateTime(timezone=True), nullable=True)
     approved_by = Column(Integer, nullable=True)  # 承認した管理者の user.id
 
+    # Phase 7: ゲーミフィケーション (既存 DB には ALTER TABLE で追加、下記参照)
+    xp    = Column(Integer, nullable=False, default=0)
+    level = Column(Integer, nullable=False, default=1)
+
     __table_args__ = (
         UniqueConstraint("sns_platform", "sns_handle", name="uq_sns_platform_handle"),
     )

@@ -35,8 +35,8 @@ class Settings:
     ENABLE_ADMIN_DASHBOARD: bool = os.getenv("ENABLE_ADMIN_DASHBOARD", "true").lower() == "true"
     # Phase 5 - コミュニティ（公開広場）ENABLE_COMMUNITY=false で無効化可能
     ENABLE_COMMUNITY: bool = os.getenv("ENABLE_COMMUNITY", "true").lower() == "true"
-    # TODO: Phase 4 - ゲーミフィケーション（XP/バッジ）
-    ENABLE_GAMIFICATION: bool = False
+    # Phase 7 - ゲーミフィケーション（XP/バッジ）ENABLE_GAMIFICATION=false で無効化可能
+    ENABLE_GAMIFICATION: bool = os.getenv("ENABLE_GAMIFICATION", "true").lower() == "true"
     # TODO: Phase 5 - 招待コードシステム
     ENABLE_INVITE_SYSTEM: bool = False
 
