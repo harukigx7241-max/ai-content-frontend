@@ -48,3 +48,24 @@ class SystemSettingsUpdate(BaseModel):
     notice_banner_enabled: Optional[bool] = None
     notice_banner_text: Optional[str] = None
     notice_banner_link: Optional[str] = None
+
+
+class UserAdminDetailResponse(UserAdminResponse):
+    """
+    個別ユーザー詳細レスポンス。UserAdminResponse を継承して拡張する。
+    TODO: Phase N+ admin_notes (管理メモ)、audit_log (変更履歴) を追加する
+    """
+    # 将来 admin_notes テーブルから JOIN して取得する。現時点は None 固定。
+    admin_notes: Optional[str] = None
+
+
+class UserUsageResponse(BaseModel):
+    """
+    ユーザーごとの利用状況。
+    現時点では生成ログテーブルが存在しないため 0 / None を返すスタブ。
+    TODO: Phase N+ generation_log テーブル実装後に analytics_service から集計する
+    """
+    user_id: int
+    generation_count: int = 0          # TODO: generation_log から集計
+    last_active: Optional[datetime] = None  # TODO: generation_log の最終レコード日時
+    favorite_category: Optional[str] = None  # TODO: 最多利用カテゴリ

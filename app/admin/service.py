@@ -110,6 +110,31 @@ def get_settings(db: Session) -> dict:
     }
 
 
+# ── 個別ユーザー詳細 ──────────────────────────────────────────────
+
+def get_user_detail(db: Session, user_id: int) -> User:
+    """
+    個別ユーザーの詳細情報を返す。
+    将来的に admin_notes / audit_log などを JOIN して返す拡張ポイント。
+    """
+    return _get_user_or_404(db, user_id)
+
+
+def get_user_usage(db: Session, user_id: int) -> dict:
+    """
+    ユーザーの利用状況サマリーを返す。
+    現時点では generation_log テーブルが存在しないためスタブ値を返す。
+    TODO: Phase N+ generation_log 実装後に analytics_service.summarize_user(db, user_id) に委譲する
+    """
+    user = _get_user_or_404(db, user_id)
+    return {
+        "user_id": user_id,
+        "generation_count": 0,       # TODO: generation_log から集計
+        "last_active": user.last_login_at,  # 暫定: ログイン日時で代替
+        "favorite_category": None,   # TODO: generation_log から集計
+    }
+
+
 def update_settings(db: Session, data: dict, admin_id: int) -> dict:
     """
     システム設定を DB と runtime_config の両方に保存する。

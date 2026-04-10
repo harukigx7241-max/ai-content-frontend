@@ -14,7 +14,9 @@ from app.admin.schemas import (
     AdminStatsResponse,
     SystemSettingsResponse,
     SystemSettingsUpdate,
+    UserAdminDetailResponse,
     UserAdminResponse,
+    UserUsageResponse,
 )
 from app.auth.dependencies import require_admin
 from app.db.models.user import User
@@ -61,6 +63,29 @@ def suspend(
 ):
     user = admin_service.suspend_user(db, user_id, admin.id)
     return JSONResponse({"message": f"{user.display_name} を停止しました", "user_id": user.id})
+
+
+@router.get("/users/{user_id}", response_model=UserAdminDetailResponse)
+def get_user_detail(
+    user_id: int,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """個別ユーザーの詳細情報。将来 admin_notes / audit_log を追加しやすい受け皿。"""
+    return admin_service.get_user_detail(db, user_id)
+
+
+@router.get("/users/{user_id}/usage", response_model=UserUsageResponse)
+def get_user_usage(
+    user_id: int,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """
+    ユーザー利用状況。現時点はスタブ（生成ログ未実装）。
+    TODO: Phase N+ generation_log 実装後に実データを返す
+    """
+    return admin_service.get_user_usage(db, user_id)
 
 
 @router.post("/users/{user_id}/restore")
