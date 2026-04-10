@@ -17,8 +17,8 @@ from sqlalchemy.orm import Session
 from app.auth.dependencies import get_current_user
 from app.db.models.user import User
 from app.db.session import get_db
-from app.gamification import service as gami_service
-from app.gamification.constants import BADGE_DEFINITIONS, LEVEL_THRESHOLDS
+from app.gamification import service as gami_service, xp_service
+from app.gamification.constants import BADGE_DEFINITIONS
 from app.gamification.schemas import (
     BadgeDefinitionResponse,
     GamificationStatusResponse,
@@ -39,10 +39,14 @@ def get_status(
 
 @router.get("/levels", response_model=list[LevelDefinitionResponse])
 def get_levels():
-    """レベル定義一覧を返す。未認証でも閲覧可能。"""
+    """レベル定義一覧 (Lv1〜30) を返す。未認証でも閲覧可能。"""
     return [
-        LevelDefinitionResponse(level=lv, min_xp=min_xp, title=title)
-        for lv, min_xp, title in LEVEL_THRESHOLDS
+        LevelDefinitionResponse(
+            level=lv,
+            min_xp=xp_service.xp_for_level(lv),
+            title=xp_service.get_title(lv),
+        )
+        for lv in range(1, 31)
     ]
 
 

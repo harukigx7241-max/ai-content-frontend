@@ -40,6 +40,13 @@ class LevelDefinitionResponse(BaseModel):
     title: str
 
 
+class LevelBenefitsResponse(BaseModel):
+    """レベル特典。GamificationStatusResponse に含まれる。"""
+    daily_gen_limit: int  # 日次生成上限 (-1 = 無制限)
+    post_limit: int       # 投稿上限 (-1 = 無制限)
+    invite_codes: int     # 招待コード発行可能数
+
+
 class GamificationStatusResponse(BaseModel):
     """
     自分のゲーミフィケーション状況サマリー。
@@ -51,12 +58,13 @@ class GamificationStatusResponse(BaseModel):
     title: str
 
     # レベルバー表示用
-    xp_at_current_level: int    # 現在レベルの下限 XP
+    xp_at_current_level: int         # 現在レベルの下限 XP
     xp_at_next_level: Optional[int]  # 次レベルの下限 XP (最大レベルなら None)
     xp_to_next: Optional[int]        # 次レベルまでの残り XP (最大レベルなら None)
     progress_pct: int                # 現レベル内での進捗 % (0-100)
 
     badges: list[BadgeResponse]
+    level_benefits: LevelBenefitsResponse
 
     # TODO: Phase N+
     # recent_xp_events: list[XpEventResponse]

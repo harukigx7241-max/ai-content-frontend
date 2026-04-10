@@ -1,5 +1,5 @@
 """
-app/gamification/service.py — XP付与・レベル計算・バッジ判定
+app/gamification/service.py — ゲーミフィケーション オーケストレーター
 
 責務:
   - try_award()  : XP を安全に付与する (日次制限・バッジ判定を含む)
@@ -8,15 +8,13 @@ app/gamification/service.py — XP付与・レベル計算・バッジ判定
 設計原則:
   - try_award は必ず try/except で囲み、失敗しても呼び出し元 (router) に例外を伝播しない
     → ゲーミフィケーションの不具合でログインや投稿が壊れないようにする
+  - 重いロジックは xp_service / badge_service に委譲し、このファイルは薄く保つ
   - 全ての XP 付与は xp_events テーブルに記録 (監査ログ)
-  - レベルは XP から計算し User.level にキャッシュする
-  - バッジは user_badges テーブルで管理し重複取得を防ぐ
 
 将来拡張:
   TODO: Phase N+ ランキング集計 (xp_events を期間で sum)
   TODO: Phase N+ ミッション進捗チェック
   TODO: Phase N+ 連続ログイン streak 追跡
-  TODO: Phase N+ use_count に基づく shared_10 バッジ
 """
 import logging
 from datetime import date, datetime, timezone
@@ -26,53 +24,21 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db.models.user import User
-from app.db.models.user_badge import UserBadge
 from app.db.models.xp_event import XpEvent
+from app.gamification import badge_service, xp_service
 from app.gamification.constants import (
     BADGE_DEFINITIONS,
     DAILY_CAP_EVENTS,
-    LEVEL_BADGE_MAP,
-    LEVEL_THRESHOLDS,
-    MAX_LEVEL,
+    ENTITY_TYPE_BY_EVENT,
     XP_VALUES,
 )
 from app.gamification.schemas import (
     BadgeResponse,
     GamificationStatusResponse,
+    LevelBenefitsResponse,
 )
 
 logger = logging.getLogger(__name__)
-
-
-# ── レベル計算 ────────────────────────────────────────────────────
-
-def calc_level(xp: int) -> int:
-    """XP からレベルを計算する。LEVEL_THRESHOLDS の変更だけで調整可能。"""
-    level = 1
-    for lv, min_xp, _ in LEVEL_THRESHOLDS:
-        if xp >= min_xp:
-            level = lv
-        else:
-            break
-    return level
-
-
-def get_level_info(level: int) -> tuple[int, int, str, Optional[int]]:
-    """
-    Returns: (min_xp_current, min_xp_next_or_none, title, next_level_or_none)
-    """
-    current_min = 0
-    current_title = "見習い副業家"
-    next_min: Optional[int] = None
-
-    for i, (lv, min_xp, title) in enumerate(LEVEL_THRESHOLDS):
-        if lv == level:
-            current_min = min_xp
-            current_title = title
-            if i + 1 < len(LEVEL_THRESHOLDS):
-                next_min = LEVEL_THRESHOLDS[i + 1][1]
-            break
-    return current_min, next_min, current_title, (None if next_min is None else level + 1)
 
 
 # ── XP 付与 ───────────────────────────────────────────────────────
@@ -130,7 +96,9 @@ def _do_award(
         user_id=user_id,
         event_type=event_type,
         xp_delta=xp_amount,
-        ref_id=ref_id,
+        ref_id=ref_id,                                       # 後方互換
+        related_entity_type=ENTITY_TYPE_BY_EVENT.get(event_type),
+        related_entity_id=ref_id,
     )
     db.add(log)
 
@@ -140,68 +108,25 @@ def _do_award(
         db.rollback()
         return 0, []
 
-    old_level = user.level or 1
-    user.xp = (user.xp or 0) + xp_amount
-    user.level = calc_level(user.xp)
+    old_level  = user.level or 1
+    user.xp    = (user.xp or 0) + xp_amount
+    user.level = xp_service.calc_level(user.xp)
     db.commit()
 
     # ── バッジ判定 (コミット後) ───────────────────────────────────
-    new_badges = _check_and_award_badges(db, user, old_level, event_type)
+    new_badges = badge_service.check_and_award_badges(db, user, old_level, event_type)
     return xp_amount, new_badges
-
-
-# ── バッジ判定 ────────────────────────────────────────────────────
-
-def _check_and_award_badges(
-    db: Session,
-    user: User,
-    old_level: int,
-    event_type: str,
-) -> list[str]:
-    earned: list[str] = []
-
-    # 初公開投稿バッジ
-    if event_type == "post_public":
-        if _try_award_badge(db, user.id, "first_post"):
-            earned.append("first_post")
-
-    # レベル到達バッジ (Phase 7 実装: level 2, 5, 10)
-    current_level = user.level or 1
-    for target_level, badge_key in LEVEL_BADGE_MAP.items():
-        if current_level >= target_level > old_level:
-            if _try_award_badge(db, user.id, badge_key):
-                earned.append(badge_key)
-
-    return earned
-
-
-def _try_award_badge(db: Session, user_id: int, badge_key: str) -> bool:
-    """バッジを付与する。既に持っていれば False を返す。"""
-    if badge_key not in BADGE_DEFINITIONS:
-        return False
-    # 重複チェック (UNIQUE 制約でも防ぐが事前チェックで例外を避ける)
-    exists = db.execute(
-        select(UserBadge.id).where(
-            UserBadge.user_id == user_id,
-            UserBadge.badge_key == badge_key,
-        ).limit(1)
-    ).first()
-    if exists:
-        return False
-    db.add(UserBadge(user_id=user_id, badge_key=badge_key))
-    db.commit()
-    return True
 
 
 # ── ステータス取得 ────────────────────────────────────────────────
 
 def get_status(db: Session, user_id: int) -> GamificationStatusResponse:
     """ユーザーの現在の XP / レベル / バッジ状況を返す。"""
-    user = db.get(User, user_id)
+    user  = db.get(User, user_id)
     xp    = user.xp    if user and user.xp    is not None else 0
     level = user.level if user and user.level is not None else 1
 
-    current_min, next_min, title, _ = get_level_info(level)
+    current_min, next_min, title, _ = xp_service.get_level_info(level)
 
     if next_min is not None:
         xp_to_next   = max(0, next_min - xp)
@@ -212,11 +137,6 @@ def get_status(db: Session, user_id: int) -> GamificationStatusResponse:
         progress_pct = 100  # 最大レベル
 
     # 獲得バッジ一覧
-    rows = db.execute(
-        select(UserBadge).where(UserBadge.user_id == user_id)
-        .order_by(UserBadge.earned_at)
-    ).scalars().all()
-
     badges = [
         BadgeResponse(
             key=b.badge_key,
@@ -225,9 +145,13 @@ def get_status(db: Session, user_id: int) -> GamificationStatusResponse:
             description=BADGE_DEFINITIONS[b.badge_key]["description"],
             earned_at=b.earned_at,
         )
-        for b in rows
+        for b in badge_service.get_user_badges(db, user_id)
         if b.badge_key in BADGE_DEFINITIONS
     ]
+
+    # レベル特典
+    raw_benefits = xp_service.get_benefits(level)
+    benefits = LevelBenefitsResponse(**raw_benefits)
 
     return GamificationStatusResponse(
         user_id=user_id,
@@ -239,4 +163,5 @@ def get_status(db: Session, user_id: int) -> GamificationStatusResponse:
         xp_to_next=xp_to_next,
         progress_pct=progress_pct,
         badges=badges,
+        level_benefits=benefits,
     )

@@ -70,6 +70,9 @@ if settings.ENABLE_AUTH_SYSTEM:
         "ALTER TABLE users ADD COLUMN bio   TEXT",
         "ALTER TABLE users ADD COLUMN xp    INTEGER NOT NULL DEFAULT 0",
         "ALTER TABLE users ADD COLUMN level INTEGER NOT NULL DEFAULT 1",
+        # Phase 7 second pass: xp_events に関連エンティティ種別カラムを追加
+        "ALTER TABLE xp_events ADD COLUMN related_entity_type VARCHAR(50)",
+        "ALTER TABLE xp_events ADD COLUMN related_entity_id   INTEGER",
     ]
     with engine.connect() as _conn:
         for _stmt in _migrations:
