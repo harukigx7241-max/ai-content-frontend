@@ -15,6 +15,7 @@ class RegisterRequest(BaseModel):
     display_name: str = Field(..., min_length=1, max_length=100)
     password: str = Field(..., min_length=8, max_length=128)
     profile_url: Optional[str] = Field(None, max_length=500)
+    invite_code: Optional[str] = Field(None, max_length=20, description="招待コード（任意）")
     # TODO: Phase 3+ email: Optional[str] = Field(None, max_length=200)
 
     @field_validator("sns_platform")

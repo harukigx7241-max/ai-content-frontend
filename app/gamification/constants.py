@@ -23,6 +23,9 @@ class XPEvent:
     POST_SAVED        = "post_saved"        # 投稿を保存された (受け皿: Phase N+)
     POST_USED         = "post_used"         # 投稿が使用された (受け皿: Phase N+)
     COMMENT_RECEIVED  = "comment_received"  # コメントをもらった (受け皿: Phase N+)
+    # Phase 8: 招待
+    INVITE_REGISTERED = "invite_registered" # 招待コード経由で登録 (段階1)
+    INVITE_APPROVED   = "invite_approved"   # 招待コード経由ユーザーが承認 (段階2)
 
 
 # ── XP 付与量 (event_type → xp) ──────────────────────────────────
@@ -36,6 +39,8 @@ XP_VALUES: dict[str, int] = {
     XPEvent.POST_SAVED:       10,
     XPEvent.POST_USED:        15,
     XPEvent.COMMENT_RECEIVED:  5,
+    XPEvent.INVITE_REGISTERED: 10,  # 招待登録: 小さなXP (段階1)
+    XPEvent.INVITE_APPROVED:   50,  # 招待承認: 主要XP (段階2) — 質の高い招待を評価
 }
 
 # ── 日次1回上限のイベント ─────────────────────────────────────────
@@ -52,8 +57,10 @@ ENTITY_TYPE_BY_EVENT: dict[str, str | None] = {
     XPEvent.COPY_RECEIVED:    "post",
     XPEvent.POST_LIKED:       "post",
     XPEvent.POST_SAVED:       "post",
-    XPEvent.POST_USED:        "post",
-    XPEvent.COMMENT_RECEIVED: "post",
+    XPEvent.POST_USED:          "post",
+    XPEvent.COMMENT_RECEIVED:   "post",
+    XPEvent.INVITE_REGISTERED:  "user",  # related_entity_id = 招待された User.id
+    XPEvent.INVITE_APPROVED:    "user",  # related_entity_id = 承認された User.id
 }
 
 # ── レベル上限 ────────────────────────────────────────────────────

@@ -76,6 +76,17 @@
                  placeholder="https://x.com/username">
         </div>
 
+        <!-- Phase 8: 招待コード入力 -->
+        <div class="field-group">
+          <label class="field-label" for="invite_code">招待コード <span style="color:var(--text-muted);font-size:0.75rem">任意</span></label>
+          <input id="invite_code" type="text" name="invite_code" class="field-input"
+                 placeholder="招待コードをお持ちの場合は入力" maxlength="20"
+                 autocomplete="off" style="text-transform:uppercase;letter-spacing:0.08em">
+          <p style="font-size:0.72rem;color:var(--text-muted);margin-top:4px">
+            招待コードがあると、コードによっては登録後すぐにご利用いただける場合があります
+          </p>
+        </div>
+
         <!-- TODO: Phase 3+ メールアドレス入力欄を追加 -->
 
         <button type="submit" class="auth-submit-btn" id="registerBtn">登録する</button>
@@ -89,6 +100,20 @@
 </main>
 
 <script>
+// URL パラメータから招待コードを自動入力 (?code=XXXX または ?invite=XXXX)
+(function() {
+  const p = new URLSearchParams(window.location.search);
+  const code = p.get('code') || p.get('invite');
+  if (code) document.getElementById('invite_code').value = code.toUpperCase();
+})();
+
+// 入力時に大文字変換
+document.getElementById('invite_code').addEventListener('input', function() {
+  const pos = this.selectionStart;
+  this.value = this.value.toUpperCase();
+  this.setSelectionRange(pos, pos);
+});
+
 document.getElementById('registerForm').addEventListener('submit', async (e) => {
   e.preventDefault();
   const btn = document.getElementById('registerBtn');

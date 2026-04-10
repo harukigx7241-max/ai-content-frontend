@@ -221,23 +221,42 @@
       </div>
     </div>
 
-    <!-- 招待 (stub) -->
-    <div class="mypage-stub-card" aria-label="準備中">
-      <div class="mypage-stub-header">
-        <span class="mypage-stub-icon">🎟️</span>
-        <span class="mypage-stub-title">招待</span>
-        <span class="mypage-stub-badge">近日公開</span>
+    <!-- 招待 (Phase 8: 実装済み) -->
+    <div class="mypage-card" id="inviteCard">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div class="mypage-section-title" style="margin-bottom:0">🎟️ 招待</div>
+        <button id="issueCodeBtn" class="auth-nav-btn primary"
+                style="font-size:0.78rem;display:none">+ コードを発行する</button>
       </div>
-      <div class="mypage-stub-body">
-        <div class="mypage-stub-row">
-          <span class="mypage-stub-label">招待コード</span>
-          <span class="mypage-stub-value stub-dim">——————</span>
+
+      <div id="inviteLoading" style="font-size:0.82rem;color:var(--text-muted)">読み込み中...</div>
+      <div id="inviteError"   style="display:none;font-size:0.82rem;color:var(--text-muted)">読み込みに失敗しました</div>
+
+      <div id="inviteStats" style="display:none">
+        <!-- 統計グリッド -->
+        <div class="dash-stats-grid" style="margin-bottom:16px">
+          <div class="dash-stat-card">
+            <div class="dash-stat-label">招待人数</div>
+            <div class="dash-stat-value" id="inviteTotalCount">—</div>
+          </div>
+          <div class="dash-stat-card approved">
+            <div class="dash-stat-label">承認済み</div>
+            <div class="dash-stat-value" id="inviteApprovedCount">—</div>
+          </div>
+          <div class="dash-stat-card">
+            <div class="dash-stat-label">招待 XP</div>
+            <div class="dash-stat-value" id="inviteXpEarned" style="font-size:1.1rem">—</div>
+          </div>
         </div>
-        <div class="mypage-stub-row">
-          <span class="mypage-stub-label">招待人数</span>
-          <span class="mypage-stub-value stub-dim">—</span>
+
+        <!-- 発行済みコード一覧 -->
+        <div id="inviteCodesSection" style="display:none">
+          <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:8px">発行済み招待コード</div>
+          <div id="inviteCodeList"></div>
         </div>
-        <!-- TODO: Phase N+ 招待コード発行・管理 -->
+
+        <!-- 発行不可・次の解放条件 -->
+        <div id="inviteLockMsg" style="display:none;font-size:0.82rem;color:var(--text-muted);margin-top:6px;padding:10px 14px;background:rgba(255,255,255,0.03);border-radius:8px"></div>
       </div>
     </div>
 
@@ -431,6 +450,7 @@ document.querySelectorAll('[data-tab]').forEach(btn => {
     if (btn.dataset.tab === 'usage') {
       loadUsageStats();
       loadGamification();
+      loadInviteSummary();
     }
   });
 });
@@ -650,6 +670,86 @@ function esc(s) {
 document.getElementById('logoutBtn').addEventListener('click', async () => {
   await fetch('/api/auth/logout', { method: 'POST' });
   location.href = '/';
+});
+
+// ── 招待サマリー ─────────────────────────────────────────────────
+let _inviteLoaded = false;
+async function loadInviteSummary() {
+  if (_inviteLoaded) return;  // 一度取得したら再取得しない
+  const loading = document.getElementById('inviteLoading');
+  const errEl   = document.getElementById('inviteError');
+  try {
+    const res = await fetch('/api/invite/summary');
+    if (!res.ok) throw new Error('api error');
+    const d = await res.json();
+    _inviteLoaded = true;
+    loading.style.display = 'none';
+
+    document.getElementById('inviteStats').style.display     = '';
+    document.getElementById('inviteTotalCount').textContent   = d.total_invited;
+    document.getElementById('inviteApprovedCount').textContent = d.total_approved;
+    document.getElementById('inviteXpEarned').textContent     = `+${d.xp_earned_from_invites} XP`;
+
+    // 発行ボタン: 発行可能かつ空き枠がある場合のみ表示
+    if (d.can_issue && d.active_codes_count < d.max_codes) {
+      document.getElementById('issueCodeBtn').style.display = '';
+    }
+
+    // コード一覧
+    if (d.codes && d.codes.length > 0) {
+      document.getElementById('inviteCodesSection').style.display = '';
+      document.getElementById('inviteCodeList').innerHTML = d.codes.map(c => `
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;margin-bottom:8px;flex-wrap:wrap">
+          <code style="font-family:monospace;font-size:1rem;letter-spacing:0.1em;color:var(--accent-gold);flex:1;min-width:100px">${esc(c.code)}</code>
+          <span style="font-size:0.74rem;color:var(--text-muted)">${c.used_count}/${c.max_uses}回</span>
+          <span style="font-size:0.72rem;padding:2px 8px;border-radius:20px;background:${c.status==='active'?'rgba(52,211,153,0.15)':'rgba(255,255,255,0.06)'};color:${c.status==='active'?'#34d399':'var(--text-muted)'}">${c.status}</span>
+          <button onclick="copyInviteCode('${esc(c.code)}')" class="auth-nav-btn outline" style="font-size:0.72rem;padding:4px 10px">コピー</button>
+        </div>
+      `).join('');
+    }
+
+    // 発行不可 / 次の解放条件
+    if (!d.can_issue && d.next_unlock_level) {
+      const msg = document.getElementById('inviteLockMsg');
+      msg.style.display = '';
+      msg.textContent   = `🔒 Lv${d.next_unlock_level} で招待コードの発行が解放されます`;
+    }
+  } catch {
+    loading.style.display = 'none';
+    errEl.style.display   = '';
+  }
+}
+
+function copyInviteCode(code) {
+  navigator.clipboard.writeText(code).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = code;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  });
+}
+
+document.getElementById('issueCodeBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('issueCodeBtn');
+  btn.disabled    = true;
+  btn.textContent = '発行中...';
+  try {
+    const res  = await fetch('/api/invite/codes', { method: 'POST' });
+    const data = await res.json();
+    if (!res.ok) {
+      alert(data.detail || '招待コードの発行に失敗しました');
+      return;
+    }
+    _inviteLoaded = false;  // キャッシュをリセットして再取得
+    await loadInviteSummary();
+  } catch {
+    alert('サーバーエラーが発生しました');
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = '+ コードを発行する';
+  }
 });
 
 // Storage.js が読み込まれていれば利用状況タブ初回表示時に自動ロード

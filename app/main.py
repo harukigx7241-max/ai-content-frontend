@@ -73,6 +73,8 @@ if settings.ENABLE_AUTH_SYSTEM:
         # Phase 7 second pass: xp_events に関連エンティティ種別カラムを追加
         "ALTER TABLE xp_events ADD COLUMN related_entity_type VARCHAR(50)",
         "ALTER TABLE xp_events ADD COLUMN related_entity_id   INTEGER",
+        # Phase 8: 招待元ユーザー追跡
+        "ALTER TABLE users ADD COLUMN invited_by_user_id INTEGER",
     ]
     with engine.connect() as _conn:
         for _stmt in _migrations:
@@ -110,5 +112,11 @@ if settings.ENABLE_AUTH_SYSTEM:
     if settings.ENABLE_GAMIFICATION:
         from app.gamification.router import router as gami_router
         app.include_router(gami_router)             # /api/gamification/*
+
+    # ── Phase 8: 招待システム ──────────────────────────────────────
+    from app.invite.router import router as invite_router
+    from app.invite.admin_router import router as invite_admin_router
+    app.include_router(invite_router)       # /api/invite/*
+    app.include_router(invite_admin_router) # /api/admin/invite/*
 
 # TODO: Phase N+ - app.include_router(invite.router)

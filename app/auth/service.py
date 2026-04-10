@@ -29,6 +29,7 @@ def register_user(db: Session, data: RegisterRequest) -> User:
     新規ユーザーを登録する。
     - sns_platform + sns_handle 重複は 400 エラー。
     - ADMIN_SNS_PLATFORM + ADMIN_SNS_HANDLE に一致する場合は role=admin, status=approved で登録。
+    - invite_code が指定された場合: 検証し auto_approve フラグを反映。
     """
     exists = db.query(User).filter(
         User.sns_platform == data.sns_platform,
@@ -45,18 +46,38 @@ def register_user(db: Session, data: RegisterRequest) -> User:
         and data.sns_handle.lower() == settings.ADMIN_SNS_HANDLE.lower()
     )
 
+    # Phase 8: 招待コードの検証 (任意)
+    invite_code_obj = None
+    if data.invite_code:
+        from app.invite import service as _invite_svc
+        invite_code_obj = _invite_svc.validate_code_or_raise(db, data.invite_code)
+
+    auto_approve_via_invite = (invite_code_obj is not None and invite_code_obj.auto_approve)
+    now = datetime.now(timezone.utc)
+
     user = User(
         sns_platform=data.sns_platform,
         sns_handle=data.sns_handle,
         display_name=data.display_name,
         profile_url=data.profile_url,
         password_hash=hash_password(data.password),
-        status="approved" if is_admin else "pending",
+        status="approved" if (is_admin or auto_approve_via_invite) else "pending",
         role="admin" if is_admin else "user",
+        invited_by_user_id=invite_code_obj.created_by_user_id if invite_code_obj else None,
+        approved_at=now if (is_admin or auto_approve_via_invite) else None,
     )
     db.add(user)
     db.commit()
     db.refresh(user)
+
+    # 招待コードの使用記録 & XP付与 (失敗しても登録自体は成功扱い)
+    if invite_code_obj:
+        try:
+            from app.invite import service as _invite_svc
+            _invite_svc.record_code_use(db, invite_code_obj, user.id)
+        except Exception:
+            pass  # 招待記録の失敗は登録に影響させない
+
     return user
 
 

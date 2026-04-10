@@ -43,6 +43,27 @@ def approve_user(db: Session, user_id: int, admin_id: int) -> User:
     user.approved_by = admin_id
     db.commit()
     db.refresh(user)
+
+    # Phase 8: 招待元ユーザーに承認段階 XP を付与 (段階2)
+    # auto_approve コードで既に付与済みの場合は related_entity_id で二重付与を防止
+    if user.invited_by_user_id and settings.ENABLE_GAMIFICATION:
+        try:
+            from app.gamification import service as _gami
+            from app.gamification.constants import XPEvent as _XPE
+            from app.db.models.xp_event import XpEvent
+            from sqlalchemy import select as _sel
+            already = db.execute(
+                _sel(XpEvent.id).where(
+                    XpEvent.user_id == user.invited_by_user_id,
+                    XpEvent.event_type == _XPE.INVITE_APPROVED,
+                    XpEvent.related_entity_id == user.id,
+                ).limit(1)
+            ).first()
+            if not already:
+                _gami.try_award(db, user.invited_by_user_id, _XPE.INVITE_APPROVED, ref_id=user.id)
+        except Exception:
+            pass  # XP 付与の失敗は承認処理に影響させない
+
     return user
 
 
