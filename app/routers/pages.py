@@ -3,8 +3,8 @@ app/routers/pages.py — 会員向け HTML ページルーター
 認証が必要なページはサーバーサイドでチェックし、未ログイン時は /login にリダイレクト。
 既存の / (index) は system.py が担当し、このルーターは会員ページのみ扱う。
 
-TODO: Phase 3+ mypage にプロンプト履歴・お気に入りを追加
-TODO: Phase 4+ mypage に XP / レベル を追加
+TODO: Phase 4+ mypage にプロンプト履歴・お気に入りを追加
+TODO: Phase 5+ mypage に XP / レベル を追加
 """
 from typing import Optional
 
@@ -60,16 +60,13 @@ def admin_page(
     request: Request,
     current_user: Optional[User] = Depends(get_current_user_soft),
 ):
-    """
-    管理者ページ。未ログインは /login へ。管理者以外は / へ。
-    TODO: Phase 3+ 管理者ダッシュボード完成版
-    """
+    """管理者ダッシュボード。未ログインは /login へ。管理者以外は / へ。"""
     if not current_user:
         return RedirectResponse("/login?next=/admin", status_code=302)
     if current_user.role != "admin":
         return RedirectResponse("/", status_code=302)
     return templates.TemplateResponse(
         request=request,
-        name="admin/users.html",
+        name="admin/dashboard.html",
         context={"user": current_user},
     )

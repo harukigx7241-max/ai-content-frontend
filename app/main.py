@@ -64,6 +64,12 @@ if settings.ENABLE_AUTH_SYSTEM:
 
     Base.metadata.create_all(bind=engine)
 
+    # 起動時に DB のシステム設定を runtime_config に読み込む
+    from app.core import runtime_config
+    from app.db.session import SessionLocal
+    with SessionLocal() as _startup_db:
+        runtime_config.load_from_db(_startup_db)
+
     from app.auth.router import router as auth_router
     from app.admin.router import router as admin_router
     from app.routers.pages import router as pages_router
@@ -72,6 +78,6 @@ if settings.ENABLE_AUTH_SYSTEM:
     app.include_router(admin_router)  # /api/admin/*
     app.include_router(pages_router)  # /login, /register, /mypage, /admin
 
-# TODO: Phase 3 - app.include_router(community.router)
+# TODO: Phase 4 - app.include_router(community.router)
 # TODO: Phase 4 - app.include_router(gamification.router)
 # TODO: Phase 5 - app.include_router(invite.router)

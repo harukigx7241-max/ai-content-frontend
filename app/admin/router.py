@@ -1,8 +1,7 @@
 """
 app/admin/router.py — /api/admin/* エンドポイント (薄いルーター)
-このフェーズでは管理者承認の最小受け皿として機能する。
 重いロジックは admin/service.py に委譲。
-TODO: Phase 3+ 統計 / メール通知 / 一括操作 / 詳細ログ
+TODO: Phase 4+ メール通知 / 一括操作 / 監査ログ
 """
 from typing import Optional
 
@@ -11,7 +10,12 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from app.admin import service as admin_service
-from app.admin.schemas import UserAdminResponse
+from app.admin.schemas import (
+    AdminStatsResponse,
+    SystemSettingsResponse,
+    SystemSettingsUpdate,
+    UserAdminResponse,
+)
 from app.auth.dependencies import require_admin
 from app.db.models.user import User
 from app.db.session import get_db
@@ -65,6 +69,37 @@ def restore(
     admin: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
-    """停止解除。TODO: Phase 3+ で管理者 UI から呼べるようにする"""
     user = admin_service.restore_user(db, user_id, admin.id)
     return JSONResponse({"message": f"{user.display_name} を復元しました", "user_id": user.id})
+
+
+# ── 統計 ─────────────────────────────────────────────────────────
+
+@router.get("/stats", response_model=AdminStatsResponse)
+def stats(
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """管理ダッシュボード向け基本統計。"""
+    return admin_service.get_stats(db)
+
+
+# ── システム設定 ──────────────────────────────────────────────────
+
+@router.get("/settings", response_model=SystemSettingsResponse)
+def get_settings(
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """現在のシステム設定を返す。"""
+    return admin_service.get_settings(db)
+
+
+@router.post("/settings", response_model=SystemSettingsResponse)
+def update_settings(
+    body: SystemSettingsUpdate,
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """システム設定を更新する。None フィールドはスキップ。"""
+    return admin_service.update_settings(db, body.model_dump(), admin.id)

@@ -1716,3 +1716,77 @@ kbd {
 .admin-action-btn.reject:hover   { background: rgba(239,68,68,0.25);   }
 .admin-action-btn.suspend:hover  { background: rgba(148,163,184,0.25); }
 .admin-action-btn.restore:hover  { background: rgba(251,191,36,0.25);  }
+
+/* ── 管理ダッシュボード統計カード ──────────────────────────── */
+.dash-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+}
+.dash-stat-card {
+  background: var(--glass-fill);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  padding: 20px 18px;
+  backdrop-filter: blur(20px);
+  text-align: center;
+}
+.dash-stat-card.pending   { border-color: rgba(251,191,36,0.3); }
+.dash-stat-card.approved  { border-color: rgba(52,211,153,0.3); }
+.dash-stat-card.rejected  { border-color: rgba(239,68,68,0.3); }
+.dash-stat-card.suspended { border-color: rgba(148,163,184,0.3); }
+.dash-stat-card.recent    { border-color: rgba(168,85,247,0.3); }
+.dash-stat-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+.dash-stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.dash-stat-card.pending   .dash-stat-value { color: #fbbf24; }
+.dash-stat-card.approved  .dash-stat-value { color: #34d399; }
+.dash-stat-card.rejected  .dash-stat-value { color: #f87171; }
+.dash-stat-card.suspended .dash-stat-value { color: #94a3b8; }
+.dash-stat-card.recent    .dash-stat-value { color: var(--accent-purple); }
+
+/* ── トグルスイッチ ────────────────────────────────────────── */
+.dash-toggle {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+}
+.dash-toggle input { opacity: 0; width: 0; height: 0; }
+.dash-toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.dash-toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  left: 2px;
+  top: 2px;
+  background: var(--text-muted);
+  border-radius: 50%;
+  transition: transform 0.2s, background 0.2s;
+}
+.dash-toggle input:checked + .dash-toggle-slider {
+  background: rgba(168,85,247,0.35);
+  border-color: var(--accent-purple);
+}
+.dash-toggle input:checked + .dash-toggle-slider::before {
+  transform: translateX(20px);
+  background: var(--accent-purple);
+}

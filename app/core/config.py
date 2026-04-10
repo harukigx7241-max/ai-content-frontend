@@ -31,8 +31,8 @@ class Settings:
     ENABLE_PHASE1_FEATURES: bool = os.getenv("ENABLE_PHASE1_FEATURES", "true").lower() == "true"
 
     # ── 将来機能フラグ（全て無効）──────────────────────────────────
-    # TODO: Phase 2 - 管理画面 (ENABLE_AUTH_SYSTEM は下の Phase 2 設定セクションで定義)
-    ENABLE_ADMIN_DASHBOARD: bool = False
+    # Phase 3 - 管理ダッシュボード
+    ENABLE_ADMIN_DASHBOARD: bool = os.getenv("ENABLE_ADMIN_DASHBOARD", "true").lower() == "true"
     # TODO: Phase 3 - コミュニティ（公開広場）
     ENABLE_COMMUNITY: bool = False
     # TODO: Phase 4 - ゲーミフィケーション（XP/バッジ）
