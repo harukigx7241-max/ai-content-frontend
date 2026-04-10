@@ -31,7 +31,7 @@
 
   {% if user.must_change_password %}
   <!-- bootstrap 管理者向け: 初回パスワード変更促進バナー -->
-  <div style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.45);border-radius:12px;padding:14px 20px;margin-bottom:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+  <div id="mustChangePwBanner" style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.45);border-radius:12px;padding:14px 20px;margin-bottom:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
     <span style="font-size:1.3rem">⚠️</span>
     <span style="color:#fbbf24;font-weight:600;flex:1;min-width:0">
       初期パスワードが設定されています。セキュリティのため、今すぐパスワードを変更してください。
@@ -667,6 +667,10 @@ document.getElementById('pwForm').addEventListener('submit', async e => {
     sucEl.textContent = 'パスワードを変更しました';
     sucEl.style.display = 'block';
     e.target.reset();
+    // must_change_password バナーが出ている場合はリロードして消す
+    if (document.getElementById('mustChangePwBanner')) {
+      setTimeout(() => location.reload(), 1200);
+    }
   } catch {
     errEl.textContent = 'サーバーエラーが発生しました';
     errEl.style.display = 'block';

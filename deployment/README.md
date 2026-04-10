@@ -91,15 +91,36 @@ server {
 
 ## 5. 初回管理者アカウント
 
-`.env` で `ADMIN_BOOTSTRAP_ENABLED=true` のままサービスを起動すると、
-起動時に管理者アカウントが自動作成されます。
+**安全設計:**
+- `.env.example` のデフォルトは `ADMIN_BOOTSTRAP_ENABLED=false`
+- 既存の管理者が1件でもいれば、bootstrap は何もしない（べき等）
+- bootstrap で作成された管理者は `must_change_password=true` フラグが付き、マイページに警告バナーが表示される
 
-**初回ログイン後の必須作業:**
+**手順:**
+
+```bash
+# 1. .env を編集して bootstrap を有効化 + 強固なパスワードを設定
+nano .env
+```
+
+```
+ADMIN_BOOTSTRAP_ENABLED=true
+ADMIN_BOOTSTRAP_PASSWORD=<推測困難なパスワード>  # ← admin123 は絶対に使わない
+```
+
+```bash
+# 2. サービスを起動 (または再起動) — 起動ログに WARNING が出れば成功
+systemctl restart prompt-guild
+journalctl -u prompt-guild -n 20 | grep bootstrap
+```
+
+**ログイン後の必須作業:**
 
 1. `/login` で管理者アカウントにログイン
-2. マイページ → 設定タブ → パスワード変更
-3. `.env` の `ADMIN_BOOTSTRAP_ENABLED=false` に変更
-4. `systemctl restart prompt-guild`
+2. マイページのオレンジ色の警告バナー →「パスワードを変更 →」ボタン
+3. 設定タブ → パスワード変更フォームで新しいパスワードに変更（変更後バナーが消える）
+4. `.env` の `ADMIN_BOOTSTRAP_ENABLED=false` に変更（またはコメントアウト）
+5. `systemctl restart prompt-guild`
 
 ---
 
