@@ -64,6 +64,16 @@ class Settings:
     ADMIN_SNS_PLATFORM: str = os.getenv("ADMIN_SNS_PLATFORM", "")
     ADMIN_SNS_HANDLE: str = os.getenv("ADMIN_SNS_HANDLE", "")
 
+    # ── 初回管理者ブートストラップ ──────────────────────────────────────
+    # ADMIN_BOOTSTRAP_ENABLED=true のとき、起動時に role=admin ユーザーが存在しなければ作成する。
+    # 初回ログイン後は必ずパスワードを変更し、ADMIN_BOOTSTRAP_ENABLED=false に戻すこと。
+    # 本番環境では ADMIN_BOOTSTRAP_PASSWORD を強固なパスワードにすること (admin123 のまま使わない)。
+    ADMIN_BOOTSTRAP_ENABLED: bool = os.getenv("ADMIN_BOOTSTRAP_ENABLED", "false").lower() == "true"
+    ADMIN_BOOTSTRAP_PLATFORM: str = os.getenv("ADMIN_BOOTSTRAP_PLATFORM", "X")
+    ADMIN_BOOTSTRAP_HANDLE: str = os.getenv("ADMIN_BOOTSTRAP_HANDLE", "admin")
+    ADMIN_BOOTSTRAP_DISPLAY_NAME: str = os.getenv("ADMIN_BOOTSTRAP_DISPLAY_NAME", "管理者")
+    ADMIN_BOOTSTRAP_PASSWORD: str = os.getenv("ADMIN_BOOTSTRAP_PASSWORD", "")
+
 
 # グローバルシングルトン
 settings = Settings()

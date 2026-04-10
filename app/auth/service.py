@@ -119,6 +119,9 @@ def change_password(db: Session, user: User, data: ChangePasswordRequest) -> Non
         raise HTTPException(400, "新しいパスワードが一致しません")
 
     user.password_hash = hash_password(data.new_password)
+    # bootstrap で設定された初回変更フラグをクリアする
+    if getattr(user, "must_change_password", False):
+        user.must_change_password = False
     db.commit()
 
     # TODO: Phase 3+ ここでセッションを無効化する (全デバイスログアウト)

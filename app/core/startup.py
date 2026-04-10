@@ -48,3 +48,14 @@ def bootstrap_db() -> None:
     with SessionLocal() as db:
         runtime_config.load_from_db(db)
     logger.info("startup: runtime_config loaded from db")
+
+    # 5. 初回管理者ブートストラップ (ADMIN_BOOTSTRAP_ENABLED=true の場合のみ)
+    #    管理者が1人も存在しない場合に環境変数の認証情報で admin アカウントを1件作成する。
+    #    べき等設計: 既存 admin がいれば何もしない。
+    from app.core.config import settings
+    if settings.ADMIN_BOOTSTRAP_ENABLED:
+        from app.core.admin_bootstrap import bootstrap_admin
+        with SessionLocal() as db:
+            bootstrap_admin(db)
+    else:
+        logger.debug("startup: admin bootstrap disabled (ADMIN_BOOTSTRAP_ENABLED=false)")

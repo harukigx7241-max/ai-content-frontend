@@ -10,7 +10,7 @@ app/db/models/user.py — User SQLAlchemy モデル
   - TODO: Phase 5+ invite_code_id カラム追加
 """
 from datetime import datetime, timezone
-from sqlalchemy import Column, Integer, String, Text, DateTime, UniqueConstraint
+from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, UniqueConstraint
 
 from app.db.base import Base
 
@@ -48,6 +48,10 @@ class User(Base):
 
     # Phase 8: 招待元ユーザー追跡 (既存 DB には ALTER TABLE で追加)
     invited_by_user_id = Column(Integer, nullable=True)  # 招待した User.id
+
+    # admin bootstrap: 初回ログイン後のパスワード変更を促すフラグ
+    # bootstrap_admin() で作成した管理者のみ True。change_password 成功時に False へ戻す。
+    must_change_password = Column(Boolean, nullable=False, default=False)
 
     __table_args__ = (
         UniqueConstraint("sns_platform", "sns_handle", name="uq_sns_platform_handle"),

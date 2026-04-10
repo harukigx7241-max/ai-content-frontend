@@ -48,6 +48,9 @@ COLUMN_MIGRATIONS: list[_Migration] = [
     # Phase 9
     _Migration("feedback.priority",
                "ALTER TABLE feedback ADD COLUMN priority VARCHAR(20) NOT NULL DEFAULT 'medium'"),
+    # admin bootstrap
+    _Migration("users.must_change_password",
+               "ALTER TABLE users ADD COLUMN must_change_password BOOLEAN NOT NULL DEFAULT 0"),
 ]
 
 

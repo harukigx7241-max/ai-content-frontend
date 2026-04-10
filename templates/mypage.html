@@ -29,6 +29,20 @@
 
 <main class="mypage-container">
 
+  {% if user.must_change_password %}
+  <!-- bootstrap 管理者向け: 初回パスワード変更促進バナー -->
+  <div style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.45);border-radius:12px;padding:14px 20px;margin-bottom:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <span style="font-size:1.3rem">⚠️</span>
+    <span style="color:#fbbf24;font-weight:600;flex:1;min-width:0">
+      初期パスワードが設定されています。セキュリティのため、今すぐパスワードを変更してください。
+    </span>
+    <button onclick="document.querySelector('[data-tab=settings]').click()"
+            style="background:rgba(245,158,11,0.2);border:1px solid rgba(245,158,11,0.6);color:#fbbf24;padding:6px 16px;border-radius:8px;cursor:pointer;font-weight:600;white-space:nowrap">
+      パスワードを変更 →
+    </button>
+  </div>
+  {% endif %}
+
   <!-- ── グリーティングヘッダー ── -->
   <div class="mypage-hero">
     <div class="mypage-hero-left">
