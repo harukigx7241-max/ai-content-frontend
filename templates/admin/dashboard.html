@@ -42,9 +42,11 @@
 
   <!-- タブナビ -->
   <div class="admin-filter-bar" style="margin-bottom:28px" role="tablist">
-    <button class="admin-filter-btn active" data-panel="stats"   role="tab">統計</button>
-    <button class="admin-filter-btn"         data-panel="users"   role="tab">ユーザー管理</button>
-    <button class="admin-filter-btn"         data-panel="settings" role="tab">システム設定</button>
+    <button class="admin-filter-btn active" data-panel="stats"    role="tab">統計</button>
+    <button class="admin-filter-btn"        data-panel="users"    role="tab">ユーザー管理</button>
+    <button class="admin-filter-btn"        data-panel="analytics" role="tab">分析</button>
+    <button class="admin-filter-btn"        data-panel="feedback" role="tab">要望</button>
+    <button class="admin-filter-btn"        data-panel="settings" role="tab">システム設定</button>
   </div>
 
   <!-- ═══ パネル: 統計 ═══ -->
@@ -123,6 +125,96 @@
     </div>
   </section>
 
+  <!-- ═══ パネル: 分析 ═══ -->
+  <section id="panel-analytics" style="display:none">
+    <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:20px">
+      KPI・アクティビティ・人気コンテンツを確認できます。
+    </p>
+    <p id="analyticsLoading" style="color:var(--text-muted)">読み込み中...</p>
+
+    <!-- KPI グリッド -->
+    <div id="analyticsKpi" style="display:none">
+      <div class="mypage-section-title">KPI サマリー</div>
+      <div class="dash-stats-grid" style="margin-bottom:28px">
+        <div class="dash-stat-card approved">
+          <div class="dash-stat-label">承認済みユーザー</div>
+          <div class="dash-stat-value" id="an-approved">—</div>
+        </div>
+        <div class="dash-stat-card recent">
+          <div class="dash-stat-label">30日間の新規登録</div>
+          <div class="dash-stat-value" id="an-signups30">—</div>
+        </div>
+        <div class="dash-stat-card">
+          <div class="dash-stat-label">公開投稿数</div>
+          <div class="dash-stat-value" id="an-posts-public">—</div>
+        </div>
+        <div class="dash-stat-card">
+          <div class="dash-stat-label">XP イベント(7日)</div>
+          <div class="dash-stat-value" id="an-xp7d">—</div>
+        </div>
+        <div class="dash-stat-card">
+          <div class="dash-stat-label">招待登録数</div>
+          <div class="dash-stat-value" id="an-invites">—</div>
+        </div>
+        <div class="dash-stat-card">
+          <div class="dash-stat-label">招待承認率</div>
+          <div class="dash-stat-value" id="an-conv">—</div>
+        </div>
+      </div>
+
+      <!-- 人気投稿 TOP -->
+      <div class="mypage-section-title" style="margin-bottom:12px">人気投稿 TOP 10</div>
+      <p id="popularPostsEmpty" style="display:none;color:var(--text-muted);font-size:0.85rem;margin-bottom:20px">
+        公開投稿がありません
+      </p>
+      <div class="admin-table-wrap" id="popularPostsWrap" style="display:none;margin-bottom:28px">
+        <table class="admin-table">
+          <thead>
+            <tr><th>タイトル</th><th>作成者</th><th>カテゴリ</th><th>閲覧数</th></tr>
+          </thead>
+          <tbody id="popularPostsBody"></tbody>
+        </table>
+      </div>
+
+      <!-- XP イベント分布 -->
+      <div class="mypage-section-title" style="margin-bottom:12px">XP イベント分布</div>
+      <div id="xpEventStats" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:28px"></div>
+
+      <!-- カテゴリ別投稿数 -->
+      <div id="categoryStatsSection" style="display:none">
+        <div class="mypage-section-title" style="margin-bottom:12px">カテゴリ別投稿数</div>
+        <div id="categoryStats" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:28px"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ パネル: 要望 ═══ -->
+  <section id="panel-feedback" style="display:none">
+    <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:20px">
+      ユーザーから送られた要望・バグ報告を管理します。
+    </p>
+
+    <div class="admin-filter-bar" id="feedbackFilterBar" style="margin-bottom:16px">
+      <button class="admin-filter-btn active" data-fstatus="">すべて</button>
+      <button class="admin-filter-btn" data-fstatus="open">未対応</button>
+      <button class="admin-filter-btn" data-fstatus="acknowledged">確認済み</button>
+      <button class="admin-filter-btn" data-fstatus="closed">クローズ</button>
+    </div>
+
+    <p id="feedbackLoadingMsg" style="color:var(--text-muted)">読み込み中...</p>
+    <p id="feedbackEmptyMsg" style="display:none;color:var(--text-muted);text-align:center;padding:20px 0">
+      該当する要望がありません
+    </p>
+    <div class="admin-table-wrap" id="feedbackTableWrap" style="display:none">
+      <table class="admin-table">
+        <thead>
+          <tr><th>ID</th><th>種別</th><th>タイトル</th><th>送信者</th><th>ステータス</th><th>日時</th><th>操作</th></tr>
+        </thead>
+        <tbody id="feedbackTableBody"></tbody>
+      </table>
+    </div>
+  </section>
+
   <!-- ═══ パネル: システム設定 ═══ -->
   <section id="panel-settings" style="display:none">
     <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:24px">
@@ -186,17 +278,20 @@
 const STATUS_LABELS = {pending:'承認待ち', approved:'承認済み', rejected:'却下', suspended:'停止中'};
 
 // ── タブ切替 ──────────────────────────────────────────────────────
+const ALL_PANELS = ['stats', 'users', 'analytics', 'feedback', 'settings'];
 let currentPanel = 'stats';
 document.querySelectorAll('[data-panel]').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('[data-panel]').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    ['stats','users','settings'].forEach(id => {
+    ALL_PANELS.forEach(id => {
       document.getElementById('panel-' + id).style.display = id === btn.dataset.panel ? '' : 'none';
     });
     currentPanel = btn.dataset.panel;
-    if (currentPanel === 'users' && !usersLoaded) loadUsers('');
-    if (currentPanel === 'settings' && !settingsLoaded) loadSettings();
+    if (currentPanel === 'users'     && !usersLoaded)     loadUsers('');
+    if (currentPanel === 'analytics' && !analyticsLoaded) loadAnalytics();
+    if (currentPanel === 'feedback'  && !feedbackLoaded)  loadFeedback('');
+    if (currentPanel === 'settings'  && !settingsLoaded)  loadSettings();
   });
 });
 
@@ -340,6 +435,148 @@ document.querySelectorAll('#userFilterBar .admin-filter-btn').forEach(btn => {
     document.querySelectorAll('#userFilterBar .admin-filter-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     loadUsers(btn.dataset.status);
+  });
+});
+
+// ── 分析パネル ────────────────────────────────────────────────────
+let analyticsLoaded = false;
+
+async function loadAnalytics() {
+  try {
+    const [kpiRes, postsRes, xpRes, catRes] = await Promise.all([
+      fetch('/api/analytics/kpi'),
+      fetch('/api/analytics/popular-posts'),
+      fetch('/api/analytics/xp-events'),
+      fetch('/api/analytics/categories'),
+    ]);
+    if (!kpiRes.ok) throw new Error();
+    const kpi   = await kpiRes.json();
+    const posts  = postsRes.ok  ? await postsRes.json()  : [];
+    const xpEvts = xpRes.ok    ? await xpRes.json()      : [];
+    const cats   = catRes.ok   ? await catRes.json()     : [];
+
+    document.getElementById('an-approved').textContent   = kpi.users_approved;
+    document.getElementById('an-signups30').textContent  = kpi.users_signups_30d;
+    document.getElementById('an-posts-public').textContent = kpi.posts_public;
+    document.getElementById('an-xp7d').textContent       = kpi.xp_events_7d;
+    document.getElementById('an-invites').textContent    = kpi.invites_total;
+    document.getElementById('an-conv').textContent       = kpi.invite_conversion_rate + '%';
+
+    // 人気投稿
+    if (posts.length) {
+      document.getElementById('popularPostsBody').innerHTML = posts.map(p => `
+        <tr>
+          <td>${esc(p.title)}</td>
+          <td style="font-size:0.8rem;color:var(--text-secondary)">${esc(p.author_name)}</td>
+          <td style="font-size:0.8rem;color:var(--text-secondary)">${esc(p.category || '—')}</td>
+          <td style="font-size:0.85rem">${p.view_count}</td>
+        </tr>
+      `).join('');
+      document.getElementById('popularPostsWrap').style.display = '';
+    } else {
+      document.getElementById('popularPostsEmpty').style.display = '';
+    }
+
+    // XP イベント分布
+    const xpEl = document.getElementById('xpEventStats');
+    if (xpEvts.length) {
+      xpEl.innerHTML = xpEvts.map(x => `
+        <div style="background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.25);border-radius:8px;padding:8px 14px;font-size:0.82rem">
+          <span style="color:var(--text-secondary)">${esc(x.event_type)}</span>
+          <span style="color:var(--accent-purple);font-weight:700;margin-left:8px">${x.count}</span>
+        </div>
+      `).join('');
+    } else {
+      xpEl.innerHTML = '<span style="color:var(--text-muted);font-size:0.85rem">データなし</span>';
+    }
+
+    // カテゴリ別
+    if (cats.length) {
+      document.getElementById('categoryStats').innerHTML = cats.map(c => `
+        <div style="background:rgba(6,182,212,0.1);border:1px solid rgba(6,182,212,0.25);border-radius:8px;padding:8px 14px;font-size:0.82rem">
+          <span style="color:var(--text-secondary)">${esc(c.category)}</span>
+          <span style="color:var(--accent-cyan);font-weight:700;margin-left:8px">${c.post_count}</span>
+        </div>
+      `).join('');
+      document.getElementById('categoryStatsSection').style.display = '';
+    }
+
+    document.getElementById('analyticsLoading').style.display = 'none';
+    document.getElementById('analyticsKpi').style.display = '';
+    analyticsLoaded = true;
+  } catch {
+    document.getElementById('analyticsLoading').textContent = '読み込みに失敗しました';
+  }
+}
+
+// ── 要望パネル ────────────────────────────────────────────────────
+let feedbackLoaded = false;
+let currentFeedbackStatus = '';
+
+const FB_STATUS_LABELS = {open:'未対応', acknowledged:'確認済み', closed:'クローズ'};
+const FB_CAT_LABELS    = {feature:'機能要望', bug:'バグ報告', other:'その他', general:'一般'};
+
+async function loadFeedback(status) {
+  currentFeedbackStatus = status;
+  const url = '/api/admin/feedback' + (status ? `?status=${encodeURIComponent(status)}` : '');
+  document.getElementById('feedbackLoadingMsg').style.display = '';
+  document.getElementById('feedbackTableWrap').style.display  = 'none';
+  document.getElementById('feedbackEmptyMsg').style.display   = 'none';
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error();
+    const items = await res.json();
+    renderFeedback(items);
+    feedbackLoaded = true;
+  } catch {
+    document.getElementById('feedbackLoadingMsg').textContent = '読み込みに失敗しました';
+  }
+}
+
+function renderFeedback(items) {
+  document.getElementById('feedbackLoadingMsg').style.display = 'none';
+  if (!items.length) {
+    document.getElementById('feedbackEmptyMsg').style.display = '';
+    return;
+  }
+  document.getElementById('feedbackTableBody').innerHTML = items.map(fb => `
+    <tr id="fbrow-${fb.id}">
+      <td style="color:var(--text-muted)">${fb.id}</td>
+      <td style="font-size:0.8rem">${esc(FB_CAT_LABELS[fb.category] || fb.category)}</td>
+      <td>${esc(fb.title)}</td>
+      <td style="font-size:0.8rem;color:var(--text-secondary)">${esc(fb.display_name || '—')}</td>
+      <td><span class="status-badge ${fb.status === 'open' ? 'pending' : fb.status === 'closed' ? 'approved' : ''}">${FB_STATUS_LABELS[fb.status] || fb.status}</span></td>
+      <td style="font-size:0.8rem;color:var(--text-secondary)">${fmtDate(fb.created_at)}</td>
+      <td style="display:flex;gap:4px;flex-wrap:wrap">
+        ${fb.status !== 'acknowledged' ? `<button class="admin-action-btn approve" style="font-size:0.72rem;padding:4px 8px" onclick="updateFeedback(${fb.id},'acknowledged')">確認済み</button>` : ''}
+        ${fb.status !== 'closed'       ? `<button class="admin-action-btn suspend" style="font-size:0.72rem;padding:4px 8px" onclick="updateFeedback(${fb.id},'closed')">クローズ</button>`    : ''}
+        ${fb.status !== 'open'         ? `<button class="admin-action-btn"         style="font-size:0.72rem;padding:4px 8px" onclick="updateFeedback(${fb.id},'open')">再開</button>`          : ''}
+      </td>
+    </tr>
+  `).join('');
+  document.getElementById('feedbackTableWrap').style.display = '';
+}
+
+async function updateFeedback(fbId, status) {
+  try {
+    const res = await fetch(`/api/admin/feedback/${fbId}`, {
+      method: 'PATCH',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({status}),
+    });
+    if (!res.ok) { alert('更新に失敗しました'); return; }
+    feedbackLoaded = false;
+    loadFeedback(currentFeedbackStatus);
+  } catch {
+    alert('サーバーエラーが発生しました');
+  }
+}
+
+document.querySelectorAll('#feedbackFilterBar .admin-filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#feedbackFilterBar .admin-filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    loadFeedback(btn.dataset.fstatus);
   });
 });
 

@@ -75,6 +75,8 @@ if settings.ENABLE_AUTH_SYSTEM:
         "ALTER TABLE xp_events ADD COLUMN related_entity_id   INTEGER",
         # Phase 8: 招待元ユーザー追跡
         "ALTER TABLE users ADD COLUMN invited_by_user_id INTEGER",
+        # Phase 9: フィードバック + 監査ログ (テーブル自体は Base.metadata.create_all で作成済み)
+        # audit_logs.detail は Text 型なので追加マイグレーション不要
     ]
     with engine.connect() as _conn:
         for _stmt in _migrations:
@@ -119,4 +121,6 @@ if settings.ENABLE_AUTH_SYSTEM:
     app.include_router(invite_router)       # /api/invite/*
     app.include_router(invite_admin_router) # /api/admin/invite/*
 
-# TODO: Phase N+ - app.include_router(invite.router)
+    # ── Phase 9: 分析 + フィードバック ──────────────────────────────
+    from app.analytics.router import router as analytics_router
+    app.include_router(analytics_router)    # /api/analytics/*, /api/feedback, /api/admin/feedback
