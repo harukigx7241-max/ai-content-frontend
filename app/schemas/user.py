@@ -18,7 +18,8 @@ class ProfileUpdateRequest(BaseModel):
     """
     display_name: Optional[str] = Field(None, min_length=1, max_length=100)
     profile_url: Optional[str] = Field(None, max_length=500)
-    # profile_url に空文字 "" を送ると URL を削除する
+    bio: Optional[str] = Field(None, max_length=500)
+    # profile_url / bio に空文字 "" を送ると削除する
     # None を送った場合は変更しない (PATCH セマンティクス)
 
 

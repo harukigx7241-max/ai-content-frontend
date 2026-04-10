@@ -20,7 +20,7 @@ from app.schemas.user import ProfileUpdateRequest
 def update_profile(db: Session, user: User, data: ProfileUpdateRequest) -> User:
     """
     プロフィールを更新する。None フィールドはスキップ (PATCH セマンティクス)。
-    profile_url に空文字 "" を渡すと URL を削除する。
+    profile_url / bio に空文字 "" を渡すと削除する。
     """
     if data.display_name is not None:
         user.display_name = data.display_name
@@ -28,6 +28,10 @@ def update_profile(db: Session, user: User, data: ProfileUpdateRequest) -> User:
     if data.profile_url is not None:
         # 空文字は None に変換して URL を削除
         user.profile_url = data.profile_url.strip() or None
+
+    if data.bio is not None:
+        # 空文字は None に変換して bio を削除
+        user.bio = data.bio.strip() or None
 
     db.commit()
     db.refresh(user)

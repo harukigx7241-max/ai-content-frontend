@@ -55,6 +55,7 @@ class UserResponse(BaseModel):
     sns_handle: str
     display_name: str
     profile_url: Optional[str]
+    bio: Optional[str] = None  # Phase 4: 自己紹介文
     status: str
     role: str
     created_at: datetime

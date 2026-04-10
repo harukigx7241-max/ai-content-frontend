@@ -64,6 +64,15 @@ if settings.ENABLE_AUTH_SYSTEM:
 
     Base.metadata.create_all(bind=engine)
 
+    # Phase 4 delta: bio カラムが無い旧 DB へのオンライン追加
+    from sqlalchemy import text as _sql_text
+    with engine.connect() as _conn:
+        try:
+            _conn.execute(_sql_text("ALTER TABLE users ADD COLUMN bio TEXT"))
+            _conn.commit()
+        except Exception:
+            pass  # すでに存在する場合は無視
+
     # 起動時に DB のシステム設定を runtime_config に読み込む
     from app.core import runtime_config
     from app.db.session import SessionLocal

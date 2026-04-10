@@ -10,7 +10,7 @@ app/db/models/user.py — User SQLAlchemy モデル
   - TODO: Phase 5+ invite_code_id カラム追加
 """
 from datetime import datetime, timezone
-from sqlalchemy import Column, Integer, String, DateTime, UniqueConstraint
+from sqlalchemy import Column, Integer, String, Text, DateTime, UniqueConstraint
 
 from app.db.base import Base
 
@@ -27,6 +27,7 @@ class User(Base):
     sns_handle = Column(String(100), nullable=False)
     display_name = Column(String(100), nullable=False)
     profile_url = Column(String(500), nullable=True)
+    bio = Column(Text, nullable=True)  # Phase 4: 自己紹介文（500字以内）
     email = Column(String(200), nullable=True, unique=True)  # TODO: Phase 3+ メール認証
 
     password_hash = Column(String(256), nullable=False)

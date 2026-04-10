@@ -95,6 +95,10 @@
             {{ user.profile_url or '' }}
           </a>
         </div>
+        <div class="mypage-info-item" id="viewBioItem" style="{{ '' if user.bio else 'display:none' }};grid-column:1/-1">
+          <label>自己紹介</label>
+          <span id="viewBio" style="font-size:0.88rem;line-height:1.6;white-space:pre-wrap;word-break:break-all">{{ user.bio or '' }}</span>
+        </div>
       </div>
     </div>
 
@@ -115,6 +119,16 @@
           </label>
           <input id="editProfileUrl" type="url" name="profile_url" class="field-input"
                  value="{{ user.profile_url or '' }}" placeholder="https://x.com/username">
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="editBio">自己紹介
+            <span style="color:var(--text-muted);font-size:0.75rem">任意・500字以内・空欄で削除</span>
+          </label>
+          <textarea id="editBio" name="bio" class="field-input" rows="3"
+                    maxlength="500" placeholder="どんな副業をしているか、得意なことなど">{{ user.bio or '' }}</textarea>
+          <div style="text-align:right;font-size:0.72rem;color:var(--text-muted);margin-top:4px">
+            <span id="bioCharCount">{{ (user.bio or '') | length }}</span>/500
+          </div>
         </div>
         <p style="font-size:0.78rem;color:var(--text-muted);margin-top:-6px">
           ※ SNSプラットフォーム・アカウント名はログインIDのため変更できません
@@ -173,10 +187,62 @@
       </p>
     </div>
 
-    <!-- 将来機能受け皿 (非表示) -->
-    <!-- TODO: Phase N+ 投稿一覧 (公開広場の自分の投稿) -->
-    <!-- TODO: Phase N+ XP / レベル / バッジ 表示 -->
-    <!-- TODO: Phase N+ 招待コード利用状況 -->
+    <!-- レベル・実績 (stub) -->
+    <div class="mypage-stub-card" aria-label="準備中">
+      <div class="mypage-stub-header">
+        <span class="mypage-stub-icon">🏅</span>
+        <span class="mypage-stub-title">レベル &amp; 実績</span>
+        <span class="mypage-stub-badge">近日公開</span>
+      </div>
+      <div class="mypage-stub-body">
+        <div class="mypage-stub-row">
+          <span class="mypage-stub-label">現在のレベル</span>
+          <span class="mypage-stub-value stub-dim">—</span>
+        </div>
+        <div class="mypage-stub-row">
+          <span class="mypage-stub-label">経験値 (XP)</span>
+          <span class="mypage-stub-value stub-dim">— / —</span>
+        </div>
+        <div class="mypage-stub-row">
+          <span class="mypage-stub-label">獲得バッジ</span>
+          <span class="mypage-stub-value stub-dim">—</span>
+        </div>
+        <!-- TODO: Phase N+ XP / レベル / バッジ実装 -->
+      </div>
+    </div>
+
+    <!-- 招待 (stub) -->
+    <div class="mypage-stub-card" aria-label="準備中">
+      <div class="mypage-stub-header">
+        <span class="mypage-stub-icon">🎟️</span>
+        <span class="mypage-stub-title">招待</span>
+        <span class="mypage-stub-badge">近日公開</span>
+      </div>
+      <div class="mypage-stub-body">
+        <div class="mypage-stub-row">
+          <span class="mypage-stub-label">招待コード</span>
+          <span class="mypage-stub-value stub-dim">——————</span>
+        </div>
+        <div class="mypage-stub-row">
+          <span class="mypage-stub-label">招待人数</span>
+          <span class="mypage-stub-value stub-dim">—</span>
+        </div>
+        <!-- TODO: Phase N+ 招待コード発行・管理 -->
+      </div>
+    </div>
+
+    <!-- 投稿管理 (stub) -->
+    <div class="mypage-stub-card" aria-label="準備中">
+      <div class="mypage-stub-header">
+        <span class="mypage-stub-icon">📝</span>
+        <span class="mypage-stub-title">投稿管理</span>
+        <span class="mypage-stub-badge">近日公開</span>
+      </div>
+      <div class="mypage-stub-body">
+        <p class="mypage-stub-desc">生成したプロンプトを公開広場でシェアできるようになります。</p>
+        <!-- TODO: Phase N+ 投稿一覧・公開/非公開切替 -->
+      </div>
+    </div>
 
   </section>
 
@@ -210,11 +276,126 @@
       </form>
     </div>
 
-    <!-- 将来機能受け皿 (非表示) -->
-    <!-- TODO: Phase N+ 通知設定 (メール通知 ON/OFF、種別ごとの設定) -->
-    <!-- TODO: Phase N+ メールアドレス設定 (パスワードリセット用) -->
-    <!-- TODO: Phase N+ SNSアカウント変更 (確認フロー付き) -->
-    <!-- TODO: Phase N+ アカウント削除リクエスト -->
+    <!-- AI設定 (stub) -->
+    <div class="mypage-stub-card" aria-label="準備中">
+      <div class="mypage-stub-header">
+        <span class="mypage-stub-icon">🤖</span>
+        <span class="mypage-stub-title">AI設定</span>
+        <span class="mypage-stub-badge">近日公開</span>
+      </div>
+      <div class="mypage-stub-body">
+        <div class="mypage-stub-row">
+          <label class="mypage-stub-label" for="prefFavoriteAi">よく使うAI</label>
+          <select id="prefFavoriteAi" class="field-input mypage-stub-select" disabled>
+            <option>ChatGPT</option>
+            <option>Gemini</option>
+            <option>Claude</option>
+            <option>その他</option>
+          </select>
+        </div>
+        <div class="mypage-stub-row">
+          <label class="mypage-stub-label" for="prefAiPlan">AIプラン</label>
+          <select id="prefAiPlan" class="field-input mypage-stub-select" disabled>
+            <option>無料</option>
+            <option>有料（Plus / Pro）</option>
+          </select>
+        </div>
+        <div class="mypage-stub-row">
+          <label class="mypage-stub-label" for="prefGenMode">既定の生成モード</label>
+          <select id="prefGenMode" class="field-input mypage-stub-select" disabled>
+            <option>標準</option>
+            <option>詳細</option>
+            <option>簡易</option>
+          </select>
+        </div>
+        <div class="mypage-stub-row">
+          <label class="mypage-stub-label" for="prefOutMode">既定の出力モード</label>
+          <select id="prefOutMode" class="field-input mypage-stub-select" disabled>
+            <option>マークダウン</option>
+            <option>プレーンテキスト</option>
+            <option>XML構造</option>
+          </select>
+        </div>
+        <p class="mypage-stub-note">※ 設定の保存はリリース後に有効になります</p>
+        <!-- TODO: Phase N+ AI設定の保存・適用 -->
+      </div>
+    </div>
+
+    <!-- 公開設定 (stub) -->
+    <div class="mypage-stub-card" aria-label="準備中">
+      <div class="mypage-stub-header">
+        <span class="mypage-stub-icon">🌐</span>
+        <span class="mypage-stub-title">公開設定</span>
+        <span class="mypage-stub-badge">近日公開</span>
+      </div>
+      <div class="mypage-stub-body">
+        <div class="mypage-stub-row">
+          <span class="mypage-stub-label">プロフィールを公開</span>
+          <label class="dash-toggle" style="opacity:0.4;pointer-events:none">
+            <input type="checkbox" disabled>
+            <span class="dash-toggle-slider"></span>
+          </label>
+        </div>
+        <div class="mypage-stub-row">
+          <span class="mypage-stub-label">生成履歴を公開広場でシェア可能にする</span>
+          <label class="dash-toggle" style="opacity:0.4;pointer-events:none">
+            <input type="checkbox" disabled>
+            <span class="dash-toggle-slider"></span>
+          </label>
+        </div>
+        <!-- TODO: Phase N+ 公開設定の保存・適用 -->
+      </div>
+    </div>
+
+    <!-- 通知設定 (stub) -->
+    <div class="mypage-stub-card" aria-label="準備中">
+      <div class="mypage-stub-header">
+        <span class="mypage-stub-icon">🔔</span>
+        <span class="mypage-stub-title">通知設定</span>
+        <span class="mypage-stub-badge">近日公開</span>
+      </div>
+      <div class="mypage-stub-body">
+        <div class="mypage-stub-row">
+          <span class="mypage-stub-label">メールアドレス</span>
+          <span class="mypage-stub-value stub-dim">未設定</span>
+        </div>
+        <div class="mypage-stub-row">
+          <span class="mypage-stub-label">お知らせメール</span>
+          <label class="dash-toggle" style="opacity:0.4;pointer-events:none">
+            <input type="checkbox" disabled>
+            <span class="dash-toggle-slider"></span>
+          </label>
+        </div>
+        <div class="mypage-stub-row">
+          <span class="mypage-stub-label">承認通知</span>
+          <label class="dash-toggle" style="opacity:0.4;pointer-events:none">
+            <input type="checkbox" disabled>
+            <span class="dash-toggle-slider"></span>
+          </label>
+        </div>
+        <!-- TODO: Phase N+ メールアドレス登録・通知設定の保存 -->
+      </div>
+    </div>
+
+    <!-- アカウント管理 (stub) -->
+    <div class="mypage-stub-card" aria-label="準備中">
+      <div class="mypage-stub-header">
+        <span class="mypage-stub-icon">⚙️</span>
+        <span class="mypage-stub-title">アカウント管理</span>
+        <span class="mypage-stub-badge">近日公開</span>
+      </div>
+      <div class="mypage-stub-body">
+        <div class="mypage-stub-row">
+          <span class="mypage-stub-label">SNSアカウント変更</span>
+          <button class="auth-nav-btn outline" style="font-size:0.75rem;padding:5px 14px;opacity:0.4;pointer-events:none" disabled>変更（確認フロー付き）</button>
+        </div>
+        <div class="mypage-stub-row">
+          <span class="mypage-stub-label">アカウント削除</span>
+          <button class="auth-nav-btn outline" style="font-size:0.75rem;padding:5px 14px;opacity:0.4;pointer-events:none;color:#f87171;border-color:rgba(248,113,113,0.3)" disabled>削除申請</button>
+        </div>
+        <!-- TODO: Phase N+ SNSアカウント変更・アカウント削除フロー -->
+      </div>
+    </div>
 
   </section>
 
@@ -237,6 +418,11 @@ document.querySelectorAll('[data-tab]').forEach(btn => {
 document.getElementById('editProfileBtn').addEventListener('click', () => {
   document.getElementById('profileViewCard').style.display = 'none';
   document.getElementById('profileEditCard').style.display = '';
+});
+
+// bio 文字数カウント
+document.getElementById('editBio').addEventListener('input', function() {
+  document.getElementById('bioCharCount').textContent = this.value.length;
 });
 document.getElementById('cancelEditBtn').addEventListener('click', () => {
   document.getElementById('profileEditCard').style.display = 'none';
@@ -293,6 +479,15 @@ document.getElementById('profileEditForm').addEventListener('submit', async e =>
       urlItem.style.display = '';
     } else {
       urlItem.style.display = 'none';
+    }
+    // bio 反映
+    const bioItem = document.getElementById('viewBioItem');
+    const bioSpan = document.getElementById('viewBio');
+    if (data.bio) {
+      bioSpan.textContent    = data.bio;
+      bioItem.style.display  = '';
+    } else {
+      bioItem.style.display  = 'none';
     }
     sucEl.textContent = 'プロフィールを更新しました';
     sucEl.style.display = '';

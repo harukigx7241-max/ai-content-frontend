@@ -1935,3 +1935,75 @@ kbd {
   white-space: pre-wrap;
   word-break: break-all;
 }
+
+/* ── 将来機能 stub カード ────────────────────────────────── */
+.mypage-stub-card {
+  background: var(--glass-fill);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-card);
+  padding: 20px 24px;
+  margin-bottom: 16px;
+  opacity: 0.7;
+}
+.mypage-stub-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.mypage-stub-icon { font-size: 1.1rem; }
+.mypage-stub-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  flex: 1;
+}
+.mypage-stub-badge {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  padding: 2px 10px;
+  letter-spacing: 0.03em;
+}
+.mypage-stub-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.mypage-stub-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.mypage-stub-label {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+.mypage-stub-value {
+  font-size: 0.85rem;
+  color: var(--text-primary);
+}
+.stub-dim { color: var(--text-muted); }
+.mypage-stub-select {
+  max-width: 180px;
+  padding: 6px 10px;
+  font-size: 0.82rem;
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.mypage-stub-note {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.mypage-stub-desc {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
