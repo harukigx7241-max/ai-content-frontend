@@ -10,6 +10,7 @@ require_admin          : 管理者のみ。一般ユーザーは 403。
   例: ADMIN_ROLES = frozenset({"admin", "support_admin", "super_admin"})
   TODO: Phase N+ ロール別権限マトリクスが必要になったら role_guard(required_role) に発展させる
 """
+import logging
 from typing import Optional
 
 from fastapi import Depends, HTTPException, Request
@@ -18,6 +19,8 @@ from sqlalchemy.orm import Session
 from app.core.security import decode_access_token
 from app.db.models.user import User
 from app.db.session import get_db
+
+logger = logging.getLogger(__name__)
 
 _COOKIE_NAME = "pguild_token"
 
@@ -31,6 +34,7 @@ def get_current_user(
 ) -> User:
     token = request.cookies.get(_COOKIE_NAME)
     if not token:
+        logger.debug("get_current_user: Cookie '%s' not found. path=%s", _COOKIE_NAME, request.url.path)
         raise HTTPException(401, "ログインが必要です")
 
     payload = decode_access_token(token)  # 期限切れ・不正は HTTPException(401)
