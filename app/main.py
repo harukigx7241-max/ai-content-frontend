@@ -72,10 +72,12 @@ if settings.ENABLE_AUTH_SYSTEM:
 
     from app.auth.router import router as auth_router
     from app.admin.router import router as admin_router
+    from app.user.router import router as user_router
     from app.routers.pages import router as pages_router
 
     app.include_router(auth_router)   # /api/auth/*
     app.include_router(admin_router)  # /api/admin/*
+    app.include_router(user_router)   # /api/user/*  (Phase 4)
     app.include_router(pages_router)  # /login, /register, /mypage, /admin
 
 # TODO: Phase 4 - app.include_router(community.router)
