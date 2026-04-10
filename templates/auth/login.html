@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ログイン — 副業AIプロンプトプロ</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="/" class="logo" style="text-decoration:none">
+      <span class="logo-icon">✦</span>
+      <span class="logo-text">副業AIプロンプトプロ</span>
+    </a>
+  </div>
+</header>
+
+<main class="auth-main">
+  <div class="auth-card">
+    <h1 class="auth-title">ログイン</h1>
+    <p class="auth-desc">SNSアカウントとパスワードでログインできます</p>
+
+    <div id="authError" class="auth-error" style="display:none"></div>
+
+    <form id="loginForm" class="auth-form" novalidate>
+      <div class="field-group">
+        <label class="field-label" for="sns_platform">SNSプラットフォーム</label>
+        <select id="sns_platform" name="sns_platform" class="field-select" required>
+          <option value="">選択してください</option>
+          <option value="X">X (旧 Twitter)</option>
+          <option value="Threads">Threads</option>
+          <option value="Instagram">Instagram</option>
+          <option value="note">note</option>
+          <option value="TikTok">TikTok</option>
+          <option value="YouTube">YouTube</option>
+          <option value="ブログ">ブログ</option>
+          <option value="その他">その他</option>
+        </select>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label" for="sns_handle">SNSアカウント名</label>
+        <input id="sns_handle" type="text" name="sns_handle" class="field-input"
+               placeholder="@username（@は省略可）" required autocomplete="username">
+      </div>
+
+      <div class="field-group">
+        <label class="field-label" for="password">パスワード</label>
+        <input id="password" type="password" name="password" class="field-input"
+               placeholder="パスワードを入力" required autocomplete="current-password">
+      </div>
+
+      <button type="submit" class="auth-submit-btn" id="loginBtn">ログイン</button>
+    </form>
+
+    <div class="auth-footer">
+      <p>まだアカウントをお持ちでない方は <a href="/register">新規登録</a></p>
+      <!-- TODO: Phase 3+ パスワードリセット導線を追加 -->
+    </div>
+  </div>
+</main>
+
+<script>
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = document.getElementById('loginBtn');
+  const errEl = document.getElementById('authError');
+  errEl.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = 'ログイン中...';
+
+  const fd = new FormData(e.target);
+  const body = Object.fromEntries(fd.entries());
+
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      errEl.textContent = data.detail || 'ログインに失敗しました';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    // next パラメータがあればそこへ、なければマイページへ
+    const params = new URLSearchParams(location.search);
+    location.href = params.get('next') || '/mypage';
+  } catch {
+    errEl.textContent = 'サーバーエラーが発生しました。しばらく経ってから再試行してください';
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'ログイン';
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理ダッシュボード — 副業AIプロンプトプロ</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="/" class="logo" style="text-decoration:none">
+      <span class="logo-icon">✦</span>
+      <span class="logo-text">副業AIプロンプトプロ</span>
+    </a>
+    <div class="auth-nav">
+      <span class="auth-user-name" style="color:var(--accent-gold)">管理者: {{ user.display_name }}</span>
+      <a href="/mypage" class="auth-nav-btn outline">マイページ</a>
+      <button class="auth-nav-btn outline" id="logoutBtn">ログアウト</button>
+    </div>
+  </div>
+</header>
+
+<!-- ユーザー詳細モーダル -->
+<div id="userDetailOverlay" class="dash-modal-overlay" style="display:none" onclick="closeUserDetail(event)">
+  <div class="dash-modal" role="dialog" aria-labelledby="detailName">
+    <div class="dash-modal-header">
+      <span id="detailName" class="dash-modal-title">ユーザー詳細</span>
+      <button class="dash-modal-close" onclick="closeUserDetail()">✕</button>
+    </div>
+    <div class="dash-modal-body" id="detailBody">
+      <p style="color:var(--text-muted)">読み込み中...</p>
+    </div>
+  </div>
+</div>
+
+<main class="admin-container">
+  <h1 class="admin-title">管理ダッシュボード</h1>
+
+  <!-- タブナビ -->
+  <div class="admin-filter-bar" style="margin-bottom:28px" role="tablist">
+    <button class="admin-filter-btn active" data-panel="stats"    role="tab">統計</button>
+    <button class="admin-filter-btn"        data-panel="users"    role="tab">ユーザー管理</button>
+    <button class="admin-filter-btn"        data-panel="analytics" role="tab">分析</button>
+    <button class="admin-filter-btn"        data-panel="feedback" role="tab">要望</button>
+    <button class="admin-filter-btn"        data-panel="settings" role="tab">システム設定</button>
+  </div>
+
+  <!-- ═══ パネル: 統計 ═══ -->
+  <section id="panel-stats">
+    <p id="statsLoading" style="color:var(--text-muted)">読み込み中...</p>
+    <div id="statsCards" class="dash-stats-grid" style="display:none">
+      <div class="dash-stat-card">
+        <div class="dash-stat-label">合計ユーザー</div>
+        <div class="dash-stat-value" id="st-total">—</div>
+      </div>
+      <div class="dash-stat-card pending">
+        <div class="dash-stat-label">承認待ち</div>
+        <div class="dash-stat-value" id="st-pending">—</div>
+      </div>
+      <div class="dash-stat-card approved">
+        <div class="dash-stat-label">承認済み</div>
+        <div class="dash-stat-value" id="st-approved">—</div>
+      </div>
+      <div class="dash-stat-card rejected">
+        <div class="dash-stat-label">却下</div>
+        <div class="dash-stat-value" id="st-rejected">—</div>
+      </div>
+      <div class="dash-stat-card suspended">
+        <div class="dash-stat-label">停止中</div>
+        <div class="dash-stat-value" id="st-suspended">—</div>
+      </div>
+      <div class="dash-stat-card recent">
+        <div class="dash-stat-label">7日間の新規登録</div>
+        <div class="dash-stat-value" id="st-recent">—</div>
+      </div>
+    </div>
+
+    <!-- 承認待ちユーザーのクイックリスト -->
+    <div id="pendingSection" style="display:none;margin-top:28px">
+      <div class="mypage-section-title">承認待ちユーザー</div>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr><th>ID</th><th>表示名</th><th>SNS</th><th>アカウント名</th><th>登録日</th><th>操作</th></tr>
+          </thead>
+          <tbody id="pendingTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+    <p id="noPendingMsg" style="display:none;color:var(--text-muted);margin-top:16px;text-align:center">
+      現在、承認待ちのユーザーはいません
+    </p>
+  </section>
+
+  <!-- ═══ パネル: ユーザー管理 ═══ -->
+  <section id="panel-users" style="display:none">
+    <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:16px">
+      承認待ちユーザーの承認・却下・停止を管理します。
+    </p>
+    <div class="admin-filter-bar" id="userFilterBar">
+      <button class="admin-filter-btn active" data-status="">すべて</button>
+      <button class="admin-filter-btn" data-status="pending">承認待ち</button>
+      <button class="admin-filter-btn" data-status="approved">承認済み</button>
+      <button class="admin-filter-btn" data-status="rejected">却下</button>
+      <button class="admin-filter-btn" data-status="suspended">停止中</button>
+    </div>
+    <p id="usersLoadingMsg" style="color:var(--text-muted);padding:16px 0">読み込み中...</p>
+    <p id="usersEmptyMsg" style="display:none;color:var(--text-muted);padding:16px 0;text-align:center">
+      該当するユーザーが見つかりません
+    </p>
+    <div class="admin-table-wrap" id="usersTableWrap" style="display:none">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>ID</th><th>表示名</th><th>SNS</th><th>アカウント名</th>
+            <th>ステータス</th><th>登録日</th><th>最終ログイン</th><th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="usersTableBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ═══ パネル: 分析 ═══ -->
+  <section id="panel-analytics" style="display:none">
+    <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:20px">
+      KPI・アクティビティ・人気コンテンツを確認できます。
+    </p>
+    <p id="analyticsLoading" style="color:var(--text-muted)">読み込み中...</p>
+
+    <!-- KPI グリッド -->
+    <div id="analyticsKpi" style="display:none">
+      <div class="mypage-section-title">KPI サマリー</div>
+      <div class="dash-stats-grid" style="margin-bottom:28px">
+        <div class="dash-stat-card approved">
+          <div class="dash-stat-label">承認済みユーザー</div>
+          <div class="dash-stat-value" id="an-approved">—</div>
+        </div>
+        <div class="dash-stat-card recent">
+          <div class="dash-stat-label">30日間の新規登録</div>
+          <div class="dash-stat-value" id="an-signups30">—</div>
+        </div>
+        <div class="dash-stat-card">
+          <div class="dash-stat-label">公開投稿数</div>
+          <div class="dash-stat-value" id="an-posts-public">—</div>
+        </div>
+        <div class="dash-stat-card">
+          <div class="dash-stat-label">XP イベント(7日)</div>
+          <div class="dash-stat-value" id="an-xp7d">—</div>
+        </div>
+        <div class="dash-stat-card">
+          <div class="dash-stat-label">招待登録数</div>
+          <div class="dash-stat-value" id="an-invites">—</div>
+        </div>
+        <div class="dash-stat-card">
+          <div class="dash-stat-label">招待承認率</div>
+          <div class="dash-stat-value" id="an-conv">—</div>
+        </div>
+        <div class="dash-stat-card">
+          <div class="dash-stat-label">本日ログイン</div>
+          <div class="dash-stat-value" id="an-logins-today">—</div>
+        </div>
+        <div class="dash-stat-card suspended">
+          <div class="dash-stat-label">離脱候補(30日)</div>
+          <div class="dash-stat-value" id="an-dormant">—</div>
+        </div>
+      </div>
+
+      <!-- 人気投稿 TOP -->
+      <div class="mypage-section-title" style="margin-bottom:12px">人気投稿 TOP 10</div>
+      <p id="popularPostsEmpty" style="display:none;color:var(--text-muted);font-size:0.85rem;margin-bottom:20px">
+        公開投稿がありません
+      </p>
+      <div class="admin-table-wrap" id="popularPostsWrap" style="display:none;margin-bottom:28px">
+        <table class="admin-table">
+          <thead>
+            <tr><th>タイトル</th><th>作成者</th><th>カテゴリ</th><th>閲覧数</th></tr>
+          </thead>
+          <tbody id="popularPostsBody"></tbody>
+        </table>
+      </div>
+
+      <!-- XP イベント分布 -->
+      <div class="mypage-section-title" style="margin-bottom:12px">XP イベント分布</div>
+      <div id="xpEventStats" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:28px"></div>
+
+      <!-- カテゴリ別投稿数 -->
+      <div id="categoryStatsSection" style="display:none">
+        <div class="mypage-section-title" style="margin-bottom:12px">カテゴリ別投稿数</div>
+        <div id="categoryStats" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:28px"></div>
+      </div>
+
+      <!-- 最近アクティブなユーザー -->
+      <div class="mypage-section-title" style="margin-bottom:12px">最近アクティブなユーザー</div>
+      <p id="recentUsersEmpty" style="display:none;color:var(--text-muted);font-size:0.85rem;margin-bottom:20px">
+        ログイン済みユーザーがいません
+      </p>
+      <div class="admin-table-wrap" id="recentUsersWrap" style="display:none;margin-bottom:28px">
+        <table class="admin-table">
+          <thead>
+            <tr><th>表示名</th><th>SNS</th><th>Lv</th><th>XP</th><th>最終ログイン</th></tr>
+          </thead>
+          <tbody id="recentUsersBody"></tbody>
+        </table>
+      </div>
+
+      <!-- 招待コード利用状況 -->
+      <div class="mypage-section-title" style="margin-bottom:12px">招待コード利用状況</div>
+      <p id="inviteStatsEmpty" style="display:none;color:var(--text-muted);font-size:0.85rem;margin-bottom:20px">
+        招待コードがありません
+      </p>
+      <div class="admin-table-wrap" id="inviteStatsWrap" style="display:none;margin-bottom:28px">
+        <table class="admin-table">
+          <thead>
+            <tr><th>コード</th><th>発行者</th><th>利用/上限</th><th>自動承認</th><th>状態</th><th>期限</th></tr>
+          </thead>
+          <tbody id="inviteStatsBody"></tbody>
+        </table>
+      </div>
+
+      <!-- 改善候補 -->
+      <div class="mypage-section-title" style="margin-bottom:8px">改善候補 — 離脱ユーザー予備軍</div>
+      <div id="improvNeverLogin" style="font-size:0.83rem;color:var(--text-muted);margin-bottom:12px"></div>
+      <p id="dormantEmpty" style="display:none;color:var(--text-muted);font-size:0.85rem;margin-bottom:20px">
+        30日以上未ログインの承認済みユーザーはいません
+      </p>
+      <div class="admin-table-wrap" id="dormantWrap" style="display:none;margin-bottom:28px">
+        <table class="admin-table">
+          <thead>
+            <tr><th>表示名</th><th>最終ログイン</th><th>登録日</th></tr>
+          </thead>
+          <tbody id="dormantBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ パネル: 要望 ═══ -->
+  <section id="panel-feedback" style="display:none">
+    <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:20px">
+      ユーザーから送られた要望・バグ報告を管理します。
+    </p>
+
+    <div class="admin-filter-bar" id="feedbackFilterBar" style="margin-bottom:16px">
+      <button class="admin-filter-btn active" data-fstatus="">すべて</button>
+      <button class="admin-filter-btn" data-fstatus="open">未対応</button>
+      <button class="admin-filter-btn" data-fstatus="acknowledged">確認済み</button>
+      <button class="admin-filter-btn" data-fstatus="closed">クローズ</button>
+    </div>
+
+    <p id="feedbackLoadingMsg" style="color:var(--text-muted)">読み込み中...</p>
+    <p id="feedbackEmptyMsg" style="display:none;color:var(--text-muted);text-align:center;padding:20px 0">
+      該当する要望がありません
+    </p>
+    <div class="admin-table-wrap" id="feedbackTableWrap" style="display:none">
+      <table class="admin-table">
+        <thead>
+          <tr><th>ID</th><th>種別</th><th>タイトル</th><th>送信者</th><th>優先度</th><th>ステータス</th><th>日時</th><th>操作</th></tr>
+        </thead>
+        <tbody id="feedbackTableBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ═══ パネル: システム設定 ═══ -->
+  <section id="panel-settings" style="display:none">
+    <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:24px">
+      設定はサーバー再起動なしで即時反映されます。
+    </p>
+    <div id="settingsError"   class="auth-error"   style="display:none;margin-bottom:16px"></div>
+    <div id="settingsSuccess" class="auth-success" style="display:none;margin-bottom:16px"></div>
+
+    <form id="settingsForm">
+      <!-- メンテナンスモード -->
+      <div class="mypage-card" style="margin-bottom:20px">
+        <div class="mypage-section-title">メンテナンスモード</div>
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px">
+          <label class="dash-toggle">
+            <input type="checkbox" id="maintenanceEnabled" name="maintenance_enabled">
+            <span class="dash-toggle-slider"></span>
+          </label>
+          <span id="maintenanceStatusText" style="font-size:0.88rem;color:var(--text-secondary)">無効</span>
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="maintenanceMessage">メンテナンスメッセージ</label>
+          <input type="text" id="maintenanceMessage" name="maintenance_message" class="field-input"
+                 placeholder="現在メンテナンス中です。しばらくお待ちください。" maxlength="200">
+        </div>
+        <p style="margin-top:8px;font-size:0.78rem;color:var(--text-muted)">
+          有効にすると /api/* が 503 を返します。/api/admin/* は常に通ります。
+        </p>
+      </div>
+
+      <!-- 告知バー -->
+      <div class="mypage-card" style="margin-bottom:20px">
+        <div class="mypage-section-title">告知バー</div>
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:14px">
+          <label class="dash-toggle">
+            <input type="checkbox" id="noticeBannerEnabled" name="notice_banner_enabled">
+            <span class="dash-toggle-slider"></span>
+          </label>
+          <span id="noticeBannerStatusText" style="font-size:0.88rem;color:var(--text-secondary)">無効</span>
+        </div>
+        <div class="field-group" style="margin-bottom:12px">
+          <label class="field-label" for="noticeBannerText">告知テキスト</label>
+          <input type="text" id="noticeBannerText" name="notice_banner_text" class="field-input"
+                 placeholder="新機能をリリースしました！" maxlength="200">
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="noticeBannerLink">リンク URL（任意）</label>
+          <input type="url" id="noticeBannerLink" name="notice_banner_link" class="field-input"
+                 placeholder="https://...">
+        </div>
+      </div>
+
+      <button type="submit" class="auth-submit-btn" id="saveSettingsBtn" style="max-width:200px">
+        設定を保存する
+      </button>
+    </form>
+  </section>
+</main>
+
+<script>
+// ── 定数 ──────────────────────────────────────────────────────────
+const STATUS_LABELS = {pending:'承認待ち', approved:'承認済み', rejected:'却下', suspended:'停止中'};
+
+// ── タブ切替 ──────────────────────────────────────────────────────
+const ALL_PANELS = ['stats', 'users', 'analytics', 'feedback', 'settings'];
+let currentPanel = 'stats';
+document.querySelectorAll('[data-panel]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-panel]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    ALL_PANELS.forEach(id => {
+      document.getElementById('panel-' + id).style.display = id === btn.dataset.panel ? '' : 'none';
+    });
+    currentPanel = btn.dataset.panel;
+    if (currentPanel === 'users'     && !usersLoaded)     loadUsers('');
+    if (currentPanel === 'analytics' && !analyticsLoaded) loadAnalytics();
+    if (currentPanel === 'feedback'  && !feedbackLoaded)  loadFeedback('');
+    if (currentPanel === 'settings'  && !settingsLoaded)  loadSettings();
+  });
+});
+
+// ── 統計パネル ────────────────────────────────────────────────────
+async function loadStats() {
+  try {
+    const res = await fetch('/api/admin/stats');
+    if (!res.ok) throw new Error();
+    const d = await res.json();
+    document.getElementById('st-total').textContent    = d.total;
+    document.getElementById('st-pending').textContent  = d.pending;
+    document.getElementById('st-approved').textContent = d.approved;
+    document.getElementById('st-rejected').textContent = d.rejected;
+    document.getElementById('st-suspended').textContent = d.suspended;
+    document.getElementById('st-recent').textContent   = d.signups_last_7days;
+    document.getElementById('statsLoading').style.display = 'none';
+    document.getElementById('statsCards').style.display   = '';
+
+    // 承認待ちクイックリスト
+    if (d.pending > 0) {
+      await loadPendingUsers();
+    } else {
+      document.getElementById('noPendingMsg').style.display = '';
+    }
+  } catch {
+    document.getElementById('statsLoading').textContent = '読み込みに失敗しました';
+  }
+}
+
+async function loadPendingUsers() {
+  const res = await fetch('/api/admin/users?status=pending');
+  if (!res.ok) return;
+  const users = await res.json();
+  if (!users.length) {
+    document.getElementById('noPendingMsg').style.display = '';
+    return;
+  }
+  document.getElementById('pendingTableBody').innerHTML = users.map(u => `
+    <tr id="prow-${u.id}">
+      <td style="color:var(--text-muted)">${u.id}</td>
+      <td>${esc(u.display_name)}</td>
+      <td><span style="font-size:0.8rem;color:var(--text-secondary)">${esc(u.sns_platform)}</span></td>
+      <td>${esc(u.sns_handle)}</td>
+      <td style="font-size:0.8rem;color:var(--text-secondary)">${fmtDate(u.created_at)}</td>
+      <td>
+        <button class="admin-action-btn approve" onclick="doAction(${u.id},'approve','prow-${u.id}',true)">承認</button>
+        <button class="admin-action-btn reject"  onclick="doAction(${u.id},'reject','prow-${u.id}',true)">却下</button>
+      </td>
+    </tr>
+  `).join('');
+  document.getElementById('pendingSection').style.display = '';
+}
+
+// ── ユーザー管理パネル ────────────────────────────────────────────
+let currentStatus = '';
+let usersLoaded = false;
+
+async function loadUsers(status) {
+  currentStatus = status;
+  const url = '/api/admin/users' + (status ? `?status=${encodeURIComponent(status)}` : '');
+  document.getElementById('usersLoadingMsg').style.display = '';
+  document.getElementById('usersTableWrap').style.display  = 'none';
+  document.getElementById('usersEmptyMsg').style.display   = 'none';
+  try {
+    const res = await fetch(url);
+    if (res.status === 401 || res.status === 403) { location.href = '/login'; return; }
+    const users = await res.json();
+    renderUsers(users);
+    usersLoaded = true;
+  } catch {
+    document.getElementById('usersLoadingMsg').textContent = '読み込みに失敗しました';
+  }
+}
+
+function renderUsers(users) {
+  document.getElementById('usersLoadingMsg').style.display = 'none';
+  if (!users.length) {
+    document.getElementById('usersEmptyMsg').style.display = '';
+    return;
+  }
+  document.getElementById('usersTableBody').innerHTML = users.map(u => `
+    <tr id="urow-${u.id}">
+      <td style="color:var(--text-muted)">${u.id}</td>
+      <td>
+        <button class="dash-detail-link" onclick="openUserDetail(${u.id})">${esc(u.display_name)}</button>
+      </td>
+      <td><span style="font-size:0.8rem;color:var(--text-secondary)">${esc(u.sns_platform)}</span></td>
+      <td>${esc(u.sns_handle)}</td>
+      <td><span class="status-badge ${u.status}">${STATUS_LABELS[u.status] || u.status}</span></td>
+      <td style="font-size:0.8rem;color:var(--text-secondary)">${fmtDate(u.created_at)}</td>
+      <td style="font-size:0.8rem;color:var(--text-secondary)">${u.last_login_at ? fmtDate(u.last_login_at) : '—'}</td>
+      <td>${actionBtns(u)}</td>
+    </tr>
+  `).join('');
+  document.getElementById('usersTableWrap').style.display = '';
+}
+
+function actionBtns(u) {
+  const b = [];
+  if (['pending','rejected'].includes(u.status))
+    b.push(`<button class="admin-action-btn approve" onclick="doAction(${u.id},'approve','urow-${u.id}')">承認</button>`);
+  if (u.status === 'pending')
+    b.push(`<button class="admin-action-btn reject"  onclick="doAction(${u.id},'reject','urow-${u.id}')">却下</button>`);
+  if (u.status === 'approved')
+    b.push(`<button class="admin-action-btn suspend" onclick="doAction(${u.id},'suspend','urow-${u.id}')">停止</button>`);
+  if (u.status === 'suspended')
+    b.push(`<button class="admin-action-btn restore" onclick="doAction(${u.id},'restore','urow-${u.id}')">復元</button>`);
+  return b.join('');
+}
+
+async function doAction(userId, action, rowId, isStats = false) {
+  const row = document.getElementById(rowId);
+  row && row.querySelectorAll('.admin-action-btn').forEach(b => b.disabled = true);
+  try {
+    const res = await fetch(`/api/admin/users/${userId}/${action}`, { method: 'POST' });
+    const data = await res.json();
+    if (!res.ok) {
+      alert(data.detail || '操作に失敗しました');
+      row && row.querySelectorAll('.admin-action-btn').forEach(b => b.disabled = false);
+      return;
+    }
+    if (isStats) {
+      // 統計パネルから操作 → 統計を再読み込み
+      document.getElementById('pendingSection').style.display = 'none';
+      document.getElementById('noPendingMsg').style.display = 'none';
+      document.getElementById('statsCards').style.display = 'none';
+      document.getElementById('statsLoading').style.display = '';
+      loadStats();
+    } else {
+      loadUsers(currentStatus);
+    }
+  } catch {
+    alert('サーバーエラーが発生しました');
+    row && row.querySelectorAll('.admin-action-btn').forEach(b => b.disabled = false);
+  }
+}
+
+// ユーザーフィルタ
+document.querySelectorAll('#userFilterBar .admin-filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#userFilterBar .admin-filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    loadUsers(btn.dataset.status);
+  });
+});
+
+// ── 分析パネル ────────────────────────────────────────────────────
+let analyticsLoaded = false;
+
+const FB_PRIORITY_LABELS = {low:'低', medium:'中', high:'高'};
+const FB_PRIORITY_COLORS = {low:'var(--text-muted)', medium:'var(--accent-gold)', high:'#f87171'};
+
+async function loadAnalytics() {
+  try {
+    const [kpiRes, postsRes, xpRes, catRes, recentRes, inviteStRes, improvRes] = await Promise.all([
+      fetch('/api/analytics/kpi'),
+      fetch('/api/analytics/popular-posts'),
+      fetch('/api/analytics/xp-events'),
+      fetch('/api/analytics/categories'),
+      fetch('/api/analytics/recent-users'),
+      fetch('/api/analytics/invite-stats'),
+      fetch('/api/analytics/improvement-candidates'),
+    ]);
+    if (!kpiRes.ok) throw new Error();
+    const kpi        = await kpiRes.json();
+    const posts      = postsRes.ok   ? await postsRes.json()   : [];
+    const xpEvts     = xpRes.ok      ? await xpRes.json()      : [];
+    const cats       = catRes.ok     ? await catRes.json()     : [];
+    const recentUs   = recentRes.ok  ? await recentRes.json()  : [];
+    const inviteSts  = inviteStRes.ok ? await inviteStRes.json() : [];
+    const improv     = improvRes.ok  ? await improvRes.json()  : {};
+
+    // KPI カード
+    document.getElementById('an-approved').textContent      = kpi.users_approved;
+    document.getElementById('an-signups30').textContent     = kpi.users_signups_30d;
+    document.getElementById('an-posts-public').textContent  = kpi.posts_public;
+    document.getElementById('an-xp7d').textContent          = kpi.xp_events_7d;
+    document.getElementById('an-invites').textContent       = kpi.invites_total;
+    document.getElementById('an-conv').textContent          = kpi.invite_conversion_rate + '%';
+    document.getElementById('an-logins-today').textContent  = kpi.logins_today;
+    document.getElementById('an-dormant').textContent       = kpi.dormant_users_30d;
+
+    // 人気投稿
+    if (posts.length) {
+      document.getElementById('popularPostsBody').innerHTML = posts.map(p => `
+        <tr>
+          <td>${esc(p.title)}</td>
+          <td style="font-size:0.8rem;color:var(--text-secondary)">${esc(p.author_name)}</td>
+          <td style="font-size:0.8rem;color:var(--text-secondary)">${esc(p.category || '—')}</td>
+          <td style="font-size:0.85rem">${p.view_count}</td>
+        </tr>
+      `).join('');
+      document.getElementById('popularPostsWrap').style.display = '';
+    } else {
+      document.getElementById('popularPostsEmpty').style.display = '';
+    }
+
+    // XP イベント分布
+    const xpEl = document.getElementById('xpEventStats');
+    if (xpEvts.length) {
+      xpEl.innerHTML = xpEvts.map(x => `
+        <div style="background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.25);border-radius:8px;padding:8px 14px;font-size:0.82rem">
+          <span style="color:var(--text-secondary)">${esc(x.event_type)}</span>
+          <span style="color:var(--accent-purple);font-weight:700;margin-left:8px">${x.count}</span>
+        </div>
+      `).join('');
+    } else {
+      xpEl.innerHTML = '<span style="color:var(--text-muted);font-size:0.85rem">データなし</span>';
+    }
+
+    // カテゴリ別
+    if (cats.length) {
+      document.getElementById('categoryStats').innerHTML = cats.map(c => `
+        <div style="background:rgba(6,182,212,0.1);border:1px solid rgba(6,182,212,0.25);border-radius:8px;padding:8px 14px;font-size:0.82rem">
+          <span style="color:var(--text-secondary)">${esc(c.category)}</span>
+          <span style="color:var(--accent-cyan);font-weight:700;margin-left:8px">${c.post_count}</span>
+        </div>
+      `).join('');
+      document.getElementById('categoryStatsSection').style.display = '';
+    }
+
+    // 最近アクティブなユーザー
+    if (recentUs.length) {
+      document.getElementById('recentUsersBody').innerHTML = recentUs.map(u => `
+        <tr>
+          <td>${esc(u.display_name)}</td>
+          <td style="font-size:0.8rem;color:var(--text-secondary)">${esc(u.sns_platform)}</td>
+          <td style="font-size:0.85rem;color:var(--accent-purple)">${u.level}</td>
+          <td style="font-size:0.85rem">${u.xp}</td>
+          <td style="font-size:0.8rem;color:var(--text-secondary)">${fmtDate(u.last_login_at)}</td>
+        </tr>
+      `).join('');
+      document.getElementById('recentUsersWrap').style.display = '';
+    } else {
+      document.getElementById('recentUsersEmpty').style.display = '';
+    }
+
+    // 招待コード利用状況
+    if (inviteSts.length) {
+      document.getElementById('inviteStatsBody').innerHTML = inviteSts.map(c => `
+        <tr>
+          <td style="font-family:monospace;font-size:0.85rem;letter-spacing:0.05em">${esc(c.code)}</td>
+          <td style="font-size:0.8rem;color:var(--text-secondary)">${esc(c.created_by)}${c.label ? ' <span style="color:var(--text-muted)">(' + esc(c.label) + ')</span>' : ''}</td>
+          <td style="font-size:0.85rem">${c.used_count} / ${c.max_uses}</td>
+          <td style="font-size:0.8rem">${c.auto_approve ? '<span style="color:var(--accent-gold)">自動承認</span>' : '—'}</td>
+          <td><span class="status-badge ${c.status === 'active' ? 'approved' : c.status === 'expired' ? 'rejected' : 'suspended'}">${c.status}</span></td>
+          <td style="font-size:0.8rem;color:var(--text-secondary)">${c.expires_at ? fmtDate(c.expires_at) : '無期限'}</td>
+        </tr>
+      `).join('');
+      document.getElementById('inviteStatsWrap').style.display = '';
+    } else {
+      document.getElementById('inviteStatsEmpty').style.display = '';
+    }
+
+    // 改善候補
+    if (improv.never_logged_in_count !== undefined) {
+      document.getElementById('improvNeverLogin').textContent =
+        `承認済みで未ログイン: ${improv.never_logged_in_count} 人`;
+    }
+    const dormant = improv.dormant_users || [];
+    if (dormant.length) {
+      document.getElementById('dormantBody').innerHTML = dormant.map(u => `
+        <tr>
+          <td>${esc(u.display_name)}</td>
+          <td style="font-size:0.8rem;color:var(--text-secondary)">${u.last_login_at ? fmtDate(u.last_login_at) : '—'}</td>
+          <td style="font-size:0.8rem;color:var(--text-secondary)">${fmtDate(u.created_at)}</td>
+        </tr>
+      `).join('');
+      document.getElementById('dormantWrap').style.display = '';
+    } else {
+      document.getElementById('dormantEmpty').style.display = '';
+    }
+
+    document.getElementById('analyticsLoading').style.display = 'none';
+    document.getElementById('analyticsKpi').style.display = '';
+    analyticsLoaded = true;
+  } catch {
+    document.getElementById('analyticsLoading').textContent = '読み込みに失敗しました';
+  }
+}
+
+// ── 要望パネル ────────────────────────────────────────────────────
+let feedbackLoaded = false;
+let currentFeedbackStatus = '';
+
+const FB_STATUS_LABELS = {open:'未対応', acknowledged:'確認済み', closed:'クローズ'};
+const FB_CAT_LABELS    = {feature:'機能要望', bug:'バグ報告', other:'その他', general:'一般'};
+
+async function loadFeedback(status) {
+  currentFeedbackStatus = status;
+  const url = '/api/admin/feedback' + (status ? `?status=${encodeURIComponent(status)}` : '');
+  document.getElementById('feedbackLoadingMsg').style.display = '';
+  document.getElementById('feedbackTableWrap').style.display  = 'none';
+  document.getElementById('feedbackEmptyMsg').style.display   = 'none';
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error();
+    const items = await res.json();
+    renderFeedback(items);
+    feedbackLoaded = true;
+  } catch {
+    document.getElementById('feedbackLoadingMsg').textContent = '読み込みに失敗しました';
+  }
+}
+
+function renderFeedback(items) {
+  document.getElementById('feedbackLoadingMsg').style.display = 'none';
+  if (!items.length) {
+    document.getElementById('feedbackEmptyMsg').style.display = '';
+    return;
+  }
+  document.getElementById('feedbackTableBody').innerHTML = items.map(fb => `
+    <tr id="fbrow-${fb.id}">
+      <td style="color:var(--text-muted)">${fb.id}</td>
+      <td style="font-size:0.8rem">${esc(FB_CAT_LABELS[fb.category] || fb.category)}</td>
+      <td>${esc(fb.title)}</td>
+      <td style="font-size:0.8rem;color:var(--text-secondary)">${esc(fb.display_name || '—')}</td>
+      <td style="font-size:0.8rem;font-weight:600;color:${FB_PRIORITY_COLORS[fb.priority] || 'inherit'}">${FB_PRIORITY_LABELS[fb.priority] || fb.priority}</td>
+      <td><span class="status-badge ${fb.status === 'open' ? 'pending' : fb.status === 'closed' ? 'approved' : ''}">${FB_STATUS_LABELS[fb.status] || fb.status}</span></td>
+      <td style="font-size:0.8rem;color:var(--text-secondary)">${fmtDate(fb.created_at)}</td>
+      <td style="display:flex;gap:4px;flex-wrap:wrap">
+        ${fb.status !== 'acknowledged' ? `<button class="admin-action-btn approve" style="font-size:0.72rem;padding:4px 8px" onclick="updateFeedback(${fb.id},'acknowledged')">確認済み</button>` : ''}
+        ${fb.status !== 'closed'       ? `<button class="admin-action-btn suspend" style="font-size:0.72rem;padding:4px 8px" onclick="updateFeedback(${fb.id},'closed')">クローズ</button>`    : ''}
+        ${fb.status !== 'open'         ? `<button class="admin-action-btn"         style="font-size:0.72rem;padding:4px 8px" onclick="updateFeedback(${fb.id},'open')">再開</button>`          : ''}
+        ${fb.priority !== 'high'       ? `<button class="admin-action-btn"         style="font-size:0.72rem;padding:4px 8px;color:#f87171" onclick="updateFeedbackPriority(${fb.id},'high')">↑高</button>` : ''}
+      </td>
+    </tr>
+  `).join('');
+  document.getElementById('feedbackTableWrap').style.display = '';
+}
+
+async function updateFeedback(fbId, status) {
+  try {
+    const res = await fetch(`/api/admin/feedback/${fbId}`, {
+      method: 'PATCH',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({status}),
+    });
+    if (!res.ok) { alert('更新に失敗しました'); return; }
+    feedbackLoaded = false;
+    loadFeedback(currentFeedbackStatus);
+  } catch {
+    alert('サーバーエラーが発生しました');
+  }
+}
+
+async function updateFeedbackPriority(fbId, priority) {
+  try {
+    const res = await fetch(`/api/admin/feedback/${fbId}`, {
+      method: 'PATCH',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({status: 'open', priority}),
+    });
+    if (!res.ok) { alert('更新に失敗しました'); return; }
+    feedbackLoaded = false;
+    loadFeedback(currentFeedbackStatus);
+  } catch {
+    alert('サーバーエラーが発生しました');
+  }
+}
+
+document.querySelectorAll('#feedbackFilterBar .admin-filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('#feedbackFilterBar .admin-filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    loadFeedback(btn.dataset.fstatus);
+  });
+});
+
+// ── システム設定パネル ────────────────────────────────────────────
+let settingsLoaded = false;
+
+async function loadSettings() {
+  try {
+    const res = await fetch('/api/admin/settings');
+    if (!res.ok) throw new Error();
+    const d = await res.json();
+    applySettingsToForm(d);
+    settingsLoaded = true;
+  } catch {
+    document.getElementById('settingsError').textContent = '設定の読み込みに失敗しました';
+    document.getElementById('settingsError').style.display = '';
+  }
+}
+
+function applySettingsToForm(d) {
+  const me = document.getElementById('maintenanceEnabled');
+  me.checked = d.maintenance_enabled;
+  document.getElementById('maintenanceStatusText').textContent = d.maintenance_enabled ? '有効' : '無効';
+  document.getElementById('maintenanceMessage').value = d.maintenance_message || '';
+
+  const nb = document.getElementById('noticeBannerEnabled');
+  nb.checked = d.notice_banner_enabled;
+  document.getElementById('noticeBannerStatusText').textContent = d.notice_banner_enabled ? '有効' : '無効';
+  document.getElementById('noticeBannerText').value = d.notice_banner_text || '';
+  document.getElementById('noticeBannerLink').value = d.notice_banner_link || '';
+}
+
+document.getElementById('maintenanceEnabled').addEventListener('change', e => {
+  document.getElementById('maintenanceStatusText').textContent = e.target.checked ? '有効' : '無効';
+});
+document.getElementById('noticeBannerEnabled').addEventListener('change', e => {
+  document.getElementById('noticeBannerStatusText').textContent = e.target.checked ? '有効' : '無効';
+});
+
+document.getElementById('settingsForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = document.getElementById('saveSettingsBtn');
+  const errEl = document.getElementById('settingsError');
+  const sucEl = document.getElementById('settingsSuccess');
+  errEl.style.display = 'none';
+  sucEl.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = '保存中...';
+
+  const body = {
+    maintenance_enabled:   document.getElementById('maintenanceEnabled').checked,
+    maintenance_message:   document.getElementById('maintenanceMessage').value,
+    notice_banner_enabled: document.getElementById('noticeBannerEnabled').checked,
+    notice_banner_text:    document.getElementById('noticeBannerText').value,
+    notice_banner_link:    document.getElementById('noticeBannerLink').value,
+  };
+
+  try {
+    const res = await fetch('/api/admin/settings', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      errEl.textContent = data.detail || '保存に失敗しました';
+      errEl.style.display = '';
+      return;
+    }
+    applySettingsToForm(data);
+    sucEl.textContent = '設定を保存しました';
+    sucEl.style.display = '';
+  } catch {
+    errEl.textContent = 'サーバーエラーが発生しました';
+    errEl.style.display = '';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '設定を保存する';
+  }
+});
+
+// ── 共通ユーティリティ ────────────────────────────────────────────
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function fmtDate(iso) {
+  return new Date(iso).toLocaleDateString('ja-JP', {year:'numeric', month:'2-digit', day:'2-digit'});
+}
+
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  await fetch('/api/auth/logout', { method: 'POST' });
+  location.href = '/';
+});
+
+// ── ユーザー詳細モーダル ──────────────────────────────────────────
+async function openUserDetail(userId) {
+  const overlay = document.getElementById('userDetailOverlay');
+  const body    = document.getElementById('detailBody');
+  document.getElementById('detailName').textContent = 'ユーザー詳細';
+  body.innerHTML = '<p style="color:var(--text-muted)">読み込み中...</p>';
+  overlay.style.display = 'flex';
+
+  try {
+    const [detailRes, usageRes] = await Promise.all([
+      fetch(`/api/admin/users/${userId}`),
+      fetch(`/api/admin/users/${userId}/usage`),
+    ]);
+    if (!detailRes.ok) throw new Error();
+    const u = await detailRes.json();
+    const usage = usageRes.ok ? await usageRes.json() : null;
+
+    document.getElementById('detailName').textContent = esc(u.display_name);
+    body.innerHTML = `
+      <div class="dash-detail-grid">
+        <div class="dash-detail-item"><label>ID</label><span>${u.id}</span></div>
+        <div class="dash-detail-item"><label>ステータス</label>
+          <span class="status-badge ${u.status}">${STATUS_LABELS[u.status] || u.status}</span>
+        </div>
+        <div class="dash-detail-item"><label>ロール</label><span>${esc(u.role)}</span></div>
+        <div class="dash-detail-item"><label>SNSプラットフォーム</label><span>${esc(u.sns_platform)}</span></div>
+        <div class="dash-detail-item"><label>SNSアカウント名</label><span>${esc(u.sns_handle)}</span></div>
+        ${u.profile_url ? `<div class="dash-detail-item" style="grid-column:1/-1"><label>プロフィールURL</label>
+          <a href="${esc(u.profile_url)}" target="_blank" rel="noopener"
+             style="color:var(--accent-note);font-size:0.85rem;word-break:break-all">${esc(u.profile_url)}</a>
+        </div>` : ''}
+        <div class="dash-detail-item"><label>登録日</label><span>${fmtDate(u.created_at)}</span></div>
+        <div class="dash-detail-item"><label>最終ログイン</label><span>${u.last_login_at ? fmtDate(u.last_login_at) : '—'}</span></div>
+        ${u.approved_at ? `<div class="dash-detail-item"><label>承認日</label><span>${fmtDate(u.approved_at)}</span></div>` : ''}
+      </div>
+      ${usage ? `
+      <div style="margin-top:20px">
+        <div class="mypage-section-title">利用状況</div>
+        <div class="dash-detail-grid">
+          <div class="dash-detail-item"><label>生成回数</label>
+            <span>${usage.generation_count}
+              <span style="font-size:0.72rem;color:var(--text-muted)">(ログ未実装)</span>
+            </span>
+          </div>
+          <div class="dash-detail-item"><label>最終アクティブ</label>
+            <span>${usage.last_active ? fmtDate(usage.last_active) : '—'}</span>
+          </div>
+        </div>
+      </div>` : ''}
+      <div style="margin-top:20px;display:flex;gap:8px;flex-wrap:wrap">
+        ${['pending','rejected'].includes(u.status)
+          ? `<button class="admin-action-btn approve" onclick="doAction(${u.id},'approve','urow-${u.id}');closeUserDetail()">承認</button>`
+          : ''}
+        ${u.status === 'pending'
+          ? `<button class="admin-action-btn reject" onclick="doAction(${u.id},'reject','urow-${u.id}');closeUserDetail()">却下</button>`
+          : ''}
+        ${u.status === 'approved'
+          ? `<button class="admin-action-btn suspend" onclick="doAction(${u.id},'suspend','urow-${u.id}');closeUserDetail()">停止</button>`
+          : ''}
+        ${u.status === 'suspended'
+          ? `<button class="admin-action-btn restore" onclick="doAction(${u.id},'restore','urow-${u.id}');closeUserDetail()">復元</button>`
+          : ''}
+      </div>`;
+  } catch {
+    body.innerHTML = '<p style="color:var(--text-muted)">読み込みに失敗しました</p>';
+  }
+}
+
+function closeUserDetail(event) {
+  if (event && event.target !== document.getElementById('userDetailOverlay')) return;
+  document.getElementById('userDetailOverlay').style.display = 'none';
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.getElementById('userDetailOverlay').style.display = 'none';
+});
+
+// 初期読み込み
+loadStats();
+</script>
+</body>
+</html>

@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>マイページ — 副業AIプロンプトプロ</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="/" class="logo" style="text-decoration:none">
+      <span class="logo-icon">✦</span>
+      <span class="logo-text">副業AIプロンプトプロ</span>
+    </a>
+    <div class="auth-nav">
+      <span class="auth-user-name" id="headerName">{{ user.display_name }}</span>
+      <a href="/" class="auth-nav-btn outline">生成ツール</a>
+      {% if user.role in ('admin',) %}
+      <a href="/admin" class="auth-nav-btn outline" style="color:var(--accent-gold);border-color:rgba(251,191,36,0.4)">管理</a>
+      {% endif %}
+      <button class="auth-nav-btn outline" id="logoutBtn">ログアウト</button>
+    </div>
+  </div>
+</header>
+
+<main class="mypage-container">
+
+  {% if user.must_change_password %}
+  <!-- bootstrap 管理者向け: 初回パスワード変更促進バナー -->
+  <div style="background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.45);border-radius:12px;padding:14px 20px;margin-bottom:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <span style="font-size:1.3rem">⚠️</span>
+    <span style="color:#fbbf24;font-weight:600;flex:1;min-width:0">
+      初期パスワードが設定されています。セキュリティのため、今すぐパスワードを変更してください。
+    </span>
+    <button onclick="document.querySelector('[data-tab=settings]').click()"
+            style="background:rgba(245,158,11,0.2);border:1px solid rgba(245,158,11,0.6);color:#fbbf24;padding:6px 16px;border-radius:8px;cursor:pointer;font-weight:600;white-space:nowrap">
+      パスワードを変更 →
+    </button>
+  </div>
+  {% endif %}
+
+  <!-- ── グリーティングヘッダー ── -->
+  <div class="mypage-hero">
+    <div class="mypage-hero-left">
+      <div class="mypage-avatar" id="avatarInitial">{{ user.display_name[0] | upper }}</div>
+      <div>
+        <h1 class="mypage-title" id="heroName">{{ user.display_name }}</h1>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+          <span class="status-badge {{ user.status }}">
+            {{ {"pending":"承認待ち","approved":"承認済み","rejected":"却下","suspended":"停止中"}.get(user.status, user.status) }}
+          </span>
+          <span style="font-size:0.78rem;color:var(--text-muted)">{{ user.sns_platform }} / @{{ user.sns_handle }}</span>
+        </div>
+      </div>
+    </div>
+    <a href="/" class="auth-nav-btn primary" style="font-size:0.82rem;padding:8px 18px;text-decoration:none">
+      ✦ プロンプト生成へ
+    </a>
+  </div>
+
+  <!-- ── タブナビ ── -->
+  <div class="admin-filter-bar mypage-tabs" role="tablist">
+    <button class="admin-filter-btn active" data-tab="profile"  role="tab">プロフィール</button>
+    <button class="admin-filter-btn"         data-tab="usage"   role="tab">利用状況</button>
+    <button class="admin-filter-btn"         data-tab="settings" role="tab">設定</button>
+    <!-- TODO: Phase N+ 以下のタブを追加 -->
+    <!-- <button data-tab="posts">投稿管理</button> -->
+    <!-- <button data-tab="invites">招待</button> -->
+    <!-- <button data-tab="achievements">実績</button> -->
+    <!-- <button data-tab="notifications">通知</button> -->
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       タブ 1: プロフィール
+  ══════════════════════════════════════════════ -->
+  <section id="tab-profile">
+
+    <!-- 表示モード -->
+    <div class="mypage-card" id="profileViewCard">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+        <div class="mypage-section-title" style="margin-bottom:0">プロフィール</div>
+        <button class="auth-nav-btn outline" style="font-size:0.78rem" id="editProfileBtn">編集する</button>
+      </div>
+      <div class="mypage-info-grid">
+        <div class="mypage-info-item">
+          <label>表示名</label>
+          <span id="viewDisplayName">{{ user.display_name }}</span>
+        </div>
+        <div class="mypage-info-item">
+          <label>SNSプラットフォーム</label>
+          <span>{{ user.sns_platform }}</span>
+        </div>
+        <div class="mypage-info-item">
+          <label>SNSアカウント名</label>
+          <span>@{{ user.sns_handle }}</span>
+        </div>
+        <div class="mypage-info-item">
+          <label>登録日</label>
+          <span>{{ user.created_at.strftime('%Y年%m月%d日') }}</span>
+        </div>
+        <div class="mypage-info-item" id="viewProfileUrlItem" style="{{ '' if user.profile_url else 'display:none' }};grid-column:1/-1">
+          <label>プロフィールURL</label>
+          <a id="viewProfileUrl" href="{{ user.profile_url or '#' }}" target="_blank" rel="noopener"
+             style="color:var(--accent-note);font-size:0.88rem;word-break:break-all">
+            {{ user.profile_url or '' }}
+          </a>
+        </div>
+        <div class="mypage-info-item" id="viewBioItem" style="{{ '' if user.bio else 'display:none' }};grid-column:1/-1">
+          <label>自己紹介</label>
+          <span id="viewBio" style="font-size:0.88rem;line-height:1.6;white-space:pre-wrap;word-break:break-all">{{ user.bio or '' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 編集モード (初期非表示) -->
+    <div class="mypage-card" id="profileEditCard" style="display:none">
+      <div class="mypage-section-title">プロフィールを編集</div>
+      <div id="profileEditError"   class="auth-error"   style="display:none;margin-bottom:14px"></div>
+      <div id="profileEditSuccess" class="auth-success" style="display:none;margin-bottom:14px"></div>
+      <form id="profileEditForm" class="auth-form" novalidate style="max-width:440px">
+        <div class="field-group">
+          <label class="field-label" for="editDisplayName">表示名 <span style="color:#f87171">*</span></label>
+          <input id="editDisplayName" type="text" name="display_name" class="field-input"
+                 value="{{ user.display_name }}" required maxlength="100">
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="editProfileUrl">プロフィールURL
+            <span style="color:var(--text-muted);font-size:0.75rem">任意・空欄で削除</span>
+          </label>
+          <input id="editProfileUrl" type="url" name="profile_url" class="field-input"
+                 value="{{ user.profile_url or '' }}" placeholder="https://x.com/username">
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="editBio">自己紹介
+            <span style="color:var(--text-muted);font-size:0.75rem">任意・500字以内・空欄で削除</span>
+          </label>
+          <textarea id="editBio" name="bio" class="field-input" rows="3"
+                    maxlength="500" placeholder="どんな副業をしているか、得意なことなど">{{ user.bio or '' }}</textarea>
+          <div style="text-align:right;font-size:0.72rem;color:var(--text-muted);margin-top:4px">
+            <span id="bioCharCount">{{ (user.bio or '') | length }}</span>/500
+          </div>
+        </div>
+        <p style="font-size:0.78rem;color:var(--text-muted);margin-top:-6px">
+          ※ SNSプラットフォーム・アカウント名はログインIDのため変更できません
+        </p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button type="submit" class="auth-submit-btn" id="profileSaveBtn" style="max-width:160px">保存する</button>
+          <button type="button" class="auth-nav-btn outline" id="cancelEditBtn" style="padding:10px 20px">キャンセル</button>
+        </div>
+      </form>
+    </div>
+
+  </section>
+
+  <!-- ══════════════════════════════════════════════
+       タブ 2: 利用状況
+  ══════════════════════════════════════════════ -->
+  <section id="tab-usage" style="display:none">
+
+    <!-- 統計カード -->
+    <div class="mypage-card">
+      <div class="mypage-section-title">利用サマリー</div>
+      <div class="dash-stats-grid">
+        <div class="dash-stat-card">
+          <div class="dash-stat-label">生成プロンプト数</div>
+          <div class="dash-stat-value" id="usageHistoryCount">—</div>
+        </div>
+        <div class="dash-stat-card approved">
+          <div class="dash-stat-label">お気に入り</div>
+          <div class="dash-stat-value" id="usageFavoriteCount">—</div>
+        </div>
+        <div class="dash-stat-card recent">
+          <div class="dash-stat-label">利用開始</div>
+          <div class="dash-stat-value" id="usageJoinedDate" style="font-size:1rem">{{ user.created_at.strftime('%Y/%m/%d') }}</div>
+        </div>
+        <div class="dash-stat-card">
+          <div class="dash-stat-label">最終ログイン</div>
+          <div class="dash-stat-value" id="usageLastLogin" style="font-size:1rem">
+            {% if user.last_login_at %}{{ user.last_login_at.strftime('%Y/%m/%d') }}{% else %}—{% endif %}
+          </div>
+        </div>
+      </div>
+      <p style="margin-top:12px;font-size:0.75rem;color:var(--text-muted)">
+        ※ 生成プロンプト数・お気に入りはこのブラウザの保存データです
+      </p>
+    </div>
+
+    <!-- 最近の生成履歴 -->
+    <div class="mypage-card" id="recentHistoryCard">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div class="mypage-section-title" style="margin-bottom:0">最近の生成履歴</div>
+        <a href="/" class="auth-nav-btn outline" style="font-size:0.76rem">生成ツールへ →</a>
+      </div>
+      <div id="recentHistoryList"></div>
+      <p id="noHistoryMsg" style="display:none;color:var(--text-muted);font-size:0.85rem;text-align:center;padding:20px 0">
+        まだ生成履歴がありません。<a href="/" style="color:var(--accent-purple)">プロンプトを生成してみましょう</a>
+      </p>
+    </div>
+
+    <!-- レベル・実績 (Phase 7: 実装済み) -->
+    <div class="mypage-card" id="gamiCard">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div class="mypage-section-title" style="margin-bottom:0">🏅 レベル &amp; 実績</div>
+        <span id="gamiLevelBadge" class="gami-level-badge" style="display:none"></span>
+      </div>
+
+      <!-- XP バー -->
+      <div id="gamiXpSection" style="display:none">
+        <div class="gami-title-row">
+          <span id="gamiTitle" class="gami-title-text"></span>
+          <span id="gamiXpText" class="gami-xp-text"></span>
+        </div>
+        <div class="gami-bar-wrap">
+          <div class="gami-bar-track">
+            <div class="gami-bar-fill" id="gamiBarFill" style="width:0%"></div>
+          </div>
+          <span id="gamiNextLabel" class="gami-next-label"></span>
+        </div>
+      </div>
+
+      <!-- バッジグリッド -->
+      <div id="gamiBadgeSection" style="display:none;margin-top:16px">
+        <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:8px">獲得バッジ</div>
+        <div id="gamiBadgeGrid" class="gami-badge-grid"></div>
+      </div>
+
+      <!-- ローディング / エラー -->
+      <div id="gamiLoading" style="font-size:0.82rem;color:var(--text-muted)">読み込み中...</div>
+      <div id="gamiError" style="display:none;font-size:0.82rem;color:var(--text-muted)">
+        読み込みに失敗しました
+      </div>
+    </div>
+
+    <!-- 招待 (Phase 8: 実装済み) -->
+    <div class="mypage-card" id="inviteCard">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div class="mypage-section-title" style="margin-bottom:0">🎟️ 招待</div>
+        <button id="issueCodeBtn" class="auth-nav-btn primary"
+                style="font-size:0.78rem;display:none">+ コードを発行する</button>
+      </div>
+
+      <div id="inviteLoading" style="font-size:0.82rem;color:var(--text-muted)">読み込み中...</div>
+      <div id="inviteError"   style="display:none;font-size:0.82rem;color:var(--text-muted)">読み込みに失敗しました</div>
+
+      <div id="inviteStats" style="display:none">
+        <!-- 統計グリッド -->
+        <div class="dash-stats-grid" style="margin-bottom:16px">
+          <div class="dash-stat-card">
+            <div class="dash-stat-label">招待人数</div>
+            <div class="dash-stat-value" id="inviteTotalCount">—</div>
+          </div>
+          <div class="dash-stat-card approved">
+            <div class="dash-stat-label">承認済み</div>
+            <div class="dash-stat-value" id="inviteApprovedCount">—</div>
+          </div>
+          <div class="dash-stat-card">
+            <div class="dash-stat-label">招待 XP</div>
+            <div class="dash-stat-value" id="inviteXpEarned" style="font-size:1.1rem">—</div>
+          </div>
+        </div>
+
+        <!-- 発行済みコード一覧 -->
+        <div id="inviteCodesSection" style="display:none">
+          <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:8px">発行済み招待コード</div>
+          <div id="inviteCodeList"></div>
+        </div>
+
+        <!-- 発行不可・次の解放条件 -->
+        <div id="inviteLockMsg" style="display:none;font-size:0.82rem;color:var(--text-muted);margin-top:6px;padding:10px 14px;background:rgba(255,255,255,0.03);border-radius:8px"></div>
+      </div>
+    </div>
+
+    <!-- 投稿管理 (Phase 5: 公開広場へのリンク) -->
+    <div class="mypage-card" style="background:linear-gradient(135deg,rgba(192,132,252,0.08),rgba(52,211,153,0.06))">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <div>
+          <div class="mypage-section-title" style="margin-bottom:4px">📝 公開広場</div>
+          <p style="font-size:0.82rem;color:var(--text-secondary)">
+            生成したプロンプトを広場に投稿して、他のユーザーと共有できます。
+          </p>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <a href="/square" class="auth-nav-btn outline" style="font-size:0.78rem;text-decoration:none">
+            広場を見る
+          </a>
+          <a href="/square/new" class="auth-nav-btn primary" style="font-size:0.78rem;text-decoration:none">
+            ✦ 投稿する
+          </a>
+        </div>
+      </div>
+      <!-- TODO: Phase N+ 自分の投稿一覧をここに表示 (/api/community/posts/mine) -->
+    </div>
+
+  </section>
+
+  <!-- ══════════════════════════════════════════════
+       タブ 3: 設定
+  ══════════════════════════════════════════════ -->
+  <section id="tab-settings" style="display:none">
+
+    <!-- パスワード変更 -->
+    <div class="mypage-card">
+      <div class="mypage-section-title">パスワード変更</div>
+      <div id="pwError"   class="auth-error"   style="display:none"></div>
+      <div id="pwSuccess" class="auth-success" style="display:none"></div>
+      <form id="pwForm" class="auth-form" novalidate style="max-width:420px">
+        <div class="field-group">
+          <label class="field-label" for="current_password">現在のパスワード</label>
+          <input id="current_password" type="password" name="current_password" class="field-input"
+                 placeholder="現在のパスワード" required autocomplete="current-password">
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="new_password">新しいパスワード（8文字以上）</label>
+          <input id="new_password" type="password" name="new_password" class="field-input"
+                 placeholder="新しいパスワード" required minlength="8" autocomplete="new-password">
+        </div>
+        <div class="field-group">
+          <label class="field-label" for="new_password_confirm">新しいパスワード（確認）</label>
+          <input id="new_password_confirm" type="password" name="new_password_confirm" class="field-input"
+                 placeholder="もう一度入力" required autocomplete="new-password">
+        </div>
+        <button type="submit" class="auth-submit-btn" id="pwBtn" style="max-width:180px">変更する</button>
+      </form>
+    </div>
+
+    <!-- AI設定 (stub) -->
+    <div class="mypage-stub-card" aria-label="準備中">
+      <div class="mypage-stub-header">
+        <span class="mypage-stub-icon">🤖</span>
+        <span class="mypage-stub-title">AI設定</span>
+        <span class="mypage-stub-badge">近日公開</span>
+      </div>
+      <div class="mypage-stub-body">
+        <div class="mypage-stub-row">
+          <label class="mypage-stub-label" for="prefFavoriteAi">よく使うAI</label>
+          <select id="prefFavoriteAi" class="field-input mypage-stub-select" disabled>
+            <option>ChatGPT</option>
+            <option>Gemini</option>
+            <option>Claude</option>
+            <option>その他</option>
+          </select>
+        </div>
+        <div class="mypage-stub-row">
+          <label class="mypage-stub-label" for="prefAiPlan">AIプラン</label>
+          <select id="prefAiPlan" class="field-input mypage-stub-select" disabled>
+            <option>無料</option>
+            <option>有料（Plus / Pro）</option>
+          </select>
+        </div>
+        <div class="mypage-stub-row">
+          <label class="mypage-stub-label" for="prefGenMode">既定の生成モード</label>
+          <select id="prefGenMode" class="field-input mypage-stub-select" disabled>
+            <option>標準</option>
+            <option>詳細</option>
+            <option>簡易</option>
+          </select>
+        </div>
+        <div class="mypage-stub-row">
+          <label class="mypage-stub-label" for="prefOutMode">既定の出力モード</label>
+          <select id="prefOutMode" class="field-input mypage-stub-select" disabled>
+            <option>マークダウン</option>
+            <option>プレーンテキスト</option>
+            <option>XML構造</option>
+          </select>
+        </div>
+        <p class="mypage-stub-note">※ 設定の保存はリリース後に有効になります</p>
+        <!-- TODO: Phase N+ AI設定の保存・適用 -->
+      </div>
+    </div>
+
+    <!-- 公開設定 (stub) -->
+    <div class="mypage-stub-card" aria-label="準備中">
+      <div class="mypage-stub-header">
+        <span class="mypage-stub-icon">🌐</span>
+        <span class="mypage-stub-title">公開設定</span>
+        <span class="mypage-stub-badge">近日公開</span>
+      </div>
+      <div class="mypage-stub-body">
+        <div class="mypage-stub-row">
+          <span class="mypage-stub-label">プロフィールを公開</span>
+          <label class="dash-toggle" style="opacity:0.4;pointer-events:none">
+            <input type="checkbox" disabled>
+            <span class="dash-toggle-slider"></span>
+          </label>
+        </div>
+        <div class="mypage-stub-row">
+          <span class="mypage-stub-label">生成履歴を公開広場でシェア可能にする</span>
+          <label class="dash-toggle" style="opacity:0.4;pointer-events:none">
+            <input type="checkbox" disabled>
+            <span class="dash-toggle-slider"></span>
+          </label>
+        </div>
+        <!-- TODO: Phase N+ 公開設定の保存・適用 -->
+      </div>
+    </div>
+
+    <!-- 通知設定 (stub) -->
+    <div class="mypage-stub-card" aria-label="準備中">
+      <div class="mypage-stub-header">
+        <span class="mypage-stub-icon">🔔</span>
+        <span class="mypage-stub-title">通知設定</span>
+        <span class="mypage-stub-badge">近日公開</span>
+      </div>
+      <div class="mypage-stub-body">
+        <div class="mypage-stub-row">
+          <span class="mypage-stub-label">メールアドレス</span>
+          <span class="mypage-stub-value stub-dim">未設定</span>
+        </div>
+        <div class="mypage-stub-row">
+          <span class="mypage-stub-label">お知らせメール</span>
+          <label class="dash-toggle" style="opacity:0.4;pointer-events:none">
+            <input type="checkbox" disabled>
+            <span class="dash-toggle-slider"></span>
+          </label>
+        </div>
+        <div class="mypage-stub-row">
+          <span class="mypage-stub-label">承認通知</span>
+          <label class="dash-toggle" style="opacity:0.4;pointer-events:none">
+            <input type="checkbox" disabled>
+            <span class="dash-toggle-slider"></span>
+          </label>
+        </div>
+        <!-- TODO: Phase N+ メールアドレス登録・通知設定の保存 -->
+      </div>
+    </div>
+
+    <!-- アカウント管理 (stub) -->
+    <div class="mypage-stub-card" aria-label="準備中">
+      <div class="mypage-stub-header">
+        <span class="mypage-stub-icon">⚙️</span>
+        <span class="mypage-stub-title">アカウント管理</span>
+        <span class="mypage-stub-badge">近日公開</span>
+      </div>
+      <div class="mypage-stub-body">
+        <div class="mypage-stub-row">
+          <span class="mypage-stub-label">SNSアカウント変更</span>
+          <button class="auth-nav-btn outline" style="font-size:0.75rem;padding:5px 14px;opacity:0.4;pointer-events:none" disabled>変更（確認フロー付き）</button>
+        </div>
+        <div class="mypage-stub-row">
+          <span class="mypage-stub-label">アカウント削除</span>
+          <button class="auth-nav-btn outline" style="font-size:0.75rem;padding:5px 14px;opacity:0.4;pointer-events:none;color:#f87171;border-color:rgba(248,113,113,0.3)" disabled>削除申請</button>
+        </div>
+        <!-- TODO: Phase N+ SNSアカウント変更・アカウント削除フロー -->
+      </div>
+    </div>
+
+  </section>
+
+</main>
+
+<script>
+// ── タブ切替 ──────────────────────────────────────────────────────
+document.querySelectorAll('[data-tab]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-tab]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    ['profile', 'usage', 'settings'].forEach(id => {
+      document.getElementById('tab-' + id).style.display = id === btn.dataset.tab ? '' : 'none';
+    });
+    if (btn.dataset.tab === 'usage') {
+      loadUsageStats();
+      loadGamification();
+      loadInviteSummary();
+    }
+  });
+});
+
+// ── プロフィール編集 ──────────────────────────────────────────────
+document.getElementById('editProfileBtn').addEventListener('click', () => {
+  document.getElementById('profileViewCard').style.display = 'none';
+  document.getElementById('profileEditCard').style.display = '';
+});
+
+// bio 文字数カウント
+document.getElementById('editBio').addEventListener('input', function() {
+  document.getElementById('bioCharCount').textContent = this.value.length;
+});
+document.getElementById('cancelEditBtn').addEventListener('click', () => {
+  document.getElementById('profileEditCard').style.display = 'none';
+  document.getElementById('profileViewCard').style.display = '';
+  document.getElementById('profileEditError').style.display = 'none';
+  document.getElementById('profileEditSuccess').style.display = 'none';
+});
+
+document.getElementById('profileEditForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn    = document.getElementById('profileSaveBtn');
+  const errEl  = document.getElementById('profileEditError');
+  const sucEl  = document.getElementById('profileEditSuccess');
+  errEl.style.display = 'none';
+  sucEl.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = '保存中...';
+
+  const fd = new FormData(e.target);
+  const body = {};
+  fd.forEach((v, k) => { body[k] = v === '' ? null : v; });
+  // display_name が空なら送信しない (サーバー側でも弾くが念のため)
+  if (body.display_name === null || body.display_name === '') {
+    errEl.textContent = '表示名は必須です';
+    errEl.style.display = '';
+    btn.disabled = false;
+    btn.textContent = '保存する';
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/user/profile', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      errEl.textContent = data.detail || '保存に失敗しました';
+      errEl.style.display = '';
+      return;
+    }
+    // 表示名を各所に反映
+    document.getElementById('viewDisplayName').textContent = data.display_name;
+    document.getElementById('heroName').textContent        = data.display_name;
+    document.getElementById('headerName').textContent      = data.display_name;
+    document.getElementById('avatarInitial').textContent   = data.display_name[0].toUpperCase();
+    // プロフィールURL 反映
+    const urlItem = document.getElementById('viewProfileUrlItem');
+    const urlLink = document.getElementById('viewProfileUrl');
+    if (data.profile_url) {
+      urlLink.href        = data.profile_url;
+      urlLink.textContent = data.profile_url;
+      urlItem.style.display = '';
+    } else {
+      urlItem.style.display = 'none';
+    }
+    // bio 反映
+    const bioItem = document.getElementById('viewBioItem');
+    const bioSpan = document.getElementById('viewBio');
+    if (data.bio) {
+      bioSpan.textContent    = data.bio;
+      bioItem.style.display  = '';
+    } else {
+      bioItem.style.display  = 'none';
+    }
+    sucEl.textContent = 'プロフィールを更新しました';
+    sucEl.style.display = '';
+    setTimeout(() => {
+      document.getElementById('profileEditCard').style.display = 'none';
+      document.getElementById('profileViewCard').style.display = '';
+      sucEl.style.display = 'none';
+    }, 1200);
+  } catch {
+    errEl.textContent = 'サーバーエラーが発生しました';
+    errEl.style.display = '';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '保存する';
+  }
+});
+
+// ── ゲーミフィケーション読み込み ──────────────────────────────────
+async function loadGamification() {
+  const loading = document.getElementById('gamiLoading');
+  const errEl   = document.getElementById('gamiError');
+  try {
+    const res = await fetch('/api/gamification/status');
+    if (!res.ok) throw new Error('api error');
+    const d = await res.json();
+    loading.style.display = 'none';
+
+    // レベルバッジ
+    const badge = document.getElementById('gamiLevelBadge');
+    badge.textContent = `Lv.${d.level}`;
+    badge.style.display = '';
+
+    // XP バー
+    const xpSec = document.getElementById('gamiXpSection');
+    xpSec.style.display = '';
+    document.getElementById('gamiTitle').textContent = d.title;
+    if (d.xp_at_next_level !== null) {
+      document.getElementById('gamiXpText').textContent =
+        `${d.xp} / ${d.xp_at_next_level} XP`;
+      document.getElementById('gamiBarFill').style.width = `${d.progress_pct}%`;
+      document.getElementById('gamiNextLabel').textContent =
+        `次のレベルまで ${d.xp_to_next} XP`;
+    } else {
+      document.getElementById('gamiXpText').textContent = `${d.xp} XP (MAX)`;
+      document.getElementById('gamiBarFill').style.width = '100%';
+      document.getElementById('gamiNextLabel').textContent = '最大レベル達成！';
+    }
+
+    // バッジ
+    const badgeSec  = document.getElementById('gamiBadgeSection');
+    const badgeGrid = document.getElementById('gamiBadgeGrid');
+    if (d.badges && d.badges.length > 0) {
+      badgeSec.style.display = '';
+      badgeGrid.innerHTML = d.badges.map(b => `
+        <div class="gami-badge-item" title="${esc(b.description)}">
+          <span class="gami-badge-icon">${esc(b.icon)}</span>
+          <span class="gami-badge-name">${esc(b.name)}</span>
+        </div>
+      `).join('');
+    }
+  } catch {
+    loading.style.display = 'none';
+    errEl.style.display   = '';
+  }
+}
+
+// ── 利用状況 (localStorage から読み込み) ─────────────────────────
+function loadUsageStats() {
+  const history   = window.Storage ? window.Storage.getAllHistory() : [];
+  const favorites = window.Storage ? window.Storage.getAllFavorites() : [];
+
+  document.getElementById('usageHistoryCount').textContent  = history.length;
+  document.getElementById('usageFavoriteCount').textContent = favorites.length;
+
+  const list = document.getElementById('recentHistoryList');
+  const none = document.getElementById('noHistoryMsg');
+
+  if (!history.length) {
+    none.style.display = '';
+    list.innerHTML = '';
+    return;
+  }
+  none.style.display = 'none';
+  // 最新 5 件を表示
+  list.innerHTML = history.slice(-5).reverse().map(item => `
+    <div class="mypage-history-item">
+      <div class="mypage-history-meta">
+        <span class="mypage-history-category">${esc(item.category || item.endpoint || '不明')}</span>
+        <span class="mypage-history-date">${item.savedAt ? new Date(item.savedAt).toLocaleDateString('ja-JP') : ''}</span>
+      </div>
+      <p class="mypage-history-preview">${esc((item.text || '').slice(0, 120))}${(item.text || '').length > 120 ? '…' : ''}</p>
+    </div>
+  `).join('');
+}
+
+// ── パスワード変更 ────────────────────────────────────────────────
+document.getElementById('pwForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn   = document.getElementById('pwBtn');
+  const errEl = document.getElementById('pwError');
+  const sucEl = document.getElementById('pwSuccess');
+  errEl.style.display = 'none';
+  sucEl.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = '変更中...';
+
+  const fd   = new FormData(e.target);
+  const body = Object.fromEntries(fd.entries());
+
+  try {
+    const res  = await fetch('/api/auth/change_password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      errEl.textContent = data.detail || 'パスワード変更に失敗しました';
+      errEl.style.display = 'block';
+      return;
+    }
+    sucEl.textContent = 'パスワードを変更しました';
+    sucEl.style.display = 'block';
+    e.target.reset();
+  } catch {
+    errEl.textContent = 'サーバーエラーが発生しました';
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '変更する';
+  }
+});
+
+// ── 共通 ─────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  await fetch('/api/auth/logout', { method: 'POST' });
+  location.href = '/';
+});
+
+// ── 招待サマリー ─────────────────────────────────────────────────
+let _inviteLoaded = false;
+async function loadInviteSummary() {
+  if (_inviteLoaded) return;  // 一度取得したら再取得しない
+  const loading = document.getElementById('inviteLoading');
+  const errEl   = document.getElementById('inviteError');
+  try {
+    const res = await fetch('/api/invite/summary');
+    if (!res.ok) throw new Error('api error');
+    const d = await res.json();
+    _inviteLoaded = true;
+    loading.style.display = 'none';
+
+    document.getElementById('inviteStats').style.display     = '';
+    document.getElementById('inviteTotalCount').textContent   = d.total_invited;
+    document.getElementById('inviteApprovedCount').textContent = d.total_approved;
+    document.getElementById('inviteXpEarned').textContent     = `+${d.xp_earned_from_invites} XP`;
+
+    // 発行ボタン: 発行可能かつ空き枠がある場合のみ表示
+    if (d.can_issue && d.active_codes_count < d.max_codes) {
+      document.getElementById('issueCodeBtn').style.display = '';
+    }
+
+    // コード一覧
+    if (d.codes && d.codes.length > 0) {
+      document.getElementById('inviteCodesSection').style.display = '';
+      document.getElementById('inviteCodeList').innerHTML = d.codes.map(c => `
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;margin-bottom:8px;flex-wrap:wrap">
+          <code style="font-family:monospace;font-size:1rem;letter-spacing:0.1em;color:var(--accent-gold);flex:1;min-width:100px">${esc(c.code)}</code>
+          <span style="font-size:0.74rem;color:var(--text-muted)">${c.used_count}/${c.max_uses}回</span>
+          <span style="font-size:0.72rem;padding:2px 8px;border-radius:20px;background:${c.status==='active'?'rgba(52,211,153,0.15)':'rgba(255,255,255,0.06)'};color:${c.status==='active'?'#34d399':'var(--text-muted)'}">${c.status}</span>
+          <button onclick="copyInviteCode('${esc(c.code)}')" class="auth-nav-btn outline" style="font-size:0.72rem;padding:4px 10px">コピー</button>
+        </div>
+      `).join('');
+    }
+
+    // 発行不可 / 次の解放条件
+    if (!d.can_issue && d.next_unlock_level) {
+      const msg = document.getElementById('inviteLockMsg');
+      msg.style.display = '';
+      msg.textContent   = `🔒 Lv${d.next_unlock_level} で招待コードの発行が解放されます`;
+    }
+  } catch {
+    loading.style.display = 'none';
+    errEl.style.display   = '';
+  }
+}
+
+function copyInviteCode(code) {
+  navigator.clipboard.writeText(code).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = code;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  });
+}
+
+document.getElementById('issueCodeBtn').addEventListener('click', async () => {
+  const btn = document.getElementById('issueCodeBtn');
+  btn.disabled    = true;
+  btn.textContent = '発行中...';
+  try {
+    const res  = await fetch('/api/invite/codes', { method: 'POST' });
+    const data = await res.json();
+    if (!res.ok) {
+      alert(data.detail || '招待コードの発行に失敗しました');
+      return;
+    }
+    _inviteLoaded = false;  // キャッシュをリセットして再取得
+    await loadInviteSummary();
+  } catch {
+    alert('サーバーエラーが発生しました');
+  } finally {
+    btn.disabled    = false;
+    btn.textContent = '+ コードを発行する';
+  }
+});
+
+// Storage.js が読み込まれていれば利用状況タブ初回表示時に自動ロード
+// (タブ切替イベントでも呼ばれるため、ここでは呼ばない)
+</script>
+</body>
+</html>

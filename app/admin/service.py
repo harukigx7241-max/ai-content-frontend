@@ -1,0 +1,224 @@
+"""
+app/admin/service.py — 管理者サービス
+
+ユーザー承認処理・統計取得・システム設定管理をここに集約する。
+router は薄く保ち、重いロジックはこのモジュールに寄せる。
+
+Phase 9: 重要な管理操作は audit_log に記録する。
+  記録パターン: try: log_audit(...) except Exception as e: logger.warning(...)
+  失敗しても本処理に影響させない。
+"""
+import logging
+from datetime import datetime, timedelta, timezone
+from typing import Optional
+
+from fastapi import HTTPException
+from sqlalchemy.orm import Session
+
+logger = logging.getLogger(__name__)
+
+from app.core import runtime_config as rc
+from app.core.config import settings
+from app.db.models.system_setting import SystemSetting
+from app.db.models.user import User
+
+
+def _get_user_or_404(db: Session, user_id: int) -> User:
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(404, f"ユーザー ID={user_id} が見つかりません")
+    return user
+
+
+def list_users(db: Session, status: Optional[str] = None) -> list[User]:
+    """全ユーザーを返す。status 指定時はフィルタリングする。"""
+    q = db.query(User)
+    if status:
+        q = q.filter(User.status == status)
+    return q.order_by(User.created_at.desc()).all()
+
+
+def approve_user(db: Session, user_id: int, admin_id: int) -> User:
+    """ユーザーを承認する (pending / rejected → approved)。"""
+    user = _get_user_or_404(db, user_id)
+    if user.status == "approved":
+        raise HTTPException(400, "このユーザーはすでに承認済みです")
+    user.status = "approved"
+    user.approved_at = datetime.now(timezone.utc)
+    user.approved_by = admin_id
+    db.commit()
+    db.refresh(user)
+
+    # Phase 8: 招待元ユーザーに承認段階 XP を付与 (段階2)
+    # auto_approve コードで既に付与済みの場合は related_entity_id で二重付与を防止
+    if user.invited_by_user_id and settings.ENABLE_GAMIFICATION:
+        try:
+            from app.gamification import service as _gami
+            from app.gamification.constants import XPEvent as _XPE
+            from app.db.models.xp_event import XpEvent
+            from sqlalchemy import select as _sel
+            already = db.execute(
+                _sel(XpEvent.id).where(
+                    XpEvent.user_id == user.invited_by_user_id,
+                    XpEvent.event_type == _XPE.INVITE_APPROVED,
+                    XpEvent.related_entity_id == user.id,
+                ).limit(1)
+            ).first()
+            if not already:
+                _gami.try_award(db, user.invited_by_user_id, _XPE.INVITE_APPROVED, ref_id=user.id)
+        except Exception as e:
+            logger.warning("XP付与失敗 (approve_user user_id=%s): %s", user_id, e)
+
+    # Phase 9: 監査ログ
+    try:
+        from app.analytics.service import log_audit
+        log_audit(db, admin_id, "approve_user", "user", user_id)
+    except Exception as e:
+        logger.warning("audit_log失敗 (approve_user user_id=%s): %s", user_id, e)
+
+    return user
+
+
+def reject_user(db: Session, user_id: int, admin_id: int) -> User:
+    """ユーザー登録を却下する (pending → rejected)。"""
+    user = _get_user_or_404(db, user_id)
+    if user.status not in ("pending",):
+        raise HTTPException(400, "却下できるのは承認待ちのユーザーのみです")
+    user.status = "rejected"
+    user.approved_by = admin_id
+    db.commit()
+    db.refresh(user)
+
+    # Phase 9: 監査ログ
+    try:
+        from app.analytics.service import log_audit
+        log_audit(db, admin_id, "reject_user", "user", user_id)
+    except Exception as e:
+        logger.warning("audit_log失敗 (reject_user user_id=%s): %s", user_id, e)
+
+    return user
+
+
+def suspend_user(db: Session, user_id: int, admin_id: int) -> User:
+    """ユーザーを停止する (approved → suspended)。管理者は停止不可。"""
+    user = _get_user_or_404(db, user_id)
+    if user.role == "admin":
+        raise HTTPException(400, "管理者アカウントは停止できません")
+    if user.status != "approved":
+        raise HTTPException(400, "停止できるのは承認済みのユーザーのみです")
+    user.status = "suspended"
+    db.commit()
+    db.refresh(user)
+
+    # Phase 9: 監査ログ
+    try:
+        from app.analytics.service import log_audit
+        log_audit(db, admin_id, "suspend_user", "user", user_id)
+    except Exception as e:
+        logger.warning("audit_log失敗 (suspend_user user_id=%s): %s", user_id, e)
+
+    return user
+
+
+def restore_user(db: Session, user_id: int, admin_id: int) -> User:
+    """停止ユーザーを復元する (suspended → approved)。"""
+    user = _get_user_or_404(db, user_id)
+    if user.status != "suspended":
+        raise HTTPException(400, "復元できるのは停止中のユーザーのみです")
+    user.status = "approved"
+    user.approved_by = admin_id
+    db.commit()
+    db.refresh(user)
+
+    # Phase 9: 監査ログ
+    try:
+        from app.analytics.service import log_audit
+        log_audit(db, admin_id, "restore_user", "user", user_id)
+    except Exception as e:
+        logger.warning("audit_log失敗 (restore_user user_id=%s): %s", user_id, e)
+
+    return user
+
+
+# ── 統計 ─────────────────────────────────────────────────────────
+
+def get_stats(db: Session) -> dict:
+    """管理ダッシュボード向け基本統計を返す。"""
+    total = db.query(User).count()
+    by_status = {
+        s: db.query(User).filter(User.status == s).count()
+        for s in ("pending", "approved", "rejected", "suspended")
+    }
+    week_ago = datetime.now(timezone.utc) - timedelta(days=7)
+    recent = db.query(User).filter(User.created_at >= week_ago).count()
+    return {"total": total, **by_status, "signups_last_7days": recent}
+
+
+# ── システム設定 ──────────────────────────────────────────────────
+
+def get_settings(db: Session) -> dict:
+    """現在のシステム設定を返す。DB 値 > 環境変数 の優先順位。"""
+    return {
+        "maintenance_enabled": rc.get_bool(rc.KEY_MAINTENANCE_ENABLED, settings.ENABLE_MAINTENANCE_MODE),
+        "maintenance_message": rc.get(rc.KEY_MAINTENANCE_MESSAGE, settings.MAINTENANCE_MESSAGE),
+        "notice_banner_enabled": rc.get_bool(rc.KEY_NOTICE_BANNER_ENABLED, settings.ENABLE_NOTICE_BANNER),
+        "notice_banner_text": rc.get(rc.KEY_NOTICE_BANNER_TEXT, settings.NOTICE_BANNER_TEXT),
+        "notice_banner_link": rc.get(rc.KEY_NOTICE_BANNER_LINK, settings.NOTICE_BANNER_LINK),
+    }
+
+
+# ── 個別ユーザー詳細 ──────────────────────────────────────────────
+
+def get_user_detail(db: Session, user_id: int) -> User:
+    """
+    個別ユーザーの詳細情報を返す。
+    将来的に admin_notes / audit_log などを JOIN して返す拡張ポイント。
+    """
+    return _get_user_or_404(db, user_id)
+
+
+def get_user_usage(db: Session, user_id: int) -> dict:
+    """
+    ユーザーの利用状況サマリーを返す。
+    現時点では generation_log テーブルが存在しないためスタブ値を返す。
+    TODO: Phase N+ generation_log 実装後に analytics_service.summarize_user(db, user_id) に委譲する
+    """
+    user = _get_user_or_404(db, user_id)
+    return {
+        "user_id": user_id,
+        "generation_count": 0,       # TODO: generation_log から集計
+        "last_active": user.last_login_at,  # 暫定: ログイン日時で代替
+        "favorite_category": None,   # TODO: generation_log から集計
+    }
+
+
+def update_settings(db: Session, data: dict, admin_id: int) -> dict:
+    """
+    システム設定を DB と runtime_config の両方に保存する。
+    None のフィールドはスキップ。bool は "true"/"false" 文字列に変換して保存。
+    """
+    now = datetime.now(timezone.utc)
+    for key, value in data.items():
+        if value is None:
+            continue
+        str_val = str(value).lower() if isinstance(value, bool) else str(value)
+        row = db.query(SystemSetting).filter(SystemSetting.key == key).first()
+        if row:
+            row.value = str_val
+            row.updated_at = now
+            row.updated_by = admin_id
+        else:
+            db.add(SystemSetting(key=key, value=str_val, updated_at=now, updated_by=admin_id))
+        rc.set_value(key, str_val)  # インメモリも即時更新
+    db.commit()
+
+    # Phase 9: 監査ログ (変更キーをまとめて detail に記録)
+    try:
+        import json as _json
+        from app.analytics.service import log_audit
+        changed = {k: v for k, v in data.items() if v is not None}
+        log_audit(db, admin_id, "update_settings", detail=_json.dumps(changed, ensure_ascii=False))
+    except Exception as e:
+        logger.warning("audit_log失敗 (update_settings): %s", e)
+
+    return get_settings(db)

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ post.title }} — 公開広場</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="/" class="logo" style="text-decoration:none">
+      <span class="logo-icon">✦</span>
+      <span class="logo-text">副業AIプロンプトプロ</span>
+    </a>
+    <div class="auth-nav">
+      {% if user %}
+        <span class="auth-user-name">{{ user.display_name }}</span>
+        <a href="/square" class="auth-nav-btn outline">広場</a>
+        <a href="/" class="auth-nav-btn outline">生成ツール</a>
+        <a href="/mypage" class="auth-nav-btn outline">マイページ</a>
+        {% if user.role in ('admin',) %}
+          <a href="/admin" class="auth-nav-btn outline" style="color:var(--accent-gold);border-color:rgba(251,191,36,0.4)">管理</a>
+        {% endif %}
+        <button class="auth-nav-btn outline" id="logoutBtn">ログアウト</button>
+      {% else %}
+        <a href="/square" class="auth-nav-btn outline">広場</a>
+        <a href="/" class="auth-nav-btn outline">生成ツール</a>
+        <a href="/login" class="auth-nav-btn outline">ログイン</a>
+        <a href="/register" class="auth-nav-btn primary">新規登録</a>
+      {% endif %}
+    </div>
+  </div>
+</header>
+
+<main class="mypage-container sq-detail-main">
+
+  <!-- ← 戻る -->
+  <a href="/square" class="sq-back-link">← 公開広場に戻る</a>
+
+  <!-- ── 投稿ヘッダー ─────────────────────────────────────────── -->
+  <div class="mypage-card sq-detail-head">
+    <div class="sq-detail-badges">
+      {% set cat_labels = {'note':'📝 note記事','sns':'✨ SNS投稿','cw':'💼 クラウドワークス','fortune':'🔮 占い','image':'🖼️ 画像生成','other':'その他'} %}
+      <span class="sq-cat-badge" data-cat="{{ post.category }}">
+        {{ cat_labels.get(post.category, post.category) }}
+      </span>
+      {% if post.purpose %}
+        {% set pur_labels = {'article':'記事','sales':'販売','proposal':'提案','profile':'プロフィール','post':'投稿','research':'リサーチ','image':'画像'} %}
+        <span class="sq-purpose-badge">{{ pur_labels.get(post.purpose, post.purpose) }}</span>
+      {% endif %}
+      {% if post.target_platform %}
+        {% set plat_labels = {'note':'note','x':'X','threads':'Threads','instagram':'Instagram','brain':'Brain','tips':'tips','blog':'ブログ','generic':'汎用'} %}
+        <span class="sq-plat-badge">{{ plat_labels.get(post.target_platform, post.target_platform) }}</span>
+      {% endif %}
+      {% if post.is_own %}
+        <span class="sq-own-badge">自分の投稿</span>
+      {% endif %}
+    </div>
+
+    <h1 class="sq-detail-title">{{ post.title }}</h1>
+
+    <div class="sq-detail-meta-row">
+      <span class="sq-author">by {{ post.author_name }}</span>
+      <span class="sq-detail-date">
+        {{ post.created_at.strftime('%Y年%m月%d日') if post.created_at else '' }}
+        {% if post.updated_at %}
+          <span style="color:var(--text-muted);font-size:0.75rem">
+            ({{ post.updated_at.strftime('%m/%d') }}更新)
+          </span>
+        {% endif %}
+      </span>
+      <span class="sq-detail-views">👁 {{ post.view_count or 0 }}</span>
+    </div>
+
+    {% if post.tags %}
+      <div class="sq-tag-row" style="margin-top:10px">
+        {% for tag in post.tags.split(',') %}
+          {% set t = tag.strip() %}
+          {% if t %}
+            <span class="sq-tag">{{ t }}</span>
+          {% endif %}
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- ── 説明文 ─────────────────────────────────────────────────── -->
+  {% if post.description %}
+  <div class="mypage-card sq-desc-card">
+    <div class="mypage-section-title" style="margin-bottom:10px">説明</div>
+    <p style="font-size:0.9rem;color:var(--text-secondary);line-height:1.7;white-space:pre-wrap;word-break:break-all">
+      {{- post.description -}}
+    </p>
+  </div>
+  {% endif %}
+
+  <!-- ── プロンプト本文 ────────────────────────────────────────── -->
+  <div class="mypage-card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+      <div class="mypage-section-title" style="margin-bottom:0">プロンプト本文</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="auth-nav-btn primary sq-copy-btn" id="copyBtn">
+          📋 コピーして使う
+        </button>
+      </div>
+    </div>
+
+    <div class="sq-prompt-display" id="promptDisplay">{{- post.prompt_body -}}</div>
+
+    <!-- コピー成功トースト -->
+    <div id="copyToast" class="sq-copy-toast" style="display:none">
+      ✓ クリップボードにコピーしました
+    </div>
+
+    <!-- AI リンク -->
+    <div class="sq-ai-links">
+      <p class="sq-ai-links-label">このプロンプトをAIで使う:</p>
+      <div class="sq-ai-btn-row">
+        <a href="https://chat.openai.com" target="_blank" rel="noopener" class="sq-ai-btn sq-ai-gpt"
+           data-ai="ChatGPT">ChatGPT で開く</a>
+        <a href="https://gemini.google.com" target="_blank" rel="noopener" class="sq-ai-btn sq-ai-gemini"
+           data-ai="Gemini">Gemini で開く</a>
+        <a href="https://claude.ai" target="_blank" rel="noopener" class="sq-ai-btn sq-ai-claude"
+           data-ai="Claude">Claude で開く</a>
+      </div>
+      <p style="font-size:0.75rem;color:var(--text-muted);margin-top:8px">
+        ↑ リンクを開いた後、コピーしたプロンプトを貼り付けて使ってください
+      </p>
+    </div>
+  </div>
+
+  <!-- ── 本人の操作エリア ──────────────────────────────────────── -->
+  {% if post.is_own %}
+  <div class="mypage-card sq-own-actions">
+    <div class="mypage-section-title" style="margin-bottom:12px">投稿の管理</div>
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <span style="font-size:0.85rem;color:var(--text-secondary)">
+        現在の公開設定:
+        {% if post.visibility == 'public' %}
+          <strong style="color:var(--accent-sns)">🌐 公開</strong>
+        {% else %}
+          <strong style="color:var(--text-muted)">🔒 非公開</strong>
+        {% endif %}
+      </span>
+      {% if post.visibility == 'public' %}
+        <button class="auth-nav-btn outline" id="visBtn" data-to="private"
+                style="font-size:0.78rem;padding:6px 14px">
+          🔒 非公開にする
+        </button>
+      {% else %}
+        <button class="auth-nav-btn primary" id="visBtn" data-to="public"
+                style="font-size:0.78rem;padding:6px 14px">
+          🌐 公開する
+        </button>
+      {% endif %}
+      <button class="auth-nav-btn outline" id="deleteBtn"
+              style="font-size:0.78rem;padding:6px 14px;color:#f87171;border-color:rgba(248,113,113,0.3)">
+        削除する
+      </button>
+    </div>
+    <div id="ownActionMsg" style="display:none;margin-top:10px;font-size:0.82rem"></div>
+  </div>
+  {% endif %}
+
+  <!-- ── 将来機能受け皿 ────────────────────────────────────────── -->
+  <div class="mypage-stub-card" aria-label="準備中" style="margin-top:0">
+    <div class="mypage-stub-header">
+      <span class="mypage-stub-icon">❤️</span>
+      <span class="mypage-stub-title">リアクション</span>
+      <span class="mypage-stub-badge">近日公開</span>
+    </div>
+    <div class="mypage-stub-body" style="flex-direction:row;gap:16px;flex-wrap:wrap">
+      <button class="sq-react-stub" disabled>❤️ いいね</button>
+      <button class="sq-react-stub" disabled>🔖 保存</button>
+      <button class="sq-react-stub" disabled>💬 コメント</button>
+      <!-- TODO: Phase N+ like / save / comment 本実装 -->
+    </div>
+  </div>
+
+</main>
+
+<script>
+const POST_ID = {{ post.id }};
+
+// ── コピーボタン ─────────────────────────────────────────────────
+document.getElementById('copyBtn').addEventListener('click', async () => {
+  const text  = document.getElementById('promptDisplay').textContent;
+  const toast = document.getElementById('copyToast');
+  try {
+    await navigator.clipboard.writeText(text);
+    toast.style.display = '';
+    setTimeout(() => { toast.style.display = 'none'; }, 2000);
+    // コピーアクション受け皿 (将来 use_count++)
+    fetch(`/api/community/posts/${POST_ID}/copy`, { method: 'POST' }).catch(() => {});
+  } catch {
+    // フォールバック: テキストエリアを使ってコピー
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity  = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    toast.style.display = '';
+    setTimeout(() => { toast.style.display = 'none'; }, 2000);
+  }
+});
+
+// AI リンクをクリック → コピーもしておく (UX)
+document.querySelectorAll('.sq-ai-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const text = document.getElementById('promptDisplay').textContent;
+    navigator.clipboard.writeText(text).catch(() => {});
+  });
+});
+
+{% if post.is_own %}
+// ── 公開/非公開 切替 ─────────────────────────────────────────────
+const visBtn = document.getElementById('visBtn');
+if (visBtn) {
+  visBtn.addEventListener('click', async () => {
+    const to  = visBtn.dataset.to;
+    const msg = document.getElementById('ownActionMsg');
+    visBtn.disabled = true;
+    try {
+      const res = await fetch(`/api/community/posts/${POST_ID}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ visibility: to }),
+      });
+      if (!res.ok) throw new Error('fail');
+      msg.textContent = to === 'public' ? '公開しました。' : '非公開にしました。';
+      msg.style.color = 'var(--accent-sns)';
+      msg.style.display = '';
+      setTimeout(() => location.reload(), 1000);
+    } catch {
+      msg.textContent = '操作に失敗しました。';
+      msg.style.color = '#f87171';
+      msg.style.display = '';
+      visBtn.disabled = false;
+    }
+  });
+}
+
+// ── 削除 ─────────────────────────────────────────────────────────
+document.getElementById('deleteBtn').addEventListener('click', async () => {
+  if (!confirm('この投稿を削除しますか？この操作は取り消せません。')) return;
+  const msg = document.getElementById('ownActionMsg');
+  try {
+    const res = await fetch(`/api/community/posts/${POST_ID}`, { method: 'DELETE' });
+    if (!res.ok && res.status !== 204) throw new Error('fail');
+    msg.textContent = '削除しました。広場に戻ります…';
+    msg.style.color = 'var(--accent-sns)';
+    msg.style.display = '';
+    setTimeout(() => { location.href = '/square'; }, 1200);
+  } catch {
+    msg.textContent = '削除に失敗しました。';
+    msg.style.color = '#f87171';
+    msg.style.display = '';
+  }
+});
+{% endif %}
+
+{% if user %}
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+  await fetch('/api/auth/logout', { method: 'POST' });
+  location.href = '/';
+});
+{% endif %}
+</script>
+</body>
+</html>
