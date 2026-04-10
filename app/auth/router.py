@@ -2,7 +2,9 @@
 app/auth/router.py — /api/auth/* エンドポイント (薄いルーター)
 重いロジックは auth/service.py に委譲。
 """
-from fastapi import APIRouter, Depends, Response
+import logging
+
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
@@ -19,6 +21,7 @@ from app.auth import service as auth_service
 from app.auth.dependencies import get_current_user
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
+logger = logging.getLogger(__name__)
 
 _COOKIE_NAME = "pguild_token"
 _COOKIE_MAX_AGE = settings.JWT_EXPIRE_DAYS * 86400
@@ -39,37 +42,51 @@ def register(p: RegisterRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/login")
-def login(p: LoginRequest, response: Response, db: Session = Depends(get_db)):
+def login(p: LoginRequest, request: Request, db: Session = Depends(get_db)):
     """
     承認済みユーザーのログイン。JWT を httpOnly Cookie にセットして返す。
     pending / rejected / suspended は 403 + ステータス別メッセージ。
+
+    Note: response.set_cookie() + return JSONResponse() の組み合わせは
+    Cookie が最終レスポンスに反映されない FastAPI の落とし穴があるため、
+    JSONResponse オブジェクトに直接 set_cookie() する方式を使う。
     """
     user, token = auth_service.login_user(db, p)
+
     # Phase 7: 日次ログイン XP 付与 (失敗しても login 本体に影響しない)
     if settings.ENABLE_GAMIFICATION:
-        from app.gamification import service as _gami
-        from app.gamification.constants import XPEvent as _XPE
-        _gami.try_award(db, user.id, _XPE.LOGIN)
-    response.set_cookie(
+        try:
+            from app.gamification import service as _gami
+            from app.gamification.constants import XPEvent as _XPE
+            _gami.try_award(db, user.id, _XPE.LOGIN)
+        except Exception as e:
+            logger.warning("login XP付与失敗 (user_id=%s): %s", user.id, e)
+
+    # JSONResponse に直接 set_cookie する (DI Response + return JSONResponse は Cookie が失われる)
+    resp = JSONResponse({
+        "message": "ログインしました",
+        "display_name": user.display_name,
+        "role": user.role,
+    })
+    resp.set_cookie(
         key=_COOKIE_NAME,
         value=token,
         httponly=True,
         max_age=_COOKIE_MAX_AGE,
         samesite="lax",
         secure=settings.COOKIE_SECURE,
+        path="/",
     )
-    return JSONResponse({
-        "message": "ログインしました",
-        "display_name": user.display_name,
-        "role": user.role,
-    })
+    logger.info("login ok: user_id=%s role=%s cookie_secure=%s", user.id, user.role, settings.COOKIE_SECURE)
+    return resp
 
 
 @router.post("/logout")
-def logout(response: Response):
+def logout():
     """Cookie を削除してログアウト。"""
-    response.delete_cookie(_COOKIE_NAME, samesite="lax")
-    return JSONResponse({"message": "ログアウトしました"})
+    resp = JSONResponse({"message": "ログアウトしました"})
+    resp.delete_cookie(_COOKIE_NAME, path="/", samesite="lax")
+    return resp
 
 
 @router.get("/me", response_model=UserResponse)
