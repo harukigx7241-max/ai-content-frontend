@@ -4,7 +4,9 @@ app/admin/service.py — 管理者サービス
 ユーザー承認処理・統計取得・システム設定管理をここに集約する。
 router は薄く保ち、重いロジックはこのモジュールに寄せる。
 
-TODO: Phase 4+ 一括操作 / 監査ログ / 通知
+Phase 9: 重要な管理操作は audit_log に記録する。
+  記録パターン: try: log_audit(...) except: pass
+  失敗しても本処理に影響させない。
 """
 from datetime import datetime, timedelta, timezone
 from typing import Optional
@@ -64,6 +66,13 @@ def approve_user(db: Session, user_id: int, admin_id: int) -> User:
         except Exception:
             pass  # XP 付与の失敗は承認処理に影響させない
 
+    # Phase 9: 監査ログ
+    try:
+        from app.analytics.service import log_audit
+        log_audit(db, admin_id, "approve_user", "user", user_id)
+    except Exception:
+        pass
+
     return user
 
 
@@ -76,6 +85,14 @@ def reject_user(db: Session, user_id: int, admin_id: int) -> User:
     user.approved_by = admin_id
     db.commit()
     db.refresh(user)
+
+    # Phase 9: 監査ログ
+    try:
+        from app.analytics.service import log_audit
+        log_audit(db, admin_id, "reject_user", "user", user_id)
+    except Exception:
+        pass
+
     return user
 
 
@@ -89,6 +106,14 @@ def suspend_user(db: Session, user_id: int, admin_id: int) -> User:
     user.status = "suspended"
     db.commit()
     db.refresh(user)
+
+    # Phase 9: 監査ログ
+    try:
+        from app.analytics.service import log_audit
+        log_audit(db, admin_id, "suspend_user", "user", user_id)
+    except Exception:
+        pass
+
     return user
 
 
@@ -101,6 +126,14 @@ def restore_user(db: Session, user_id: int, admin_id: int) -> User:
     user.approved_by = admin_id
     db.commit()
     db.refresh(user)
+
+    # Phase 9: 監査ログ
+    try:
+        from app.analytics.service import log_audit
+        log_audit(db, admin_id, "restore_user", "user", user_id)
+    except Exception:
+        pass
+
     return user
 
 
@@ -175,4 +208,14 @@ def update_settings(db: Session, data: dict, admin_id: int) -> dict:
             db.add(SystemSetting(key=key, value=str_val, updated_at=now, updated_by=admin_id))
         rc.set_value(key, str_val)  # インメモリも即時更新
     db.commit()
+
+    # Phase 9: 監査ログ (変更キーをまとめて detail に記録)
+    try:
+        import json as _json
+        from app.analytics.service import log_audit
+        changed = {k: v for k, v in data.items() if v is not None}
+        log_audit(db, admin_id, "update_settings", detail=_json.dumps(changed, ensure_ascii=False))
+    except Exception:
+        pass
+
     return get_settings(db)

@@ -15,7 +15,7 @@ from app.analytics.schemas import (
     FeedbackStatusUpdate,
     KpiResponse,
 )
-from app.auth.dependencies import get_current_user, get_current_user_soft, require_admin
+from app.auth.dependencies import get_current_user_soft, require_admin
 from app.db.models.user import User
 from app.db.session import get_db
 
@@ -72,6 +72,34 @@ def xp_events(
     return analytics_service.get_xp_event_stats(db)
 
 
+@router.get("/api/analytics/recent-users")
+def recent_users(
+    limit: int = Query(10, ge=1, le=50),
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """直近ログインユーザー上位。"""
+    return analytics_service.get_recently_active_users(db, limit)
+
+
+@router.get("/api/analytics/invite-stats")
+def invite_stats(
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """招待コード別利用状況。"""
+    return analytics_service.get_invite_code_stats(db)
+
+
+@router.get("/api/analytics/improvement-candidates")
+def improvement_candidates(
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """改善候補の簡易集計（離脱ユーザー予備軍など）。"""
+    return analytics_service.get_improvement_candidates(db)
+
+
 # ── フィードバック ────────────────────────────────────────────────────
 
 @router.post("/api/feedback", response_model=FeedbackResponse, status_code=201)
@@ -82,8 +110,7 @@ def submit_feedback(
 ):
     """要望・フィードバックを送信する。ログイン任意（未ログインでも user_id=None で保存）。"""
     user_id = current_user.id if current_user else None
-    fb = analytics_service.create_feedback(db, user_id, body.model_dump())
-    return fb
+    return analytics_service.create_feedback(db, user_id, body.model_dump())
 
 
 @router.get("/api/admin/feedback")
@@ -103,5 +130,7 @@ def update_feedback(
     admin: User = Depends(require_admin),
     db: Session = Depends(get_db),
 ):
-    """フィードバックのステータス・管理者メモを更新する。"""
-    return analytics_service.update_feedback_status(db, feedback_id, body.status, body.admin_note)
+    """フィードバックのステータス・優先度・管理者メモを更新する。"""
+    return analytics_service.update_feedback_status(
+        db, feedback_id, body.status, body.admin_note, body.priority
+    )

@@ -20,6 +20,7 @@ class Feedback(Base):
     title      = Column(String(200), nullable=False)
     body       = Column(Text,        nullable=True)
     status     = Column(String(20),  nullable=False, default="open")  # "open"|"acknowledged"|"closed"
+    priority   = Column(String(20),  nullable=False, default="medium")  # "low"|"medium"|"high"
     admin_note = Column(Text,        nullable=True)
     created_at = Column(DateTime(timezone=True), nullable=False, default=_now)
     updated_at = Column(DateTime(timezone=True), nullable=True)

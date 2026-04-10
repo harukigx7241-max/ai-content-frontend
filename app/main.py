@@ -76,7 +76,7 @@ if settings.ENABLE_AUTH_SYSTEM:
         # Phase 8: 招待元ユーザー追跡
         "ALTER TABLE users ADD COLUMN invited_by_user_id INTEGER",
         # Phase 9: フィードバック + 監査ログ (テーブル自体は Base.metadata.create_all で作成済み)
-        # audit_logs.detail は Text 型なので追加マイグレーション不要
+        "ALTER TABLE feedback ADD COLUMN priority VARCHAR(20) NOT NULL DEFAULT 'medium'",
     ]
     with engine.connect() as _conn:
         for _stmt in _migrations:
