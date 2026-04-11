@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ post.title }} — 公開広場</title>
+  <title>{{ post.title }} — ギルド広場</title>
   <link rel="stylesheet" href="/static/css/style.css">
   <script src="/static/js/core/effects.js" defer></script>
 </head>
@@ -20,18 +20,18 @@
     <div class="auth-nav">
       {% if user %}
         <span class="auth-user-name">{{ user.display_name }}</span>
-        <a href="/square" class="auth-nav-btn outline">広場</a>
-        <a href="/" class="auth-nav-btn outline">生成ツール</a>
+        <a href="/square" class="auth-nav-btn outline">⚔ ギルド広場</a>
+        <a href="/" class="auth-nav-btn outline">工房</a>
         <a href="/mypage" class="auth-nav-btn outline">マイページ</a>
         {% if user.role in ('admin',) %}
-          <a href="/admin" class="auth-nav-btn outline" style="color:var(--accent-gold);border-color:rgba(251,191,36,0.4)">管理</a>
+          <a href="/admin" class="auth-nav-btn outline" style="color:var(--accent-gold);border-color:rgba(251,191,36,0.4)">管理本部</a>
         {% endif %}
         <button class="auth-nav-btn outline" id="logoutBtn">ログアウト</button>
       {% else %}
-        <a href="/square" class="auth-nav-btn outline">広場</a>
-        <a href="/" class="auth-nav-btn outline">生成ツール</a>
-        <a href="/login" class="auth-nav-btn outline">ログイン</a>
-        <a href="/register" class="auth-nav-btn primary">新規登録</a>
+        <a href="/square" class="auth-nav-btn outline">⚔ ギルド広場</a>
+        <a href="/" class="auth-nav-btn outline">工房</a>
+        <a href="/login" class="auth-nav-btn outline">入館する</a>
+        <a href="/register" class="auth-nav-btn primary">⚔ ギルドに参加</a>
       {% endif %}
     </div>
   </div>
@@ -40,7 +40,7 @@
 <main class="mypage-container sq-detail-main">
 
   <!-- ← 戻る -->
-  <a href="/square" class="sq-back-link">← 公開広場に戻る</a>
+  <a href="/square" class="sq-back-link">← ギルド広場に戻る</a>
 
   <!-- ── 投稿ヘッダー ─────────────────────────────────────────── -->
   <div class="mypage-card sq-detail-head">

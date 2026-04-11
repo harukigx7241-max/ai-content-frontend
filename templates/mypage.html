@@ -50,10 +50,13 @@
       <div class="mypage-avatar" id="avatarInitial">{{ user.display_name[0] | upper }}</div>
       <div>
         <h1 class="mypage-title" id="heroName">{{ user.display_name }}</h1>
-        <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+        <div style="display:flex;align-items:center;gap:8px;margin-top:4px;flex-wrap:wrap">
           <span class="status-badge {{ user.status }}">
             {{ {"pending":"承認待ち","approved":"承認済み","rejected":"却下","suspended":"停止中"}.get(user.status, user.status) }}
           </span>
+          <!-- ランク表示 (JS で設定) -->
+          <span id="heroRankBadge" class="gami-level-badge" style="display:none"></span>
+          <span id="heroTitleBadge" style="display:none;font-size:0.78rem;color:#c084fc;font-weight:600"></span>
           <span style="font-size:0.78rem;color:var(--text-muted)">{{ user.sns_platform }} / @{{ user.sns_handle }}</span>
         </div>
       </div>
@@ -293,7 +296,14 @@
           </a>
         </div>
       </div>
-      <!-- TODO: Phase N+ 自分の投稿一覧をここに表示 (/api/community/posts/mine) -->
+      <!-- 自分の投稿一覧 -->
+      <div id="myPostsSection" style="margin-top:16px">
+        <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:8px">最近の投稿</div>
+        <div id="myPostsList"></div>
+        <p id="noMyPostsMsg" style="display:none;color:var(--text-muted);font-size:0.83rem;text-align:center;padding:14px 0">
+          まだ投稿がありません。<a href="/square/new" style="color:var(--accent-purple)">工房ログを投稿</a>してみましょう
+        </p>
+      </div>
     </div>
 
   </section>
@@ -489,8 +499,9 @@ document.querySelectorAll('[data-tab]').forEach(btn => {
     });
     if (btn.dataset.tab === 'usage') {
       loadUsageStats();
-      loadGamification();
+      if (!_gamiLoaded) loadGamification();
       loadInviteSummary();
+      loadMyPosts();
     }
   });
 });
@@ -587,6 +598,7 @@ document.getElementById('profileEditForm').addEventListener('submit', async e =>
 });
 
 // ── ゲーミフィケーション読み込み ──────────────────────────────────
+let _gamiLoaded = false;
 async function loadGamification() {
   const loading = document.getElementById('gamiLoading');
   const errEl   = document.getElementById('gamiError');
@@ -594,9 +606,16 @@ async function loadGamification() {
     const res = await fetch('/api/gamification/status');
     if (!res.ok) throw new Error('api error');
     const d = await res.json();
+    _gamiLoaded = true;
     loading.style.display = 'none';
 
-    // レベルバッジ
+    // ヒーローのランク表示
+    const heroRank  = document.getElementById('heroRankBadge');
+    const heroTitle = document.getElementById('heroTitleBadge');
+    if (heroRank)  { heroRank.textContent = `Lv.${d.level}`;  heroRank.style.display = ''; }
+    if (heroTitle) { heroTitle.textContent = d.title;          heroTitle.style.display = ''; }
+
+    // レベルバッジ (活動記録タブ内)
     const badge = document.getElementById('gamiLevelBadge');
     badge.textContent = `Lv.${d.level}`;
     badge.style.display = '';
@@ -633,6 +652,55 @@ async function loadGamification() {
     loading.style.display = 'none';
     errEl.style.display   = '';
   }
+}
+
+// ── 自分の投稿一覧 ────────────────────────────────────────────────
+let _myPostsLoaded = false;
+async function loadMyPosts() {
+  if (_myPostsLoaded) return;
+  const list = document.getElementById('myPostsList');
+  const none = document.getElementById('noMyPostsMsg');
+  if (!list) return;
+  try {
+    const res = await fetch('/api/community/posts/mine?per_page=5');
+    if (!res.ok) throw new Error('api error');
+    const d = await res.json();
+    _myPostsLoaded = true;
+    if (!d.posts || !d.posts.length) {
+      none.style.display = '';
+      return;
+    }
+    none.style.display = 'none';
+    list.innerHTML = d.posts.map(p => `
+      <a href="/square/${p.id}" style="text-decoration:none;display:block;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.06)" class="mypost-row">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:0.85rem;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+              ${esc(p.title)}
+            </div>
+            <div style="font-size:0.72rem;color:var(--text-muted);margin-top:2px">
+              ${p.visibility === 'public' ? '🌐 公開' : '🔒 非公開'} &nbsp;·&nbsp;
+              ${new Date(p.created_at).toLocaleDateString('ja-JP')}
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;font-size:0.78rem;color:var(--text-muted);flex-shrink:0">
+            <span title="閲覧数">👁 ${p.view_count || 0}</span>
+            ${p.like_count ? `<span title="いいね">❤️ ${p.like_count}</span>` : ''}
+            ${p.save_count ? `<span title="保存数">🔖 ${p.save_count}</span>` : ''}
+          </div>
+        </div>
+      </a>
+    `).join('');
+    // hover style
+    list.querySelectorAll('.mypost-row').forEach(el => {
+      el.addEventListener('mouseenter', () => el.style.opacity = '0.8');
+      el.addEventListener('mouseleave', () => el.style.opacity = '1');
+    });
+  } catch { /* silent fail */ }
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 // ── 利用状況 (localStorage から読み込み) ─────────────────────────
@@ -827,6 +895,9 @@ document.getElementById('issueCodeBtn').addEventListener('click', async () => {
   // 既に設定タブが開いている場合
   syncToggles();
 })();
+
+// ── ページロード時にランクをヒーローに表示 ─────────────────────────
+loadGamification();
 </script>
 </body>
 </html>

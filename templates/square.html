@@ -19,16 +19,16 @@
     <div class="auth-nav">
       {% if user %}
         <span class="auth-user-name">{{ user.display_name }}</span>
-        <a href="/" class="auth-nav-btn outline">生成ツール</a>
+        <a href="/" class="auth-nav-btn outline">⚔ 工房</a>
         <a href="/mypage" class="auth-nav-btn outline">マイページ</a>
         {% if user.role in ('admin',) %}
-          <a href="/admin" class="auth-nav-btn outline" style="color:var(--accent-gold);border-color:rgba(251,191,36,0.4)">管理</a>
+          <a href="/admin" class="auth-nav-btn outline" style="color:var(--accent-gold);border-color:rgba(251,191,36,0.4)">管理本部</a>
         {% endif %}
         <button class="auth-nav-btn outline" id="logoutBtn">ログアウト</button>
       {% else %}
-        <a href="/" class="auth-nav-btn outline">生成ツール</a>
-        <a href="/login" class="auth-nav-btn outline">ログイン</a>
-        <a href="/register" class="auth-nav-btn primary">新規登録</a>
+        <a href="/" class="auth-nav-btn outline">⚔ 工房</a>
+        <a href="/login" class="auth-nav-btn outline">入館する</a>
+        <a href="/register" class="auth-nav-btn primary">⚔ ギルドに参加</a>
       {% endif %}
     </div>
   </div>
