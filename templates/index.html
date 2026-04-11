@@ -72,7 +72,7 @@
   <h4>🔗 共有されたプロンプト</h4>
   <pre id="sharedPreview"></pre>
   <div class="shared-banner-actions">
-    <button class="copy-btn" id="sharedCopyBtn" style="background:rgba(52,211,153,0.15);border:1px solid rgba(52,211,153,0.3);color:#34d399;">コピー</button>
+    <button class="copy-btn" id="sharedCopyBtn">コピー</button>
     <button onclick="document.getElementById('sharedBanner').classList.remove('show')" style="background:var(--glass-fill);border:1px solid var(--glass-border);color:var(--text-secondary);">閉じる</button>
   </div>
 </div>
@@ -109,24 +109,24 @@
 
 <!-- ═══ HERO ═══ -->
 <section class="hero">
-  <div class="hero-eyebrow">⚔ PROMPT GUILD ✦ プロンプト職人の工房</div>
+  <div class="hero-eyebrow">⚔ ようこそ、プロンプトギルドへ ✦</div>
   <h1 class="hero-title">
-    生成する、育てる、共有する。<br>
-    <span class="gradient-text">プロンプト職人のギルドへ</span>
+    AIプロンプトを鍛える、<br>
+    <span class="gradient-text">職人たちの工房へ。</span>
   </h1>
-  <p class="hero-sub">専門家役割付きの高精度プロンプトを工房で生成。保存して鍛え、ギルド広場で仲間と共有できる。</p>
+  <p class="hero-sub">専門家役割付きの高品質プロンプトを4つの工房で生成。<br class="hero-br">保存して育て、ギルド広場で仲間と共有しよう。</p>
   <div class="hero-cta-group">
-    <button class="hero-cta-secondary" onclick="document.querySelector('.tab-content-area').scrollIntoView({behavior:'smooth'})">
-      ゲストで試す <span class="hero-cta-limit">（1日3回まで）</span>
+    <button class="hero-cta-secondary" onclick="document.querySelector('.hero-workshop-guide').scrollIntoView({behavior:'smooth'})">
+      工房を見てみる <span class="hero-cta-limit">（無料・登録不要）</span>
     </button>
     <a href="/register" class="hero-cta-primary">
       ⚔ ギルドに参加する <span class="hero-cta-free">無料</span>
     </a>
   </div>
   <div class="hero-benefits">
-    <span class="hero-benefit-item">🔓 保存無制限</span>
-    <span class="hero-benefit-item">🌐 広場への投稿</span>
-    <span class="hero-benefit-item">⭐ レベル・称号</span>
+    <span class="hero-benefit-item">🔓 生成・保存 無制限</span>
+    <span class="hero-benefit-item">🌐 ギルド広場へ投稿</span>
+    <span class="hero-benefit-item">⭐ ランク・称号</span>
     <span class="hero-benefit-item">🎁 今後の特典解放</span>
   </div>
   <div class="hero-ai-badge">
@@ -138,6 +138,36 @@
   </div>
 </section>
 
+<!-- ═══ 工房ガイド (受付案内板) ═══ -->
+<div class="hero-workshop-guide">
+  <div class="hwg-inner">
+    <p class="hwg-lead">⚒️ どの工房に行く？</p>
+    <div class="hwg-grid">
+      <button class="hwg-card" onclick="App.switchTab('note'); document.querySelector('.tab-content-area').scrollIntoView({behavior:'smooth'})">
+        <span class="hwg-icon">📝</span>
+        <strong class="hwg-name">販売工房</strong>
+        <span class="hwg-desc">note・tips・Brain<br>有料コンテンツ</span>
+      </button>
+      <button class="hwg-card" onclick="App.switchTab('cw'); document.querySelector('.tab-content-area').scrollIntoView({behavior:'smooth'})">
+        <span class="hwg-icon">💼</span>
+        <strong class="hwg-name">営業工房</strong>
+        <span class="hwg-desc">クラウドワークス<br>提案文・プロフィール</span>
+      </button>
+      <button class="hwg-card" onclick="App.switchTab('fortune'); document.querySelector('.tab-content-area').scrollIntoView({behavior:'smooth'})">
+        <span class="hwg-icon">🔮</span>
+        <strong class="hwg-name">占術工房</strong>
+        <span class="hwg-desc">ココナラ・鑑定書<br>占い師向け</span>
+      </button>
+      <button class="hwg-card" onclick="App.switchTab('sns'); document.querySelector('.tab-content-area').scrollIntoView({behavior:'smooth'})">
+        <span class="hwg-icon">✨</span>
+        <strong class="hwg-name">SNS工房</strong>
+        <span class="hwg-desc">X・Instagram<br>Threads・プロフ</span>
+      </button>
+    </div>
+    <p class="hwg-sub">▼ 工房を選んでスクロールするか、上のタブで切り替えられます</p>
+  </div>
+</div>
+
 <!-- ═══ MAIN CONTENT ═══ -->
 <main class="tab-content-area">
 
@@ -146,7 +176,7 @@
 
     <!-- 収益シミュレーター -->
     <div class="simulator-widget">
-      <h3>📊 副業収益シミュレーター</h3>
+      <h3>📊 収益シミュレーター</h3>
       <div class="sim-inputs">
         <div class="sim-field">
           <label>価格（円）</label>
@@ -183,11 +213,11 @@
       <div class="bundle-form">
         <div class="field-group" style="flex:1;min-width:200px;">
           <label>テーマ</label>
-          <input type="text" id="bundle-theme" placeholder="例: AI副業の始め方">
+          <input type="text" id="bundle-theme" placeholder="例: noteで月5万円稼ぐ方法">
         </div>
         <div class="field-group" style="flex:1;min-width:180px;">
           <label>ターゲット</label>
-          <input type="text" id="bundle-target" placeholder="例: 副業初心者の会社員">
+          <input type="text" id="bundle-target" placeholder="例: プロンプト初心者の会社員">
         </div>
         <div class="field-group" style="min-width:140px;">
           <label>使用AI</label>
@@ -238,8 +268,8 @@
           <div class="template-gallery">
             <div class="template-gallery-label">✨ テンプレートから始める</div>
             <div class="template-chips">
-              <span class="template-chip" data-fill='{"theme":"AI副業の始め方","situation":"会社員で副収入を得たい","concern":"何から始めればいいか分からない"}'>AI副業入門</span>
-              <span class="template-chip" data-fill='{"theme":"月5万円を稼ぐ副業術","situation":"育児中で時間が限られている","concern":"スキルがなくても稼げるか不安"}'>月5万円副業</span>
+              <span class="template-chip" data-fill='{"theme":"noteで稼ぐ方法","situation":"在宅で収入を増やしたい会社員","concern":"何から始めればいいか分からない"}'>コンテンツ入門</span>
+              <span class="template-chip" data-fill='{"theme":"月5万円を稼ぐコンテンツ術","situation":"育児中で時間が限られている","concern":"スキルがなくても稼げるか不安"}'>月5万円達成</span>
               <span class="template-chip" data-fill='{"theme":"ゼロから始めるSNS運用","situation":"フォロワー0からスタートしたい","concern":"何を発信すれば良いか分からない"}'>SNS運用入門</span>
               <span class="template-chip" data-fill='{"theme":"在宅ライターで稼ぐ方法","situation":"文章を書くのが好きな主婦","concern":"未経験でも案件を取れるか心配"}'>在宅ライター</span>
             </div>
@@ -258,7 +288,7 @@
           </div>
           <div class="field-group">
             <label>テーマ *</label>
-            <input type="text" name="theme" placeholder="例: AI副業の始め方">
+            <input type="text" name="theme" placeholder="例: noteで月5万円稼ぐ方法">
           </div>
           <div class="two-col">
             <div class="field-group">
@@ -343,7 +373,7 @@
           <div class="template-gallery">
             <div class="template-gallery-label">✨ テンプレート</div>
             <div class="template-chips">
-              <span class="template-chip" data-fill='{"genre":"副業・お金","keyword":"AI副業","target":"20〜30代の会社員"}'>AI副業</span>
+              <span class="template-chip" data-fill='{"genre":"副業・お金","keyword":"AIプロンプト","target":"20〜30代の会社員"}'>AIプロンプト</span>
               <span class="template-chip" data-fill='{"genre":"自己啓発","keyword":"習慣化","target":"なかなか継続できない人"}'>習慣化</span>
               <span class="template-chip" data-fill='{"genre":"恋愛・婚活","keyword":"婚活成功","target":"30代独身女性"}'>婚活</span>
             </div>
@@ -358,7 +388,7 @@
           <div class="field-group">
             <label>ジャンル *</label>
             <select name="genre">
-              <option value="副業・お金">副業・お金</option>
+              <option value="副業・お金">💰 収益・マネー</option>
               <option value="ビジネス・仕事術">ビジネス・仕事術</option>
               <option value="自己啓発">自己啓発</option>
               <option value="恋愛・婚活">恋愛・婚活</option>
@@ -369,11 +399,11 @@
           </div>
           <div class="field-group">
             <label>メインキーワード *</label>
-            <input type="text" name="keyword" placeholder="例: AI副業、タロット占い">
+            <input type="text" name="keyword" placeholder="例: AIプロンプト、タロット占い">
           </div>
           <div class="field-group">
             <label>ターゲット読者 *</label>
-            <input type="text" name="target" placeholder="例: 副業初心者の20〜30代会社員">
+            <input type="text" name="target" placeholder="例: 在宅ワーク中の20〜30代会社員">
           </div>
           <button class="generate-btn">⚔ 工房で生成する</button>
           <div class="result-area">
@@ -441,11 +471,11 @@
           </div>
           <div class="field-group">
             <label>商品内容 *</label>
-            <input type="text" name="content" placeholder="例: AI副業で月10万円稼ぐためのノウハウまとめ">
+            <input type="text" name="content" placeholder="例: AIプロンプトで月10万円稼ぐノウハウまとめ">
           </div>
           <div class="field-group">
             <label>ターゲット読者 *</label>
-            <input type="text" name="target" placeholder="例: 副業初心者・AIに興味ある会社員">
+            <input type="text" name="target" placeholder="例: AIに興味のある会社員・フリーランス">
           </div>
           <button class="generate-btn">⚔ 工房で生成する</button>
           <div class="result-area">
@@ -492,7 +522,7 @@
           </div>
           <div class="field-group">
             <label>記事テーマ *</label>
-            <input type="text" name="theme" placeholder="例: AI副業で月10万円稼ぐ方法">
+            <input type="text" name="theme" placeholder="例: AIで月10万円稼ぐノウハウ">
           </div>
           <div class="two-col">
             <div class="field-group">
@@ -519,7 +549,7 @@
           </div>
           <div class="field-group">
             <label>購入者の状況 *</label>
-            <input type="text" name="buyer_situation" placeholder="例: 副業初心者で右も左も分からない状態">
+            <input type="text" name="buyer_situation" placeholder="例: コンテンツ販売を始めたばかりの初心者">
           </div>
           <button class="generate-btn">⚔ 工房で生成する</button>
           <div class="result-area">
@@ -767,7 +797,7 @@
   </section>
 
 
-  <!-- ━━━ TAB: 占い副業 ━━━ -->
+  <!-- ━━━ TAB: 占術工房 ━━━ -->
   <section id="tab-fortune" class="tab-panel" data-tab="fortune">
     <div class="section-header">
       <div class="section-title">🔮 占術工房</div>
@@ -1025,7 +1055,7 @@
             <div class="card-title">X（Twitter）バズ投稿プロンプト</div>
             <div class="card-desc">エンゲージメント最大化・3パターン+スレッド展開案</div>
             <div class="card-chips">
-              <span class="card-chip-for">👤 Xで副業・サービスを告知したい人</span>
+              <span class="card-chip-for">👤 Xでサービス・商品を告知したい人</span>
               <span class="card-chip-make">📄 高エンゲージメントな投稿文3パターン</span>
             </div>
           </div>
@@ -1034,7 +1064,7 @@
           <div class="template-gallery">
             <div class="template-gallery-label">✨ テンプレート</div>
             <div class="template-chips">
-              <span class="template-chip" data-fill='{"topic":"AIを使った副業の始め方","genre":"副業・ビジネス","style":"リスト","length":"280字"}'>AI副業告知</span>
+              <span class="template-chip" data-fill='{"topic":"AIプロンプトの活用法","genre":"副業・ビジネス","style":"リスト","length":"280字"}'>AI活用告知</span>
               <span class="template-chip" data-fill='{"topic":"朝活で人生が変わった体験談","genre":"自己啓発","style":"ストーリー","length":"280字"}'>朝活体験談</span>
               <span class="template-chip" data-fill='{"topic":"タロット占いで気をつけること","genre":"スピリチュアル","style":"問いかけ","length":"140字"}'>占いTips</span>
             </div>
@@ -1048,13 +1078,13 @@
           </div>
           <div class="field-group">
             <label>トピック *</label>
-            <input type="text" name="topic" placeholder="例: AIを使った副業の始め方">
+            <input type="text" name="topic" placeholder="例: AIプロンプトで稼ぐコツ">
           </div>
           <div class="two-col">
             <div class="field-group">
               <label>ジャンル</label>
               <select name="genre">
-                <option value="副業・ビジネス">副業・ビジネス</option>
+                <option value="副業・ビジネス">💼 ビジネス・仕事術</option>
                 <option value="自己啓発">自己啓発</option>
                 <option value="恋愛・婚活">恋愛・婚活</option>
                 <option value="スピリチュアル">スピリチュアル</option>
@@ -1119,7 +1149,7 @@
           <div class="template-gallery">
             <div class="template-gallery-label">✨ テンプレート</div>
             <div class="template-chips">
-              <span class="template-chip" data-fill='{"theme":"副業で月5万円稼いだ話","mood":"カジュアル","audience":"副業に興味ある会社員"}'>副業体験談</span>
+              <span class="template-chip" data-fill='{"theme":"note記事で月5万円稼いだ話","mood":"カジュアル","audience":"コンテンツ販売に興味ある会社員"}'>収益体験談</span>
               <span class="template-chip" data-fill='{"theme":"占いで人生が変わった瞬間","mood":"インスパイア","audience":"スピリチュアルに興味ある女性"}'>スピリチュアル</span>
             </div>
           </div>
@@ -1132,7 +1162,7 @@
           </div>
           <div class="field-group">
             <label>テーマ *</label>
-            <input type="text" name="theme" placeholder="例: 副業で月5万円稼いだ実体験">
+            <input type="text" name="theme" placeholder="例: note記事で月5万円稼いだ実体験">
           </div>
           <div class="field-group">
             <label>雰囲気・トーン</label>
@@ -1145,7 +1175,7 @@
           </div>
           <div class="field-group">
             <label>ターゲットフォロワー *</label>
-            <input type="text" name="audience" placeholder="例: 副業に興味ある20〜30代会社員">
+            <input type="text" name="audience" placeholder="例: コンテンツ販売に興味ある20〜30代会社員">
           </div>
           <button class="generate-btn">⚔ 工房で生成する</button>
           <div class="result-area">
@@ -1192,13 +1222,13 @@
           </div>
           <div class="field-group">
             <label>投稿内容 *</label>
-            <input type="text" name="content" placeholder="例: 副業で月5万円達成した方法を紹介">
+            <input type="text" name="content" placeholder="例: noteで月5万円達成した方法を紹介">
           </div>
           <div class="two-col">
             <div class="field-group">
               <label>アカウントジャンル</label>
               <select name="genre">
-                <option value="副業・お金">副業・お金</option>
+                <option value="副業・お金">💰 収益・マネー</option>
                 <option value="美容・コスメ">美容・コスメ</option>
                 <option value="グルメ・カフェ">グルメ・カフェ</option>
                 <option value="ライフスタイル">ライフスタイル</option>
@@ -1271,15 +1301,15 @@
           </div>
           <div class="field-group">
             <label>発信ジャンル *</label>
-            <input type="text" name="niche" placeholder="例: AI副業・在宅ワーク・フリーランス">
+            <input type="text" name="niche" placeholder="例: AIプロンプト・在宅ワーク・フリーランス">
           </div>
           <div class="field-group">
             <label>肩書き・強み *</label>
-            <input type="text" name="title" placeholder="例: AI副業コンサルタント・元サラリーマン">
+            <input type="text" name="title" placeholder="例: AIプロンプト活用家・元サラリーマン">
           </div>
           <div class="field-group">
             <label>ターゲットフォロワー *</label>
-            <input type="text" name="target" placeholder="例: 副業で月5万円以上稼ぎたい会社員">
+            <input type="text" name="target" placeholder="例: コンテンツ販売で月5万円以上稼ぎたい会社員">
           </div>
           <button class="generate-btn">⚔ 工房で生成する</button>
           <div class="result-area">
@@ -1310,20 +1340,22 @@
 
 <!-- ═══ GUEST USAGE BADGE ═══ -->
 <!-- 未ログイン時のみ表示: 本日の残り生成回数バッジ -->
-<div id="guestUsageBadge" style="display:none" title="ゲスト利用残回数">
-  <div class="guest-badge-icon">🎯</div>
-  <div class="guest-badge-text">残り <span class="guest-remaining">3</span> 回</div>
-  <div class="guest-badge-sub">ゲスト利用</div>
+<div id="guestUsageBadge" style="display:none" title="クリックしてギルド参加特典を確認">
+  <div class="guest-badge-icon">⚗</div>
+  <div class="guest-badge-main">
+    <div class="guest-badge-text">本日残り <span class="guest-remaining">3</span> 回</div>
+    <div class="guest-badge-sub">見習い冒険者</div>
+  </div>
 </div>
 
 <!-- ═══ GUEST LIMIT MODAL ═══ -->
 <div class="guest-limit-overlay" id="guestLimitModal">
   <div class="guest-limit-modal">
-    <div class="guest-limit-icon">⚔</div>
-    <h2 class="guest-limit-title">本日の無料枠を使い切りました</h2>
+    <div class="guest-limit-icon">⚗</div>
+    <h2 class="guest-limit-title">本日の見習い体験枠を使い切りました</h2>
     <p class="guest-limit-desc">
-      ゲストは1日3回まで工房を利用できます。<br>
-      <strong>ギルドに参加</strong>すると制限なしで全機能が解放されます。
+      見習い冒険者は1日3回まで工房を体験できます。<br>
+      <strong>ギルドに参加</strong>すると全工房が無制限で使えるようになります。
     </p>
     <!-- 特典リスト -->
     <ul class="guest-limit-benefits">

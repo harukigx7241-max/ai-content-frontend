@@ -27,6 +27,8 @@ const App = {
     const panel = document.getElementById(`tab-${tabId}`);
     if (btn)   btn.classList.add('active');
     if (panel) panel.classList.add('active');
+    // タブ切替音
+    if (window.Effects) Effects.play('click');
   },
 
   // ═══════════════════════════════════════════
@@ -752,7 +754,7 @@ const App = {
         const res = await fetch('/api/project/bundle', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ theme, target: target || '副業初心者', ai_mode: aiMode })
+          body: JSON.stringify({ theme, target: target || 'プロンプト初心者', ai_mode: aiMode })
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         bundleData = await res.json();

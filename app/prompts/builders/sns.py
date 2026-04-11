@@ -1,5 +1,6 @@
 """app/prompts/builders/sns.py — Tab4: SNS特化系プロンプトビルダー"""
 from app.prompts.suffixes.ai_mode import ai_suffix
+from app.services.trend_service import get_trend_hint
 
 
 def build_sns_tweet_prompt(p) -> str:
@@ -41,7 +42,7 @@ X（旧Twitter）のトップインフルエンサー兼SNSマーケターです
 ■ 投稿タイミング
 このジャンルで最もエンゲージメントが高い曜日・時間帯の推奨
 
-Web検索で{p.genre}ジャンルの最新トレンドハッシュタグを調べてください。{ai_suffix(p.ai_mode)}""".strip()
+Web検索で{p.genre}ジャンルの最新トレンドハッシュタグを調べてください。{get_trend_hint('sns')}{ai_suffix(p.ai_mode)}""".strip()
 
 
 def build_sns_threads_prompt(p) -> str:

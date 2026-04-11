@@ -1,5 +1,6 @@
 """app/prompts/builders/note.py — Tab1: 有料コンテンツ系プロンプトビルダー"""
 from app.prompts.suffixes.ai_mode import ai_suffix
+from app.services.trend_service import get_trend_hint
 
 
 def build_note_article_prompt(p) -> str:
@@ -67,7 +68,7 @@ def build_note_article_prompt(p) -> str:
 ・改行を多めにして読みやすくする
 ・専門用語は使わず、小学生でも分かる言葉を使う
 ・具体的な数字・事例を豊富に盛り込む
-・Web検索で最新トレンド・統計データを調べ、現実的なデータを引用すること{ai_suffix(p.ai_mode)}""".strip()
+・Web検索で最新トレンド・統計データを調べ、現実的なデータを引用すること{get_trend_hint('note')}{ai_suffix(p.ai_mode)}""".strip()
 
 
 def build_note_titles_prompt(p) -> str:
