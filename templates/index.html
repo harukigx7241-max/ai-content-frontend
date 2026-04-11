@@ -87,19 +87,19 @@
     <nav class="tab-nav" role="tablist">
       <button class="tab-btn active" data-tab="note" role="tab">
         <span class="tab-icon">📝</span>
-        <span class="tab-label">有料コンテンツ</span>
+        <span class="tab-label">販売工房</span>
       </button>
       <button class="tab-btn" data-tab="cw" role="tab">
         <span class="tab-icon">💼</span>
-        <span class="tab-label">クラウドワークス</span>
+        <span class="tab-label">営業工房</span>
       </button>
       <button class="tab-btn" data-tab="fortune" role="tab">
         <span class="tab-icon">🔮</span>
-        <span class="tab-label">占い副業</span>
+        <span class="tab-label">占術工房</span>
       </button>
       <button class="tab-btn" data-tab="sns" role="tab">
         <span class="tab-icon">✨</span>
-        <span class="tab-label">SNS特化</span>
+        <span class="tab-label">SNS工房</span>
       </button>
     </nav>
     <!-- 認証ナビ (ENABLE_AUTH_SYSTEM=true 時に JS で動的に挿入) -->
@@ -109,14 +109,28 @@
 
 <!-- ═══ HERO ═══ -->
 <section class="hero">
-  <div class="hero-eyebrow">AI PROMPT GENERATOR</div>
+  <div class="hero-eyebrow">⚔ PROMPT GUILD ✦ プロンプト職人の工房</div>
   <h1 class="hero-title">
-    副業クリエイターの<br>
-    <span class="gradient-text">神プロンプト生成ツール</span>
+    生成する、育てる、共有する。<br>
+    <span class="gradient-text">プロンプト職人のギルドへ</span>
   </h1>
-  <p class="hero-sub">プロ専門家が代わりに考えた高精度プロンプトを生成。ChatGPT・Gemini・Claudeにコピーして即使える。</p>
+  <p class="hero-sub">専門家役割付きの高精度プロンプトを工房で生成。保存して鍛え、ギルド広場で仲間と共有できる。</p>
+  <div class="hero-cta-group">
+    <button class="hero-cta-secondary" onclick="document.querySelector('.tab-content-area').scrollIntoView({behavior:'smooth'})">
+      ゲストで試す <span class="hero-cta-limit">（1日3回まで）</span>
+    </button>
+    <a href="/register" class="hero-cta-primary">
+      ⚔ ギルドに参加する <span class="hero-cta-free">無料</span>
+    </a>
+  </div>
+  <div class="hero-benefits">
+    <span class="hero-benefit-item">🔓 保存無制限</span>
+    <span class="hero-benefit-item">🌐 広場への投稿</span>
+    <span class="hero-benefit-item">⭐ レベル・称号</span>
+    <span class="hero-benefit-item">🎁 今後の特典解放</span>
+  </div>
   <div class="hero-ai-badge">
-    🤖 生成したプロンプトを →
+    ✦ 生成したプロンプトを →
     <a href="https://chat.openai.com" target="_blank" rel="noopener">ChatGPT</a> /
     <a href="https://gemini.google.com" target="_blank" rel="noopener">Gemini</a> /
     <a href="https://claude.ai" target="_blank" rel="noopener">Claude</a>
@@ -165,7 +179,7 @@
 
     <!-- プロジェクトモード（一括生成） -->
     <div class="bundle-banner">
-      <h3>🚀 プロジェクトモード — テーマ1つで全部まとめて生成</h3>
+      <h3>🚀 プロジェクトモード — テーマ1つで全工房まとめて生成</h3>
       <div class="bundle-form">
         <div class="field-group" style="flex:1;min-width:200px;">
           <label>テーマ</label>
@@ -201,8 +215,8 @@
     </div>
 
     <div class="section-header">
-      <div class="section-title">📝 有料コンテンツ専門プロンプト</div>
-      <div class="section-desc">note・tips・brainで売れる記事・コンテンツ用の高精度プロンプトを生成します</div>
+      <div class="section-title">📝 販売コンテンツ工房</div>
+      <div class="section-desc">note・tips・Brain で売れる記事・有料コンテンツを生成するプロ級プロンプト。無料/有料エリア分割・7セクション構成付き。</div>
     </div>
 
     <div class="tools-grid">
@@ -286,7 +300,7 @@
               </select>
             </div>
           </div>
-          <button class="generate-btn">✦ プロンプト生成</button>
+          <button class="generate-btn">⚔ 工房で生成する</button>
           <div class="result-area">
             <div class="result-banner">
               <strong>✦ コピーして貼り付けよう</strong> → ChatGPT・Gemini・Claude
@@ -353,7 +367,7 @@
             <label>ターゲット読者 *</label>
             <input type="text" name="target" placeholder="例: 副業初心者の20〜30代会社員">
           </div>
-          <button class="generate-btn">✦ プロンプト生成</button>
+          <button class="generate-btn">⚔ 工房で生成する</button>
           <div class="result-area">
             <div class="result-banner">
               <strong>✦ コピーして貼り付けよう</strong> → ChatGPT・Gemini・Claude
@@ -421,7 +435,7 @@
             <label>ターゲット読者 *</label>
             <input type="text" name="target" placeholder="例: 副業初心者・AIに興味ある会社員">
           </div>
-          <button class="generate-btn">✦ プロンプト生成</button>
+          <button class="generate-btn">⚔ 工房で生成する</button>
           <div class="result-area">
             <div class="result-banner">
               <strong>✦ コピーして貼り付けよう</strong> → ChatGPT・Gemini・Claude
@@ -491,7 +505,7 @@
             <label>購入者の状況 *</label>
             <input type="text" name="buyer_situation" placeholder="例: 副業初心者で右も左も分からない状態">
           </div>
-          <button class="generate-btn">✦ プロンプト生成</button>
+          <button class="generate-btn">⚔ 工房で生成する</button>
           <div class="result-area">
             <div class="result-banner">
               <strong>🎁 特典用プロンプト</strong> — ChatGPT等で実行してPDFにして購入者へ渡そう！
@@ -520,8 +534,8 @@
   <!-- ━━━ TAB: クラウドワークス ━━━ -->
   <section id="tab-cw" class="tab-panel" data-tab="cw">
     <div class="section-header">
-      <div class="section-title">💼 クラウドワークス副業専門プロンプト</div>
-      <div class="section-desc">採用率を高める提案文・プロフィール・単価交渉のプロ級プロンプト</div>
+      <div class="section-title">💼 提案・営業工房</div>
+      <div class="section-desc">クラウドワークスで採用率を最大化する提案文・プロフィール・単価交渉のプロ級プロンプト。</div>
     </div>
     <div class="tools-grid">
 
@@ -566,7 +580,7 @@
             <label>希望単価</label>
             <input type="text" name="desired_rate" placeholder="例: 文字単価3円〜 / 時給1,500円〜">
           </div>
-          <button class="generate-btn">✦ プロンプト生成</button>
+          <button class="generate-btn">⚔ 工房で生成する</button>
           <div class="result-area">
             <div class="result-banner">
               <strong>✦ コピーして貼り付けよう</strong> → ChatGPT・Gemini・Claude
@@ -638,7 +652,7 @@
             <label>実績・経験 *</label>
             <input type="text" name="achievements" placeholder="例: 月30記事執筆・累計500記事以上・GoogleSEO1位実績">
           </div>
-          <button class="generate-btn">✦ プロンプト生成</button>
+          <button class="generate-btn">⚔ 工房で生成する</button>
           <div class="result-area">
             <div class="result-banner">
               <strong>✦ コピーして貼り付けよう</strong> → ChatGPT・Gemini・Claude
@@ -699,7 +713,7 @@
               <option value="自信を持って積極的">積極的（自信あり）</option>
             </select>
           </div>
-          <button class="generate-btn">✦ プロンプト生成</button>
+          <button class="generate-btn">⚔ 工房で生成する</button>
           <div class="result-area">
             <div class="result-banner">
               <strong>✦ コピーして貼り付けよう</strong> → ChatGPT・Gemini・Claude
@@ -728,8 +742,8 @@
   <!-- ━━━ TAB: 占い副業 ━━━ -->
   <section id="tab-fortune" class="tab-panel" data-tab="fortune">
     <div class="section-header">
-      <div class="section-title">🔮 占い副業専門プロンプト</div>
-      <div class="section-desc">ココナラ・SNSで売れる占い師になるためのプロ級プロンプト</div>
+      <div class="section-title">🔮 占術工房</div>
+      <div class="section-desc">ココナラ・SNSで指名される占い師になるための鑑定書・商品ページ・集客文のプロ級プロンプト。</div>
     </div>
     <div class="tools-grid">
 
@@ -793,7 +807,7 @@
               </select>
             </div>
           </div>
-          <button class="generate-btn">✦ プロンプト生成</button>
+          <button class="generate-btn">⚔ 工房で生成する</button>
           <div class="result-area">
             <div class="result-banner">
               <strong>✦ コピーして貼り付けよう</strong> → ChatGPT・Gemini・Claude
@@ -874,7 +888,7 @@
               <option value="10,000円以上">10,000円以上（高額）</option>
             </select>
           </div>
-          <button class="generate-btn">✦ プロンプト生成</button>
+          <button class="generate-btn">⚔ 工房で生成する</button>
           <div class="result-area">
             <div class="result-banner">
               <strong>✦ コピーして貼り付けよう</strong> → ChatGPT・Gemini・Claude
@@ -929,7 +943,7 @@
             <label>ターゲット顧客層 *</label>
             <input type="text" name="target" placeholder="例: 恋愛で悩む20〜30代女性">
           </div>
-          <button class="generate-btn">✦ プロンプト生成</button>
+          <button class="generate-btn">⚔ 工房で生成する</button>
           <div class="result-area">
             <div class="result-banner">
               <strong>✦ コピーして貼り付けよう</strong> → ChatGPT・Gemini・Claude
@@ -958,8 +972,8 @@
   <!-- ━━━ TAB: SNS特化 ━━━ -->
   <section id="tab-sns" class="tab-panel" data-tab="sns">
     <div class="section-header">
-      <div class="section-title">✨ SNS特化プロンプト</div>
-      <div class="section-desc">X・Threads・Instagramでバズる投稿とプロフィールを最大化するプロンプト</div>
+      <div class="section-title">✨ SNSバズ工房</div>
+      <div class="section-desc">X・Threads・Instagram でエンゲージメントが跳ねる投稿文・バイオ・プロフィールのプロ級プロンプト。</div>
     </div>
     <div class="tools-grid">
 
@@ -1022,7 +1036,7 @@
               <option value="280字以内" selected>280字以内（標準）</option>
             </select>
           </div>
-          <button class="generate-btn">✦ プロンプト生成</button>
+          <button class="generate-btn">⚔ 工房で生成する</button>
           <div class="result-area">
             <div class="result-banner">
               <strong>✦ コピーして貼り付けよう</strong> → ChatGPT・Gemini・Claude
@@ -1085,7 +1099,7 @@
             <label>ターゲットフォロワー *</label>
             <input type="text" name="audience" placeholder="例: 副業に興味ある20〜30代会社員">
           </div>
-          <button class="generate-btn">✦ プロンプト生成</button>
+          <button class="generate-btn">⚔ 工房で生成する</button>
           <div class="result-area">
             <div class="result-banner">
               <strong>✦ コピーして貼り付けよう</strong> → ChatGPT・Gemini・Claude
@@ -1152,7 +1166,7 @@
               </select>
             </div>
           </div>
-          <button class="generate-btn">✦ プロンプト生成</button>
+          <button class="generate-btn">⚔ 工房で生成する</button>
           <div class="result-area">
             <div class="result-banner">
               <strong>✦ コピーして貼り付けよう</strong> → ChatGPT・Gemini・Claude
@@ -1211,7 +1225,7 @@
             <label>ターゲットフォロワー *</label>
             <input type="text" name="target" placeholder="例: 副業で月5万円以上稼ぎたい会社員">
           </div>
-          <button class="generate-btn">✦ プロンプト生成</button>
+          <button class="generate-btn">⚔ 工房で生成する</button>
           <div class="result-area">
             <div class="result-banner">
               <strong>✦ コピーして貼り付けよう</strong> → ChatGPT・Gemini・Claude
@@ -1238,6 +1252,33 @@
 
 </main>
 
+<!-- ═══ GUEST USAGE BADGE ═══ -->
+<!-- 未ログイン時のみ表示: 本日の残り生成回数バッジ -->
+<div id="guestUsageBadge" style="display:none" title="ゲスト利用残回数">
+  <div class="guest-badge-icon">🎯</div>
+  <div class="guest-badge-text">残り <span class="guest-remaining">3</span> 回</div>
+  <div class="guest-badge-sub">ゲスト利用</div>
+</div>
+
+<!-- ═══ GUEST LIMIT MODAL ═══ -->
+<div class="guest-limit-overlay" id="guestLimitModal">
+  <div class="guest-limit-modal">
+    <div class="guest-limit-icon">⚔</div>
+    <h2 class="guest-limit-title">本日の無料枠を使い切りました</h2>
+    <p class="guest-limit-desc">
+      ゲストは1日3回まで工房を利用できます。<br>
+      <strong>プロンプトギルドに参加</strong>すると、<br>
+      制限なしで全工房が使えます。<br>
+      保存・広場への投稿・レベル成長も解放されます。
+    </p>
+    <div class="guest-limit-actions">
+      <a href="/register" class="guest-limit-join">⚔ ギルドに参加する（無料）</a>
+      <button class="guest-limit-close" onclick="document.getElementById('guestLimitModal').classList.remove('show')">あとで</button>
+    </div>
+    <p style="font-size:0.72rem;color:var(--text-muted);margin-top:16px">明日また3回無料で試せます</p>
+  </div>
+</div>
+
 <!-- ═══ HISTORY PANEL ═══ -->
 <button class="history-toggle" id="historyToggle" title="プロンプト履歴">
   📋
@@ -1245,11 +1286,11 @@
 </button>
 <div class="history-panel" id="historyPanel">
   <div class="history-panel-header">
-    <h3>📋 保存済みプロンプト</h3>
+    <h3>⭐ 保管庫</h3>
     <button class="history-clear-btn" id="historyClearBtn">すべて削除</button>
   </div>
   <div class="history-list" id="historyList">
-    <div class="history-empty">まだ保存されたプロンプトがありません<br>⭐ 保存ボタンで追加しよう</div>
+    <div class="history-empty">保管庫はまだ空です<br>⭐ 保存ボタンでプロンプトを保管しよう</div>
   </div>
 </div>
 
@@ -1261,6 +1302,7 @@
 <script src="/static/js/core/config.js"></script>
 <script src="/static/js/core/api.js"></script>
 <script src="/static/js/core/storage.js"></script>
+<script src="/static/js/core/guest.js"></script>
 <script src="/static/js/app.js"></script>
 <script src="/static/js/components/enhance.js"></script>
 <script src="/static/data/examples.js"></script>
@@ -1268,6 +1310,7 @@
   // config.js で window.Config が設定された後に初期化
   document.addEventListener('DOMContentLoaded', () => {
     if (window.Config) window.Config.init();
+    if (window.GuestUsage) window.GuestUsage.init();
   });
 </script>
 <script>
@@ -1281,12 +1324,15 @@
   fetch('/api/auth/me', { credentials: 'include' })
     .then(r => r.ok ? r.json() : null)
     .then(user => {
+      window._pguildLoggedIn = !!user;
+      if (window.GuestUsage) window.GuestUsage._updateBadge();
       if (user) {
         const isAdmin = user.role === 'admin';
         nav.innerHTML =
           `<span class="auth-user-name">${esc(user.display_name)}</span>` +
+          `<a href="/square" class="auth-nav-btn outline" style="font-size:0.8rem">⚔ 広場</a>` +
           `<a href="/mypage" class="auth-nav-btn outline">マイページ</a>` +
-          (isAdmin ? `<a href="/admin" class="auth-nav-btn outline" style="color:var(--accent-gold);border-color:rgba(251,191,36,0.4)">管理</a>` : '') +
+          (isAdmin ? `<a href="/admin" class="auth-nav-btn outline" style="color:var(--accent-gold);border-color:rgba(251,191,36,0.4)">管理本部</a>` : '') +
           `<button class="auth-nav-btn outline" id="indexLogoutBtn">ログアウト</button>`;
         document.getElementById('indexLogoutBtn').addEventListener('click', async () => {
           await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
@@ -1294,11 +1340,11 @@
         });
       } else {
         nav.innerHTML =
-          `<a href="/login" class="auth-nav-btn outline">ログイン</a>` +
-          `<a href="/register" class="auth-nav-btn primary">新規登録</a>`;
+          `<a href="/login" class="auth-nav-btn outline">入館する</a>` +
+          `<a href="/register" class="auth-nav-btn primary">⚔ ギルドに参加</a>`;
       }
     })
-    .catch(() => {}); // 非ログイン状態は無視
+    .catch(() => { window._pguildLoggedIn = false; }); // 非ログイン状態
 
   function esc(s) {
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>新規登録 — プロンプトギルド</title>
+  <title>ギルド参加申請 — プロンプトギルド</title>
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
@@ -22,17 +22,24 @@
 <main class="auth-main">
   <div class="auth-card" style="max-width:540px">
     <div id="successView" style="display:none;text-align:center;padding:20px 0">
-      <div style="font-size:2.5rem;margin-bottom:16px">🎉</div>
-      <h2 style="color:var(--text-primary);margin-bottom:12px">登録完了しました！</h2>
+      <div style="font-size:2.5rem;margin-bottom:16px">⚔</div>
+      <h2 style="color:var(--text-primary);margin-bottom:12px">ギルド参加申請が完了しました！</h2>
       <p id="successMsg" style="color:var(--text-secondary);margin-bottom:28px;line-height:1.6"></p>
       <a href="/login" class="auth-submit-btn" style="display:inline-block;padding:12px 32px;text-decoration:none;width:auto">
-        ログインページへ
+        入館する（ログイン）
       </a>
     </div>
 
     <div id="formView">
-      <h1 class="auth-title">新規登録</h1>
-      <p class="auth-desc">SNSアカウント情報で会員登録できます</p>
+      <div class="auth-guild-badge" style="text-align:center;margin-bottom:8px;font-size:1.6rem">⚔</div>
+      <h1 class="auth-title">ギルド参加申請</h1>
+      <p class="auth-desc">SNSアカウントでギルドへ参加できます</p>
+
+      <!-- ギルド参加特典バッジ -->
+      <div style="background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.25);border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:0.78rem;color:var(--text-secondary);line-height:1.7">
+        <span style="color:#fbbf24;font-weight:600">⚔ ギルド会員特典</span> —
+        保存無制限 / 広場への投稿 / レベル&称号 / 今後の特典解放
+      </div>
 
       <div id="authError" class="auth-error" style="display:none"></div>
 
@@ -59,9 +66,9 @@
         </div>
 
         <div class="field-group">
-          <label class="field-label" for="display_name">表示名 <span style="color:#f87171">*</span></label>
+          <label class="field-label" for="display_name">表示名（冒険者名） <span style="color:#f87171">*</span></label>
           <input id="display_name" type="text" name="display_name" class="field-input"
-                 placeholder="マイページや将来の投稿に表示される名前" required maxlength="100">
+                 placeholder="広場・マイページに表示される名前" required maxlength="100">
         </div>
 
         <div class="field-group">
@@ -83,17 +90,17 @@
                  placeholder="招待コードをお持ちの場合は入力" maxlength="20"
                  autocomplete="off" style="text-transform:uppercase;letter-spacing:0.08em">
           <p style="font-size:0.72rem;color:var(--text-muted);margin-top:4px">
-            招待コードがあると、コードによっては登録後すぐにご利用いただける場合があります
+            招待コードがあると、コードによっては申請後すぐにご利用いただける場合があります
           </p>
         </div>
 
         <!-- TODO: Phase 3+ メールアドレス入力欄を追加 -->
 
-        <button type="submit" class="auth-submit-btn" id="registerBtn">登録する</button>
+        <button type="submit" class="auth-submit-btn" id="registerBtn">⚔ ギルドに参加する</button>
       </form>
 
       <div class="auth-footer">
-        <p>すでにアカウントをお持ちの方は <a href="/login">ログイン</a></p>
+        <p>すでにギルド会員の方は <a href="/login">入館する</a></p>
       </div>
     </div>
   </div>
@@ -120,7 +127,7 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
   const errEl = document.getElementById('authError');
   errEl.style.display = 'none';
   btn.disabled = true;
-  btn.textContent = '登録中...';
+  btn.textContent = '申請中...';
 
   const fd = new FormData(e.target);
   const body = {};
@@ -157,7 +164,7 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
     errEl.style.display = 'block';
   } finally {
     btn.disabled = false;
-    btn.textContent = '登録する';
+    btn.textContent = '⚔ ギルドに参加する';
   }
 });
 </script>

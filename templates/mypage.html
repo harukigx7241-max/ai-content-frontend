@@ -58,14 +58,14 @@
       </div>
     </div>
     <a href="/" class="auth-nav-btn primary" style="font-size:0.82rem;padding:8px 18px;text-decoration:none">
-      ✦ プロンプト生成へ
+      ⚔ 工房へ戻る
     </a>
   </div>
 
   <!-- ── タブナビ ── -->
   <div class="admin-filter-bar mypage-tabs" role="tablist">
-    <button class="admin-filter-btn active" data-tab="profile"  role="tab">プロフィール</button>
-    <button class="admin-filter-btn"         data-tab="usage"   role="tab">利用状況</button>
+    <button class="admin-filter-btn active" data-tab="profile"  role="tab">冒険者情報</button>
+    <button class="admin-filter-btn"         data-tab="usage"   role="tab">活動記録</button>
     <button class="admin-filter-btn"         data-tab="settings" role="tab">設定</button>
     <!-- TODO: Phase N+ 以下のタブを追加 -->
     <!-- <button data-tab="posts">投稿管理</button> -->
@@ -82,7 +82,7 @@
     <!-- 表示モード -->
     <div class="mypage-card" id="profileViewCard">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
-        <div class="mypage-section-title" style="margin-bottom:0">プロフィール</div>
+        <div class="mypage-section-title" style="margin-bottom:0">冒険者情報</div>
         <button class="auth-nav-btn outline" style="font-size:0.78rem" id="editProfileBtn">編集する</button>
       </div>
       <div class="mypage-info-grid">
@@ -118,7 +118,7 @@
 
     <!-- 編集モード (初期非表示) -->
     <div class="mypage-card" id="profileEditCard" style="display:none">
-      <div class="mypage-section-title">プロフィールを編集</div>
+      <div class="mypage-section-title">冒険者情報を編集</div>
       <div id="profileEditError"   class="auth-error"   style="display:none;margin-bottom:14px"></div>
       <div id="profileEditSuccess" class="auth-success" style="display:none;margin-bottom:14px"></div>
       <form id="profileEditForm" class="auth-form" novalidate style="max-width:440px">
