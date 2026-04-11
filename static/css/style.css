@@ -2755,3 +2755,87 @@ kbd {
   flex-shrink: 0;
   margin-top: 1px;
 }
+
+/* ── Guild Guide Widget ────────────────────────────────────────── */
+.guild-guide-widget {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  width: 280px;
+  background: rgba(18,18,31,0.95);
+  border: 1px solid rgba(168,85,247,0.35);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 20px rgba(168,85,247,0.1);
+  z-index: 700;
+  overflow: hidden;
+  animation: gg-fadein 0.4s ease;
+  backdrop-filter: blur(12px);
+}
+@keyframes gg-fadein  { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+@keyframes gg-fadeout { from { opacity:1; transform:translateY(0); }  to { opacity:0; transform:translateY(12px); } }
+
+.gg-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: rgba(168,85,247,0.1);
+  border-bottom: 1px solid rgba(168,85,247,0.15);
+  cursor: pointer;
+}
+.gg-avatar { font-size: 1.2rem; }
+.gg-name   { font-size: 0.78rem; font-weight: 700; color: #c084fc; flex: 1; }
+.gg-toggle {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+  transition: var(--transition);
+}
+.gg-toggle:hover { color: var(--text-primary); }
+.gg-body { padding: 12px 14px; }
+.gg-text {
+  font-size: 0.79rem;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  margin: 0 0 10px;
+  transition: opacity 0.2s;
+  min-height: 60px;
+}
+.gg-footer {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.gg-next {
+  font-size: 0.72rem;
+  padding: 4px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(168,85,247,0.3);
+  background: rgba(168,85,247,0.08);
+  color: #c084fc;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: inherit;
+}
+.gg-next:hover { background: rgba(168,85,247,0.18); }
+.gg-dismiss {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 6px;
+  font-family: inherit;
+  transition: var(--transition);
+}
+.gg-dismiss:hover { color: var(--text-primary); }
+/* Push guest usage badge up when guide is visible */
+#guestUsageBadge { bottom: 170px; }
+@media (max-width: 639px) {
+  .guild-guide-widget { display: none; }
+  #guestUsageBadge { bottom: 90px; }
+}
