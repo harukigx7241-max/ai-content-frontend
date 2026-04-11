@@ -72,7 +72,7 @@
   <h4>🔗 共有されたプロンプト</h4>
   <pre id="sharedPreview"></pre>
   <div class="shared-banner-actions">
-    <button class="copy-btn" id="sharedCopyBtn" style="background:rgba(52,211,153,0.15);border:1px solid rgba(52,211,153,0.3);color:#34d399;">コピー</button>
+    <button class="copy-btn" id="sharedCopyBtn">コピー</button>
     <button onclick="document.getElementById('sharedBanner').classList.remove('show')" style="background:var(--glass-fill);border:1px solid var(--glass-border);color:var(--text-secondary);">閉じる</button>
   </div>
 </div>
@@ -109,24 +109,24 @@
 
 <!-- ═══ HERO ═══ -->
 <section class="hero">
-  <div class="hero-eyebrow">⚔ PROMPT GUILD ✦ プロンプト職人の工房</div>
+  <div class="hero-eyebrow">⚔ ようこそ、プロンプトギルドへ ✦</div>
   <h1 class="hero-title">
-    生成する、育てる、共有する。<br>
-    <span class="gradient-text">プロンプト職人のギルドへ</span>
+    AIプロンプトを鍛える、<br>
+    <span class="gradient-text">職人たちの工房へ。</span>
   </h1>
-  <p class="hero-sub">専門家役割付きの高精度プロンプトを工房で生成。保存して鍛え、ギルド広場で仲間と共有できる。</p>
+  <p class="hero-sub">専門家役割付きの高品質プロンプトを4つの工房で生成。<br class="hero-br">保存して育て、ギルド広場で仲間と共有しよう。</p>
   <div class="hero-cta-group">
-    <button class="hero-cta-secondary" onclick="document.querySelector('.tab-content-area').scrollIntoView({behavior:'smooth'})">
-      ゲストで試す <span class="hero-cta-limit">（1日3回まで）</span>
+    <button class="hero-cta-secondary" onclick="document.querySelector('.hero-workshop-guide').scrollIntoView({behavior:'smooth'})">
+      工房を見てみる <span class="hero-cta-limit">（無料・登録不要）</span>
     </button>
     <a href="/register" class="hero-cta-primary">
       ⚔ ギルドに参加する <span class="hero-cta-free">無料</span>
     </a>
   </div>
   <div class="hero-benefits">
-    <span class="hero-benefit-item">🔓 保存無制限</span>
-    <span class="hero-benefit-item">🌐 広場への投稿</span>
-    <span class="hero-benefit-item">⭐ レベル・称号</span>
+    <span class="hero-benefit-item">🔓 生成・保存 無制限</span>
+    <span class="hero-benefit-item">🌐 ギルド広場へ投稿</span>
+    <span class="hero-benefit-item">⭐ ランク・称号</span>
     <span class="hero-benefit-item">🎁 今後の特典解放</span>
   </div>
   <div class="hero-ai-badge">
@@ -137,6 +137,36 @@
     に貼り付けて使おう
   </div>
 </section>
+
+<!-- ═══ 工房ガイド (受付案内板) ═══ -->
+<div class="hero-workshop-guide">
+  <div class="hwg-inner">
+    <p class="hwg-lead">⚒️ どの工房に行く？</p>
+    <div class="hwg-grid">
+      <button class="hwg-card" onclick="App.switchTab('note'); document.querySelector('.tab-content-area').scrollIntoView({behavior:'smooth'})">
+        <span class="hwg-icon">📝</span>
+        <strong class="hwg-name">販売工房</strong>
+        <span class="hwg-desc">note・tips・Brain<br>有料コンテンツ</span>
+      </button>
+      <button class="hwg-card" onclick="App.switchTab('cw'); document.querySelector('.tab-content-area').scrollIntoView({behavior:'smooth'})">
+        <span class="hwg-icon">💼</span>
+        <strong class="hwg-name">営業工房</strong>
+        <span class="hwg-desc">クラウドワークス<br>提案文・プロフィール</span>
+      </button>
+      <button class="hwg-card" onclick="App.switchTab('fortune'); document.querySelector('.tab-content-area').scrollIntoView({behavior:'smooth'})">
+        <span class="hwg-icon">🔮</span>
+        <strong class="hwg-name">占術工房</strong>
+        <span class="hwg-desc">ココナラ・鑑定書<br>占い師向け</span>
+      </button>
+      <button class="hwg-card" onclick="App.switchTab('sns'); document.querySelector('.tab-content-area').scrollIntoView({behavior:'smooth'})">
+        <span class="hwg-icon">✨</span>
+        <strong class="hwg-name">SNS工房</strong>
+        <span class="hwg-desc">X・Instagram<br>Threads・プロフ</span>
+      </button>
+    </div>
+    <p class="hwg-sub">▼ 工房を選んでスクロールするか、上のタブで切り替えられます</p>
+  </div>
+</div>
 
 <!-- ═══ MAIN CONTENT ═══ -->
 <main class="tab-content-area">
