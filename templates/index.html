@@ -80,10 +80,10 @@
 <!-- ═══ HEADER ═══ -->
 <header class="site-header">
   <div class="header-inner">
-    <div class="logo">
+    <a href="/" class="logo" style="text-decoration:none">
       <span class="logo-icon">✦</span>
       <span class="logo-text">プロンプトギルド</span>
-    </div>
+    </a>
     <nav class="tab-nav" role="tablist">
       <button class="tab-btn active" data-tab="note" role="tab">
         <span class="tab-icon">📝</span>
@@ -104,8 +104,48 @@
     </nav>
     <!-- 認証ナビ (ENABLE_AUTH_SYSTEM=true 時に JS で動的に挿入) -->
     <div class="auth-nav" id="authNav"></div>
+    <!-- ハンバーガーボタン (モバイルのみ表示) -->
+    <button class="hamburger-btn" id="hamburgerBtn" aria-label="メニューを開く" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
   </div>
 </header>
+
+<!-- ═══ モバイルドロワー ═══ -->
+<div class="mobile-drawer" id="mobileDrawer" role="dialog" aria-label="メニュー" aria-hidden="true">
+  <div class="mobile-drawer-user" id="mobileDrawerUser"></div>
+  <div id="mobileDrawerNav"></div>
+</div>
+
+<!-- ═══ モバイルボトムナビ ═══ -->
+<nav class="mobile-bottom-nav" id="mobileBottomNav" aria-label="ボトムナビ">
+  <div class="mobile-bottom-nav-inner">
+    <button class="mbn-btn active" id="mbnNote" onclick="App.switchTab('note');App.updateBottomNav('note')">
+      <span class="mbn-icon">📝</span>
+      <span class="mbn-label">販売</span>
+    </button>
+    <button class="mbn-btn" id="mbnCw" onclick="App.switchTab('cw');App.updateBottomNav('cw')">
+      <span class="mbn-icon">💼</span>
+      <span class="mbn-label">営業</span>
+    </button>
+    <button class="mbn-btn" id="mbnFortune" onclick="App.switchTab('fortune');App.updateBottomNav('fortune')">
+      <span class="mbn-icon">🔮</span>
+      <span class="mbn-label">占術</span>
+    </button>
+    <button class="mbn-btn" id="mbnSns" onclick="App.switchTab('sns');App.updateBottomNav('sns')">
+      <span class="mbn-icon">✨</span>
+      <span class="mbn-label">SNS</span>
+    </button>
+    <a href="/square" class="mbn-btn" id="mbnSquare">
+      <span class="mbn-icon">⚔</span>
+      <span class="mbn-label">広場</span>
+    </a>
+    <a href="/mypage" class="mbn-btn" id="mbnMypage">
+      <span class="mbn-icon">👤</span>
+      <span class="mbn-label">冒険者</span>
+    </a>
+  </div>
+</nav>
 
 <!-- ═══ HERO ═══ -->
 <section class="hero">
@@ -1422,8 +1462,9 @@
     .then(user => {
       window._pguildLoggedIn = !!user;
       if (window.GuestUsage) window.GuestUsage._updateBadge();
+      const isAdmin = user && (user.role === 'admin' || user.role === 'headquarters');
       if (user) {
-        const isAdmin = user.role === 'admin';
+        // デスクトップヘッダー
         nav.innerHTML =
           `<span class="auth-user-name">${esc(user.display_name)}</span>` +
           `<a href="/square" class="auth-nav-btn outline" style="font-size:0.8rem">⚔ ギルド広場</a>` +
@@ -1434,9 +1475,30 @@
           await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
           location.reload();
         });
+        // モバイルドロワー
+        const drawerUser = document.getElementById('mobileDrawerUser');
+        const drawerNav  = document.getElementById('mobileDrawerNav');
+        if (drawerUser) drawerUser.textContent = `⚔ ${esc(user.display_name)}`;
+        if (drawerNav) {
+          drawerNav.innerHTML =
+            `<a href="/square"  class="auth-nav-btn outline">⚔ ギルド広場</a>` +
+            `<a href="/mypage"  class="auth-nav-btn outline">👤 マイページ</a>` +
+            (isAdmin ? `<a href="/admin" class="auth-nav-btn outline" style="color:var(--accent-gold)">🏛 管理本部</a>` : '') +
+            `<button class="auth-nav-btn outline" id="drawerLogoutBtn">ログアウト</button>`;
+          document.getElementById('drawerLogoutBtn').addEventListener('click', async () => {
+            await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+            location.reload();
+          });
+        }
       } else {
+        // デスクトップヘッダー
         nav.innerHTML =
           `<a href="/login" class="auth-nav-btn outline">入館する</a>` +
+          `<a href="/register" class="auth-nav-btn primary">⚔ ギルドに参加</a>`;
+        // モバイルドロワー
+        const drawerNav = document.getElementById('mobileDrawerNav');
+        if (drawerNav) drawerNav.innerHTML =
+          `<a href="/login"    class="auth-nav-btn outline">入館する</a>` +
           `<a href="/register" class="auth-nav-btn primary">⚔ ギルドに参加</a>`;
       }
     })

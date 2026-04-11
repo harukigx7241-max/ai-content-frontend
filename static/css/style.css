@@ -3237,3 +3237,213 @@ kbd {
   color: var(--text-muted);
 }
 
+/* ════════════════════════════════════════
+   Phase 13 — モバイル最適化
+   ════════════════════════════════════════ */
+
+/* ── ハンバーガーボタン ─────────────────────────────────────── */
+.hamburger-btn {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 44px;
+  height: 44px;
+  background: none;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  flex-shrink: 0;
+  padding: 0;
+}
+.hamburger-btn span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: var(--text-primary);
+  border-radius: 2px;
+  transition: transform 0.25s, opacity 0.25s;
+}
+.hamburger-btn.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburger-btn.open span:nth-child(2) { opacity: 0; }
+.hamburger-btn.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* ── モバイルドロワー（認証ナビ）───────────────────────────── */
+.mobile-drawer {
+  display: none;
+  position: fixed;
+  inset: 64px 0 0 0;
+  background: rgba(250,246,239,0.98);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  z-index: 99;
+  flex-direction: column;
+  padding: 24px 20px;
+  gap: 10px;
+  border-top: 1px solid var(--glass-border);
+  transform: translateX(100%);
+  transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+}
+.mobile-drawer.open {
+  transform: translateX(0);
+}
+.mobile-drawer .auth-nav-btn {
+  width: 100%;
+  text-align: center;
+  padding: 14px 20px;
+  font-size: 1rem;
+  border-radius: var(--radius-sm);
+}
+.mobile-drawer-user {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  padding: 6px 4px 14px;
+  border-bottom: 1px solid var(--glass-border);
+  margin-bottom: 6px;
+}
+
+/* ── モバイルボトムナビ ─────────────────────────────────────── */
+.mobile-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 98;
+  background: rgba(250,246,239,0.97);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid var(--glass-border);
+  padding: 6px 0 env(safe-area-inset-bottom, 0px);
+}
+.mobile-bottom-nav-inner {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  max-width: 480px;
+  margin: 0 auto;
+}
+.mbn-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 8px;
+  min-width: 56px;
+  min-height: 44px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: background 0.18s;
+  text-decoration: none;
+  color: var(--text-muted);
+}
+.mbn-btn.active,
+.mbn-btn:hover {
+  background: rgba(100,60,20,0.08);
+  color: var(--accent-wood);
+}
+.mbn-btn.active .mbn-icon {
+  transform: scale(1.18);
+}
+.mbn-icon {
+  font-size: 1.35rem;
+  line-height: 1;
+  transition: transform 0.18s;
+}
+.mbn-label {
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+/* ボトムナビ分のコンテンツ余白 */
+body.has-bottom-nav .tab-content-area,
+body.has-bottom-nav main {
+  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
+}
+
+/* ── 375px / 480px ブレークポイント強化 ────────────────────── */
+@media (max-width: 768px) {
+  .hamburger-btn { display: flex; }
+  .mobile-bottom-nav { display: block; }
+  /* ヘッダーの通常authナビを隠す */
+  .header-inner > .auth-nav { display: none; }
+  /* ヘッダーのタブナビも隠す（ボトムナビに移動） */
+  .header-inner > .tab-nav { display: none; }
+  /* ヘッダー高さ調整 */
+  .header-inner { height: 56px; gap: 8px; }
+  /* hero */
+  .hero-section { padding: 32px 16px 24px; }
+  .hero-title { font-size: 1.7rem; line-height: 1.35; }
+  .hero-sub { font-size: 0.88rem; }
+  .hero-cta { flex-direction: column; gap: 10px; }
+  .hero-cta .auth-nav-btn { width: 100%; text-align: center; padding: 14px; }
+  /* ツールカード */
+  .tools-grid { gap: 12px; }
+  .tool-card { padding: 18px 16px; }
+  /* 結果エリア */
+  .result-area { padding: 16px; }
+  .copy-banner { flex-direction: column; gap: 8px; text-align: center; }
+  /* 広場 */
+  .sq-container { padding: 0 12px; }
+  .sq-hero { flex-direction: column; gap: 12px; text-align: center; padding: 24px 0 16px; }
+  .sq-hero-title { font-size: 1.4rem; }
+  .sq-search-row { flex-direction: column; }
+  .sq-filter-row { flex-wrap: wrap; gap: 8px; }
+  .sq-filter-select { min-width: 0; flex: 1 1 140px; }
+  .sq-grid { grid-template-columns: 1fr; }
+  /* マイページ */
+  .mypage-container { padding: 16px 12px; }
+  .mypage-tab-bar { gap: 4px; }
+  .mypage-tab-btn { padding: 8px 10px; font-size: 0.78rem; }
+  .mypage-info-grid { grid-template-columns: 1fr; }
+  /* 管理 */
+  .admin-container { padding: 16px 12px; }
+  .admin-filter-bar { gap: 6px; flex-wrap: wrap; }
+  .admin-filter-btn { font-size: 0.78rem; padding: 7px 12px; }
+  .dash-stat-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 480px) {
+  .hero-title { font-size: 1.45rem; }
+  .hero-eyebrow { font-size: 0.75rem; }
+  .hwg-grid { grid-template-columns: repeat(2, 1fr); }
+  .hwg-card { padding: 12px 8px 10px; }
+  .hwg-icon { font-size: 1.3rem; }
+  .hwg-name { font-size: 0.78rem; }
+  .tab-content-area { padding: 16px 10px 80px; }
+  .tool-card-title { font-size: 1rem; }
+  .field-input, .field-select, select.field-input {
+    font-size: 16px; /* iOS zoom 防止 */
+  }
+  .mypage-card { padding: 18px 14px; }
+  .sq-featured-grid { grid-template-columns: 1fr; }
+  .dash-stat-grid { grid-template-columns: 1fr; }
+  .auth-nav-btn { padding: 9px 14px; font-size: 0.82rem; }
+}
+
+@media (max-width: 375px) {
+  .hero-title { font-size: 1.3rem; }
+  .logo-text { font-size: 0.9rem; }
+  .mbn-label { font-size: 0.58rem; }
+  .mbn-btn { min-width: 44px; }
+}
+
+/* タッチターゲット保証（44px以上） */
+button, a.auth-nav-btn, .tab-btn, .sq-sort-btn, .sq-page-btn,
+.mypage-tab-btn, .admin-filter-btn, .copy-btn, .save-btn,
+input[type="checkbox"], input[type="radio"] {
+  min-height: 44px;
+}
+input[type="checkbox"], input[type="radio"] {
+  min-width: 44px;
+  min-height: 44px;
+}
+/* ただしインラインの小ボタンは除外 */
+.sq-sort-btn, .sq-page-btn, .gg-next, .gg-dismiss, .gg-toggle {
+  min-height: 36px;
+}
+

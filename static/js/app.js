@@ -29,6 +29,14 @@ const App = {
     if (panel) panel.classList.add('active');
     // タブ切替音
     if (window.Effects) Effects.play('click');
+    // ボトムナビ同期
+    this.updateBottomNav(tabId);
+  },
+
+  updateBottomNav(tabId) {
+    const map = { note: 'mbnNote', cw: 'mbnCw', fortune: 'mbnFortune', sns: 'mbnSns' };
+    Object.values(map).forEach(id => document.getElementById(id)?.classList.remove('active'));
+    if (map[tabId]) document.getElementById(map[tabId])?.classList.add('active');
   },
 
   // ═══════════════════════════════════════════
@@ -812,7 +820,50 @@ const App = {
     this.renderHistory();
     if (window.Enhance) window.Enhance.init(); // Phase 1: enhance panel
     if (window.Storage) window.Storage.init(); // Phase 1: form auto-save
-  }
+    this.initMobileMenu();
+    document.body.classList.add('has-bottom-nav');
+  },
+
+  // ═══════════════════════════════════════════
+  // Mobile Hamburger + Drawer
+  // ═══════════════════════════════════════════
+  initMobileMenu() {
+    const btn    = document.getElementById('hamburgerBtn');
+    const drawer = document.getElementById('mobileDrawer');
+    if (!btn || !drawer) return;
+
+    btn.addEventListener('click', () => {
+      const isOpen = drawer.classList.toggle('open');
+      btn.classList.toggle('open', isOpen);
+      btn.setAttribute('aria-expanded', isOpen);
+      drawer.setAttribute('aria-hidden', !isOpen);
+      document.body.style.overflow = isOpen ? 'hidden' : '';
+      if (window.Effects) Effects.play(isOpen ? 'open' : 'close');
+    });
+
+    // ドロワー外タップで閉じる
+    document.addEventListener('click', e => {
+      if (drawer.classList.contains('open') &&
+          !drawer.contains(e.target) && !btn.contains(e.target)) {
+        drawer.classList.remove('open');
+        btn.classList.remove('open');
+        btn.setAttribute('aria-expanded', 'false');
+        drawer.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+      }
+    });
+
+    // Esc で閉じる
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && drawer.classList.contains('open')) {
+        drawer.classList.remove('open');
+        btn.classList.remove('open');
+        btn.setAttribute('aria-expanded', 'false');
+        drawer.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+      }
+    });
+  },
 };
 
 document.addEventListener('DOMContentLoaded', () => App.init());

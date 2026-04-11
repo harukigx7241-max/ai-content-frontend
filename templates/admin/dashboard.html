@@ -17,12 +17,24 @@
       <span class="logo-text">プロンプトギルド</span>
     </a>
     <div class="auth-nav">
-      <span class="auth-user-name" style="color:var(--accent-gold)">管理者: {{ user.display_name }}</span>
+      <span class="auth-user-name" style="color:var(--accent-gold)">🏛 {{ user.display_name }}</span>
+      <a href="/"       class="auth-nav-btn outline">⚔ 工房</a>
       <a href="/mypage" class="auth-nav-btn outline">マイページ</a>
       <button class="auth-nav-btn outline" id="logoutBtn">ログアウト</button>
     </div>
+    <button class="hamburger-btn" id="hamburgerBtn" aria-label="メニューを開く" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
   </div>
 </header>
+
+<!-- モバイルドロワー -->
+<div class="mobile-drawer" id="mobileDrawer" aria-hidden="true">
+  <div class="mobile-drawer-user" style="color:var(--accent-gold)">🏛 管理者: {{ user.display_name }}</div>
+  <a href="/"       class="auth-nav-btn outline">⚔ 工房</a>
+  <a href="/mypage" class="auth-nav-btn outline">👤 マイページ</a>
+  <button class="auth-nav-btn outline" id="drawerLogoutBtn">ログアウト</button>
+</div>
 
 <!-- ユーザー詳細モーダル -->
 <div id="userDetailOverlay" class="dash-modal-overlay" style="display:none" onclick="closeUserDetail(event)">
@@ -897,10 +909,35 @@ function fmtDate(iso) {
   return new Date(iso).toLocaleDateString('ja-JP', {year:'numeric', month:'2-digit', day:'2-digit'});
 }
 
-document.getElementById('logoutBtn').addEventListener('click', async () => {
+document.getElementById('logoutBtn')?.addEventListener('click', async () => {
   await fetch('/api/auth/logout', { method: 'POST' });
   location.href = '/';
 });
+document.getElementById('drawerLogoutBtn')?.addEventListener('click', async () => {
+  await fetch('/api/auth/logout', { method: 'POST' });
+  location.href = '/';
+});
+
+// ── モバイルハンバーガーメニュー ─────────────────────────────────
+(function() {
+  const btn    = document.getElementById('hamburgerBtn');
+  const drawer = document.getElementById('mobileDrawer');
+  if (!btn || !drawer) return;
+  btn.addEventListener('click', () => {
+    const isOpen = drawer.classList.toggle('open');
+    btn.classList.toggle('open', isOpen);
+    btn.setAttribute('aria-expanded', isOpen);
+    drawer.setAttribute('aria-hidden', !isOpen);
+    document.body.style.overflow = isOpen ? 'hidden' : '';
+  });
+  document.addEventListener('click', e => {
+    if (drawer.classList.contains('open') && !drawer.contains(e.target) && !btn.contains(e.target)) {
+      drawer.classList.remove('open'); btn.classList.remove('open');
+      btn.setAttribute('aria-expanded','false'); drawer.setAttribute('aria-hidden','true');
+      document.body.style.overflow = '';
+    }
+  });
+})();
 
 // ── ユーザー詳細モーダル ──────────────────────────────────────────
 async function openUserDetail(userId) {

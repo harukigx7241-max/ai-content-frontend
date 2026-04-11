@@ -22,7 +22,7 @@
         <span class="auth-user-name">{{ user.display_name }}</span>
         <a href="/" class="auth-nav-btn outline">⚔ 工房</a>
         <a href="/mypage" class="auth-nav-btn outline">マイページ</a>
-        {% if user.role in ('admin',) %}
+        {% if user.role in ('admin','headquarters') %}
           <a href="/admin" class="auth-nav-btn outline" style="color:var(--accent-gold);border-color:rgba(251,191,36,0.4)">管理本部</a>
         {% endif %}
         <button class="auth-nav-btn outline" id="logoutBtn">ログアウト</button>
@@ -32,8 +32,28 @@
         <a href="/register" class="auth-nav-btn primary">⚔ ギルドに参加</a>
       {% endif %}
     </div>
+    <button class="hamburger-btn" id="hamburgerBtn" aria-label="メニューを開く" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
   </div>
 </header>
+
+<!-- モバイルドロワー -->
+<div class="mobile-drawer" id="mobileDrawer" aria-hidden="true">
+  {% if user %}
+    <div class="mobile-drawer-user">⚔ {{ user.display_name }}</div>
+    <a href="/"       class="auth-nav-btn outline">⚔ 工房</a>
+    <a href="/mypage" class="auth-nav-btn outline">👤 マイページ</a>
+    {% if user.role in ('admin','headquarters') %}
+      <a href="/admin" class="auth-nav-btn outline" style="color:var(--accent-gold)">🏛 管理本部</a>
+    {% endif %}
+    <button class="auth-nav-btn outline" id="logoutBtn">ログアウト</button>
+  {% else %}
+    <a href="/"        class="auth-nav-btn outline">⚔ 工房</a>
+    <a href="/login"   class="auth-nav-btn outline">入館する</a>
+    <a href="/register" class="auth-nav-btn primary">⚔ ギルドに参加</a>
+  {% endif %}
+</div>
 
 <main class="sq-container">
 
@@ -315,11 +335,38 @@ document.getElementById('clearFilterBtn').addEventListener('click', () => {
 });
 
 {% if user %}
-document.getElementById('logoutBtn').addEventListener('click', async () => {
+document.getElementById('logoutBtn')?.addEventListener('click', async () => {
   await fetch('/api/auth/logout', { method: 'POST' });
   location.href = '/';
 });
 {% endif %}
+
+// ── モバイルハンバーガーメニュー ────────────────────────────────
+(function() {
+  const btn    = document.getElementById('hamburgerBtn');
+  const drawer = document.getElementById('mobileDrawer');
+  if (!btn || !drawer) return;
+  btn.addEventListener('click', () => {
+    const isOpen = drawer.classList.toggle('open');
+    btn.classList.toggle('open', isOpen);
+    btn.setAttribute('aria-expanded', isOpen);
+    drawer.setAttribute('aria-hidden', !isOpen);
+    document.body.style.overflow = isOpen ? 'hidden' : '';
+  });
+  document.addEventListener('click', e => {
+    if (drawer.classList.contains('open') && !drawer.contains(e.target) && !btn.contains(e.target)) {
+      drawer.classList.remove('open'); btn.classList.remove('open');
+      btn.setAttribute('aria-expanded','false'); drawer.setAttribute('aria-hidden','true');
+      document.body.style.overflow = '';
+    }
+  });
+  {% if user %}
+  drawer.querySelector('#drawerLogoutBtn')?.addEventListener('click', async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    location.href = '/';
+  });
+  {% endif %}
+})();
 
 // ── 注目の工房ログ (人気トップ3) ────────────────────────────────
 async function loadFeatured() {
