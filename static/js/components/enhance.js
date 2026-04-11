@@ -59,7 +59,7 @@ const Enhance = {
       <div class="autocomplete-panel" style="display:none">
         <textarea
           class="autocomplete-hint-input"
-          placeholder="作りたいものをひとことで入力してください（例: 副業で月5万稼ぐnote記事）"
+          placeholder="作りたいものをひとことで入力してください（例: noteで月5万円稼ぐ方法）"
           rows="2"
         ></textarea>
         <div class="autocomplete-panel-footer">

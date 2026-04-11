@@ -160,7 +160,7 @@
             <span style="color:var(--text-muted);font-size:0.75rem">任意・500字以内・空欄で削除</span>
           </label>
           <textarea id="editBio" name="bio" class="field-input" rows="3"
-                    maxlength="500" placeholder="どんな副業をしているか、得意なことなど">{{ user.bio or '' }}</textarea>
+                    maxlength="500" placeholder="どんな活動・創作をしているか、得意なことなど">{{ user.bio or '' }}</textarea>
           <div style="text-align:right;font-size:0.72rem;color:var(--text-muted);margin-top:4px">
             <span id="bioCharCount">{{ (user.bio or '') | length }}</span>/500
           </div>
