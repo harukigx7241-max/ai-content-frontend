@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ログイン — プロンプトギルド</title>
+  <title>入館する — プロンプトギルド</title>
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
@@ -21,8 +21,9 @@
 
 <main class="auth-main">
   <div class="auth-card">
-    <h1 class="auth-title">ログイン</h1>
-    <p class="auth-desc">SNSアカウントとパスワードでログインできます</p>
+    <div class="auth-guild-badge" style="text-align:center;margin-bottom:8px;font-size:1.6rem">⚔</div>
+    <h1 class="auth-title">ギルドに入る</h1>
+    <p class="auth-desc">SNSアカウントで入館手続きを行います</p>
 
     <div id="authError" class="auth-error" style="display:none"></div>
 
@@ -54,11 +55,11 @@
                placeholder="パスワードを入力" required autocomplete="current-password">
       </div>
 
-      <button type="submit" class="auth-submit-btn" id="loginBtn">ログイン</button>
+      <button type="submit" class="auth-submit-btn" id="loginBtn">入館する</button>
     </form>
 
     <div class="auth-footer">
-      <p>まだアカウントをお持ちでない方は <a href="/register">新規登録</a></p>
+      <p>まだギルドに参加していない方は <a href="/register">⚔ ギルドに参加</a></p>
       <!-- TODO: Phase 3+ パスワードリセット導線を追加 -->
     </div>
   </div>
@@ -71,7 +72,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
   const errEl = document.getElementById('authError');
   errEl.style.display = 'none';
   btn.disabled = true;
-  btn.textContent = 'ログイン中...';
+  btn.textContent = '入館中...';
 
   const fd = new FormData(e.target);
   const body = Object.fromEntries(fd.entries());
@@ -98,7 +99,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     errEl.style.display = 'block';
   } finally {
     btn.disabled = false;
-    btn.textContent = 'ログイン';
+    btn.textContent = '入館する';
   }
 });
 </script>

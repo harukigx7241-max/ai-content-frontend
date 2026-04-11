@@ -226,6 +226,15 @@ const App = {
     const textarea   = card.querySelector('.result-textarea');
     const track      = card.querySelector('.progress-bar-track');
 
+    // ゲスト利用制限チェック
+    if (window.GuestUsage) {
+      const g = window.GuestUsage.checkLimit();
+      if (!g.allowed) {
+        window.GuestUsage.showLimitModal();
+        return;
+      }
+    }
+
     // Validate required text inputs
     const textInputs = [...card.querySelectorAll('input[type="text"][name]')]
       .filter(el => !el.closest('.ai-mode-row'));
@@ -269,6 +278,9 @@ const App = {
 
       // Smooth scroll to result
       setTimeout(() => resultArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+
+      // ゲスト利用カウントアップ（ログイン済みは無視）
+      if (window.GuestUsage) window.GuestUsage.increment();
 
       this.showToast('プロンプト生成完了！コピーして使おう ✓', 'success');
 

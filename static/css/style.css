@@ -2472,3 +2472,155 @@ kbd {
   text-align: center;
   white-space: nowrap;
 }
+
+/* ══════════════════════════════════════════════════════
+   Guild Theme — Hero CTAs + Benefits + Guest System
+   ====================================================== */
+
+/* ── Hero CTA Group ── */
+.hero-cta-group {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 4px 0 16px;
+}
+.hero-cta-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 13px 30px;
+  background: linear-gradient(135deg,#fbbf24,#f59e0b);
+  border-radius: 100px;
+  color: #0a0a14;
+  font-weight: 700;
+  font-size: 0.92rem;
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  box-shadow: 0 0 24px rgba(251,191,36,0.35);
+  transition: var(--transition);
+}
+.hero-cta-primary:hover { opacity: 0.88; transform: translateY(-2px); box-shadow: 0 0 36px rgba(251,191,36,0.5); }
+.hero-cta-free {
+  font-size: 0.68rem;
+  background: rgba(0,0,0,0.18);
+  padding: 2px 7px;
+  border-radius: 100px;
+  letter-spacing: 0.04em;
+  font-weight: 600;
+}
+.hero-cta-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 13px 26px;
+  background: rgba(192,132,252,0.08);
+  border: 1px solid rgba(192,132,252,0.35);
+  border-radius: 100px;
+  color: #c084fc;
+  font-weight: 600;
+  font-size: 0.92rem;
+  cursor: pointer;
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  transition: var(--transition);
+}
+.hero-cta-secondary:hover { background: rgba(192,132,252,0.14); border-color: rgba(192,132,252,0.6); }
+.hero-cta-limit { font-size: 0.72rem; opacity: 0.65; font-weight: 400; }
+
+/* ── Hero Benefits Pills ── */
+.hero-benefits {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+.hero-benefit-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 11px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 100px;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.03em;
+}
+
+/* ── Guest Usage Badge ── */
+#guestUsageBadge {
+  position: fixed;
+  bottom: 90px;
+  right: 18px;
+  z-index: 800;
+  background: rgba(10,10,20,0.92);
+  border: 1px solid rgba(192,132,252,0.35);
+  backdrop-filter: blur(12px);
+  border-radius: 12px;
+  padding: 8px 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition);
+  min-width: 72px;
+}
+#guestUsageBadge:hover { border-color: rgba(192,132,252,0.6); }
+.guest-badge-icon { font-size: 1.05rem; margin-bottom: 2px; }
+.guest-badge-text { font-size: 0.75rem; color: var(--text-secondary); white-space: nowrap; }
+.guest-remaining { font-weight: 700; color: #c084fc; font-size: 0.88rem; }
+.guest-badge-sub { font-size: 0.62rem; color: var(--text-muted); margin-top: 1px; }
+#guestUsageBadge.exhausted { border-color: rgba(251,191,36,0.5); }
+#guestUsageBadge.exhausted .guest-remaining { color: #fbbf24; }
+
+/* ── Guest Limit Modal ── */
+.guest-limit-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 6000;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(8px);
+  align-items: center;
+  justify-content: center;
+}
+.guest-limit-overlay.show { display: flex; }
+.guest-limit-modal {
+  background: #12121f;
+  border: 1px solid rgba(251,191,36,0.3);
+  border-radius: 20px;
+  padding: 36px 32px;
+  max-width: 420px;
+  width: 92%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.7), 0 0 40px rgba(251,191,36,0.08);
+  animation: fadeInUp 0.25s ease;
+}
+.guest-limit-icon { font-size: 2.4rem; margin-bottom: 10px; }
+.guest-limit-title { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; }
+.guest-limit-desc { font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 24px; line-height: 1.7; }
+.guest-limit-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.guest-limit-join {
+  display: inline-block;
+  padding: 12px 28px;
+  background: linear-gradient(135deg,#fbbf24,#f59e0b);
+  border-radius: 100px;
+  color: #0a0a14;
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-decoration: none;
+  box-shadow: 0 0 20px rgba(251,191,36,0.3);
+  transition: var(--transition);
+}
+.guest-limit-join:hover { opacity: 0.88; transform: translateY(-1px); }
+.guest-limit-close {
+  padding: 12px 20px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 100px;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.guest-limit-close:hover { background: rgba(255,255,255,0.1); }
