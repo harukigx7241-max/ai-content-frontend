@@ -50,6 +50,15 @@
     {% endif %}
   </div>
 
+  <!-- ── 注目の工房ログ (人気トップ3) ────────────────────────── -->
+  <div id="featuredSection" class="sq-featured-section" style="display:none">
+    <div class="sq-featured-head">
+      <span class="sq-featured-title">🏅 注目の工房ログ</span>
+      <span class="sq-featured-sub">今週いいねが多いプロンプト</span>
+    </div>
+    <div id="featuredList" class="sq-featured-grid"></div>
+  </div>
+
   <!-- ── 検索・フィルター ──────────────────────────────────────── -->
   <div class="mypage-card sq-search-card">
     <div class="sq-search-row">
@@ -312,8 +321,35 @@ document.getElementById('logoutBtn').addEventListener('click', async () => {
 });
 {% endif %}
 
+// ── 注目の工房ログ (人気トップ3) ────────────────────────────────
+async function loadFeatured() {
+  try {
+    const res  = await fetch('/api/community/posts?sort=popular&per_page=3');
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!data.posts || data.posts.length === 0) return;
+    const sec  = document.getElementById('featuredSection');
+    const grid = document.getElementById('featuredList');
+    sec.style.display = '';
+    grid.innerHTML = data.posts.map(p => {
+      const catLabel = CAT_LABEL[p.category] || p.category;
+      const date     = new Date(p.created_at).toLocaleDateString('ja-JP');
+      return `
+<a href="/square/${p.id}" class="sq-featured-card" style="text-decoration:none">
+  <div class="sq-featured-card-head">
+    <span class="sq-cat-badge" data-cat="${esc(p.category)}">${esc(catLabel)}</span>
+    <span class="sq-featured-likes">❤️ ${p.like_count || 0}</span>
+  </div>
+  <div class="sq-featured-card-title">${esc(p.title)}</div>
+  <div class="sq-featured-card-foot">by ${esc(p.author_name)} · ${date}</div>
+</a>`;
+    }).join('');
+  } catch { /* silent */ }
+}
+
 // ── 初回ロード ────────────────────────────────────────────────────
 fetchPosts(1);
+loadFeatured();
 </script>
 </body>
 </html>

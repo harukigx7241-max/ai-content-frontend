@@ -88,6 +88,7 @@ const Effects = (() => {
   /* ── サウンド定義 ─────────────────────────────────────────────── */
   const SOUNDS = {
     click:    () => _tone([440],              0.05, 'sine',     0.08),
+    tab:      () => _tone([493],              0.04, 'triangle', 0.07),  // タブ切替: 軽い木音
     success:  () => _tone([523, 659, 784],    0.07, 'sine',     0.12),
     error:    () => _tone([330, 220],         0.10, 'square',   0.08),
     like:     () => _tone([523, 784],         0.07, 'sine',     0.11),
@@ -95,6 +96,8 @@ const Effects = (() => {
     copy:     () => _tone([660, 880],         0.06, 'sine',     0.10),
     level_up: () => _tone([523,659,784,1047], 0.09, 'sine',     0.14),
     post:     () => _tone([440, 554, 659],    0.08, 'sine',     0.11),
+    open:     () => _tone([349, 440],         0.06, 'triangle', 0.09),  // モーダル開く
+    close:    () => _tone([440, 349],         0.05, 'triangle', 0.07),  // モーダル閉じる
   };
 
   function play(name) {
@@ -116,7 +119,7 @@ const Effects = (() => {
     r.style.cssText = [
       'position:absolute',
       'border-radius:50%',
-      'background:rgba(168,85,247,0.3)',
+      'background:rgba(194,115,24,0.28)',   // 琥珀色リップル (ロッジテーマ)
       'pointer-events:none',
       `width:${size}px`,
       `height:${size}px`,
@@ -125,12 +128,25 @@ const Effects = (() => {
       'transform:scale(0)',
       'animation:pguild-ripple 0.5s ease-out forwards',
     ].join(';');
-    // overflow hidden が必要
     const prevPos = getComputedStyle(el).position;
     if (prevPos === 'static') el.style.position = 'relative';
     el.style.overflow = 'hidden';
     el.appendChild(r);
     r.addEventListener('animationend', () => r.remove(), { once: true });
+  }
+
+  /**
+   * XPバーをアニメーション付きで伸ばす
+   * @param {HTMLElement} barEl — .gami-bar-fill 要素
+   * @param {number}      pct   — 目標幅 (%)
+   */
+  function animateBar(barEl, pct) {
+    if (!barEl) return;
+    if (!animEnabled()) { barEl.style.width = `${pct}%`; return; }
+    barEl.style.width = '0%';
+    requestAnimationFrame(() => {
+      setTimeout(() => { barEl.style.width = `${pct}%`; }, 80);
+    });
   }
 
   /* ── CSS keyframes 注入 (1回のみ) ───────────────────────────── */
@@ -151,7 +167,7 @@ const Effects = (() => {
     }, { once: true });
   }
 
-  return { play, ripple, sfxEnabled, animEnabled, setSfx, setAnim, init };
+  return { play, ripple, animateBar, sfxEnabled, animEnabled, setSfx, setAnim, init };
 })();
 
 // 自動初期化

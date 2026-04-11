@@ -9,7 +9,8 @@
  *   - 閉じた状態は localStorage に保存 (セッション中は非表示)
  */
 const GuildGuide = (() => {
-  const STORAGE_KEY = 'pguild_guide_dismissed';
+  const STORAGE_KEY  = 'pguild_guide_dismissed';
+  const ENABLED_KEY  = 'pguild_guide_enabled';  // localStorage: 'false' → 非表示
 
   // ── ヒントデータ ──────────────────────────────────────────────
   const TIPS = {
@@ -136,8 +137,28 @@ const GuildGuide = (() => {
     try { sessionStorage.setItem(STORAGE_KEY, '1'); } catch {}
   }
 
+  /* ── 有効/無効設定 ──────────────────────────────────────────── */
+  function isEnabled() {
+    try { return localStorage.getItem(ENABLED_KEY) !== 'false'; } catch { return true; }
+  }
+
+  function setEnabled(val) {
+    try { localStorage.setItem(ENABLED_KEY, val ? 'true' : 'false'); } catch {}
+    const el = document.getElementById('guildGuide');
+    if (!val && el) {
+      el.style.animation = 'gg-fadeout 0.3s ease forwards';
+      setTimeout(() => { if (el) el.remove(); _el = null; }, 350);
+    } else if (val && !_el) {
+      try { sessionStorage.removeItem(STORAGE_KEY); } catch {}
+      _build();
+    }
+  }
+
   /* ── 初期化 ──────────────────────────────────────────────────── */
   function init() {
+    // 永続設定で無効化されていたら表示しない
+    if (!isEnabled()) return;
+
     // セッション中に非表示にされていたら表示しない
     try {
       if (sessionStorage.getItem(STORAGE_KEY)) return;
@@ -150,7 +171,7 @@ const GuildGuide = (() => {
     setTimeout(_build, 1200);
   }
 
-  return { init };
+  return { init, isEnabled, setEnabled };
 })();
 
 // 自動初期化

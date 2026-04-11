@@ -27,6 +27,8 @@ const App = {
     const panel = document.getElementById(`tab-${tabId}`);
     if (btn)   btn.classList.add('active');
     if (panel) panel.classList.add('active');
+    // タブ切替音
+    if (window.Effects) Effects.play('click');
   },
 
   // ═══════════════════════════════════════════

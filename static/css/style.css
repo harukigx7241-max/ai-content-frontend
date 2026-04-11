@@ -3169,3 +3169,71 @@ kbd {
   color: var(--text-muted);
 }
 
+/* ── 注目の工房ログ (sq-featured) ──────────────────────────────── */
+.sq-featured-section {
+  margin-bottom: 28px;
+}
+.sq-featured-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.sq-featured-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.sq-featured-sub {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+.sq-featured-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+@media (max-width: 680px) {
+  .sq-featured-grid { grid-template-columns: 1fr; }
+}
+.sq-featured-card {
+  display: block;
+  background: #fffdf8;
+  border: 1px solid rgba(100,60,20,0.18);
+  border-radius: var(--radius-sm);
+  padding: 16px 18px 14px;
+  box-shadow: 0 2px 10px rgba(100,60,20,0.08);
+  transition: var(--transition);
+  color: var(--text-primary);
+}
+.sq-featured-card:hover {
+  border-color: var(--accent-copper);
+  box-shadow: 0 6px 20px rgba(100,60,20,0.14);
+  transform: translateY(-2px);
+}
+.sq-featured-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.sq-featured-likes {
+  font-size: 0.8rem;
+  color: var(--accent-fortune);
+  font-weight: 600;
+}
+.sq-featured-card-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.45;
+  margin-bottom: 8px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.sq-featured-card-foot {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
