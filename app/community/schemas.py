@@ -119,10 +119,12 @@ class PostSummaryResponse(BaseModel):
     tags: Optional[str] = None
     visibility: str
     view_count: int = 0
+    like_count: int = 0
+    save_count: int = 0
+    user_liked: bool = False
+    user_saved: bool = False
     created_at: datetime
     is_own: bool = False
-    # TODO: Phase N+ like_count: int = 0
-    # TODO: Phase N+ save_count: int = 0
 
     model_config = {"from_attributes": True}
 

@@ -166,19 +166,40 @@
   </div>
   {% endif %}
 
-  <!-- ── 将来機能受け皿 ────────────────────────────────────────── -->
-  <div class="mypage-stub-card" aria-label="準備中" style="margin-top:0">
-    <div class="mypage-stub-header">
-      <span class="mypage-stub-icon">❤️</span>
-      <span class="mypage-stub-title">リアクション</span>
-      <span class="mypage-stub-badge">近日公開</span>
-    </div>
-    <div class="mypage-stub-body" style="flex-direction:row;gap:16px;flex-wrap:wrap">
-      <button class="sq-react-stub" disabled>❤️ いいね</button>
-      <button class="sq-react-stub" disabled>🔖 保存</button>
-      <button class="sq-react-stub" disabled>💬 コメント</button>
-      <!-- TODO: Phase N+ like / save / comment 本実装 -->
-    </div>
+  <!-- ── リアクション ─────────────────────────────────────────── -->
+  <div class="mypage-card sq-reaction-card">
+    {% if user %}
+      <button class="sq-react-btn{% if post.user_liked %} active{% endif %}"
+              id="likeBtn" data-type="like">
+        <span class="sq-react-icon">❤️</span>
+        <span class="sq-react-label">いいね</span>
+        <span class="sq-react-count" id="likeCount">{{ post.like_count or 0 }}</span>
+      </button>
+      <button class="sq-react-btn{% if post.user_saved %} active{% endif %}"
+              id="saveBtn" data-type="save">
+        <span class="sq-react-icon">🔖</span>
+        <span class="sq-react-label">保存</span>
+        <span class="sq-react-count" id="saveCount">{{ post.save_count or 0 }}</span>
+      </button>
+      <button class="sq-react-stub" disabled style="opacity:0.4;cursor:default">
+        💬 コメント <span style="font-size:0.7rem">近日</span>
+      </button>
+    {% else %}
+      <!-- ゲスト: カウント表示のみ、クリックでログインへ -->
+      <a href="/login?next=/square/{{ post.id }}" class="sq-react-btn" style="text-decoration:none">
+        <span class="sq-react-icon">❤️</span>
+        <span class="sq-react-label">いいね</span>
+        <span class="sq-react-count">{{ post.like_count or 0 }}</span>
+      </a>
+      <a href="/login?next=/square/{{ post.id }}" class="sq-react-btn" style="text-decoration:none">
+        <span class="sq-react-icon">🔖</span>
+        <span class="sq-react-label">保存</span>
+        <span class="sq-react-count">{{ post.save_count or 0 }}</span>
+      </a>
+      <button class="sq-react-stub" disabled style="opacity:0.4;cursor:default">
+        💬 コメント <span style="font-size:0.7rem">近日</span>
+      </button>
+    {% endif %}
   </div>
 
 </main>
@@ -271,6 +292,27 @@ document.getElementById('logoutBtn').addEventListener('click', async () => {
   await fetch('/api/auth/logout', { method: 'POST' });
   location.href = '/';
 });
+
+// ── いいね / 保存 トグル ─────────────────────────────────────────
+async function toggleReaction(type) {
+  const btn     = document.getElementById(type === 'like' ? 'likeBtn' : 'saveBtn');
+  const countEl = document.getElementById(type === 'like' ? 'likeCount' : 'saveCount');
+  if (!btn || btn.disabled) return;
+  btn.disabled = true;
+  try {
+    const res = await fetch(`/api/community/posts/${POST_ID}/${type}`, { method: 'POST' });
+    if (!res.ok) throw new Error('fail');
+    const data = await res.json();
+    countEl.textContent = data.count;
+    btn.classList.toggle('active', data.active);
+  } catch {
+    // silent fail — UX に影響なし
+  } finally {
+    btn.disabled = false;
+  }
+}
+document.getElementById('likeBtn').addEventListener('click', () => toggleReaction('like'));
+document.getElementById('saveBtn').addEventListener('click', () => toggleReaction('save'));
 {% endif %}
 </script>
 </body>

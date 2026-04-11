@@ -2624,3 +2624,83 @@ kbd {
   transition: var(--transition);
 }
 .guest-limit-close:hover { background: rgba(255,255,255,0.1); }
+
+/* ── Reaction Buttons (いいね / 保存) ──────────────────────────── */
+.sq-reaction-card {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: 14px 20px;
+}
+.sq-react-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border-radius: 24px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.88rem;
+  transition: var(--transition);
+  text-decoration: none;
+  font-family: inherit;
+}
+.sq-react-btn:hover {
+  border-color: rgba(168,85,247,0.45);
+  background: rgba(168,85,247,0.1);
+  color: var(--text-primary);
+  transform: translateY(-1px);
+}
+.sq-react-btn.active {
+  border-color: rgba(168,85,247,0.7);
+  background: rgba(168,85,247,0.18);
+  color: #d8b4fe;
+}
+.sq-react-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+  transform: none;
+}
+.sq-react-count {
+  font-size: 0.8rem;
+  font-weight: 600;
+  min-width: 16px;
+  text-align: center;
+}
+
+/* ── Square sort toggle ────────────────────────────────────────── */
+.sq-sort-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.sq-sort-btn {
+  padding: 6px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: inherit;
+}
+.sq-sort-btn.active,
+.sq-sort-btn:hover {
+  border-color: rgba(168,85,247,0.45);
+  background: rgba(168,85,247,0.12);
+  color: var(--text-primary);
+}
+.sq-sort-btn.active {
+  border-color: rgba(168,85,247,0.65);
+  color: #d8b4fe;
+}
+/* Like count on cards */
+.sq-card-likes {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}

@@ -8,9 +8,9 @@ app/community/service.py — 公開広場 サービス層
   - 詳細取得 (公開 or 本人の非公開)
   - 閲覧数インクリメント (view_count)
   - コピーアクション受け皿 (将来 use_count++)
+  - いいね / 保存 トグル (toggle_reaction)
 
 将来拡張:
-  TODO: Phase N+ like / save / comment のサービス関数
   TODO: Phase N+ use_count のインクリメント + CopyLog テーブル
   TODO: Phase N+ moderation_status によるフィルタリング
   TODO: Phase N+ ランキング (view_count / like_count 降順ソート)
@@ -24,7 +24,7 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
 from app.community.schemas import PostCreateRequest, PostUpdateRequest
-from app.db.models.post import CommunityPost
+from app.db.models.post import CommunityPost, PostReaction
 from app.db.models.user import User
 
 
@@ -32,7 +32,13 @@ def _now() -> datetime:
     return datetime.now(timezone.utc)
 
 
-def _to_summary_dict(post: CommunityPost, author_name: str, is_own: bool) -> dict:
+def _to_summary_dict(
+    post: CommunityPost,
+    author_name: str,
+    is_own: bool,
+    user_liked: bool = False,
+    user_saved: bool = False,
+) -> dict:
     return {
         "id":              post.id,
         "user_id":         post.user_id,
@@ -45,13 +51,23 @@ def _to_summary_dict(post: CommunityPost, author_name: str, is_own: bool) -> dic
         "tags":            post.tags,
         "visibility":      post.visibility,
         "view_count":      post.view_count,
+        "like_count":      post.like_count or 0,
+        "save_count":      post.save_count or 0,
+        "user_liked":      user_liked,
+        "user_saved":      user_saved,
         "created_at":      post.created_at,
         "is_own":          is_own,
     }
 
 
-def _to_detail_dict(post: CommunityPost, author_name: str, is_own: bool) -> dict:
-    d = _to_summary_dict(post, author_name, is_own)
+def _to_detail_dict(
+    post: CommunityPost,
+    author_name: str,
+    is_own: bool,
+    user_liked: bool = False,
+    user_saved: bool = False,
+) -> dict:
+    d = _to_summary_dict(post, author_name, is_own, user_liked, user_saved)
     d["prompt_body"] = post.prompt_body
     d["updated_at"]  = post.updated_at
     return d
@@ -89,18 +105,25 @@ def list_posts(
     page: int,
     per_page: int,
     current_user_id: Optional[int] = None,
+    sort: str = "new",
 ) -> dict:
     """
     公開投稿一覧を返す。
+    sort: "new" (新着順) | "popular" (いいね数降順)
     キーワード検索は title / description / tags に対して LIKE 検索。
     将来: full-text search エンジンへの置き換えポイント (TODO: Phase N+)
     将来: moderation_status == "hidden" のフィルタリング (TODO: Phase N+)
     """
+    order_col = (
+        CommunityPost.like_count.desc()
+        if sort == "popular"
+        else CommunityPost.created_at.desc()
+    )
     stmt = (
         select(CommunityPost, User.display_name.label("author_name"))
         .join(User, CommunityPost.user_id == User.id)
         .where(CommunityPost.visibility == "public")
-        .order_by(CommunityPost.created_at.desc())
+        .order_by(order_col)
     )
     if q:
         like = f"%{q}%"
@@ -119,8 +142,26 @@ def list_posts(
     total = db.execute(select(func.count()).select_from(stmt.subquery())).scalar() or 0
     rows = db.execute(stmt.offset((page - 1) * per_page).limit(per_page)).all()
 
+    # Batch-fetch current user's reactions for this page (1 extra query)
+    liked_set: set[int] = set()
+    saved_set: set[int] = set()
+    if current_user_id and rows:
+        post_ids = [post.id for post, _ in rows]
+        reactions = db.execute(
+            select(PostReaction.post_id, PostReaction.reaction_type)
+            .where(PostReaction.post_id.in_(post_ids))
+            .where(PostReaction.user_id == current_user_id)
+        ).all()
+        liked_set = {r.post_id for r in reactions if r.reaction_type == "like"}
+        saved_set = {r.post_id for r in reactions if r.reaction_type == "save"}
+
     posts = [
-        _to_summary_dict(post, author_name, is_own=(post.user_id == current_user_id))
+        _to_summary_dict(
+            post, author_name,
+            is_own=(post.user_id == current_user_id),
+            user_liked=post.id in liked_set,
+            user_saved=post.id in saved_set,
+        )
         for post, author_name in rows
     ]
     return {
@@ -164,6 +205,7 @@ def get_post(db: Session, post_id: int, current_user_id: Optional[int] = None) -
     投稿詳細を返す。
     public → 誰でも閲覧可。
     private → 本人のみ閲覧可 (他人には 404 を返す — 存在自体を隠す)。
+    ログイン済みの場合は user_liked / user_saved も返す。
     """
     post = db.get(CommunityPost, post_id)
     if not post:
@@ -171,10 +213,24 @@ def get_post(db: Session, post_id: int, current_user_id: Optional[int] = None) -
     if post.visibility == "private" and post.user_id != current_user_id:
         raise HTTPException(status_code=404, detail="投稿が見つかりません")
     author = db.get(User, post.user_id)
+
+    # Fetch user reactions
+    user_liked = user_saved = False
+    if current_user_id:
+        reactions = db.execute(
+            select(PostReaction.reaction_type)
+            .where(PostReaction.post_id == post_id)
+            .where(PostReaction.user_id == current_user_id)
+        ).scalars().all()
+        user_liked = "like" in reactions
+        user_saved = "save" in reactions
+
     return _to_detail_dict(
         post,
         author.display_name if author else "不明",
         is_own=(post.user_id == current_user_id),
+        user_liked=user_liked,
+        user_saved=user_saved,
     )
 
 
@@ -251,3 +307,65 @@ def record_copy(db: Session, post_id: int) -> Optional[int]:
     if post and post.visibility == "public":
         return post.user_id
     return None
+
+
+# ── いいね / 保存 トグル ──────────────────────────────────────────
+
+def toggle_reaction(
+    db: Session,
+    post_id: int,
+    user_id: int,
+    reaction_type: str,  # "like" | "save"
+) -> dict:
+    """
+    いいね / 保存 をトグルする。
+
+    - 既存リアクションがあれば削除 (unlike/unsave)、count を -1
+    - なければ追加 (like/save)、count を +1
+    - 自分の投稿へのリアクションも許容する (UX 上の制限は UI 側で行う)
+
+    Returns:
+        {"active": bool, "count": int, "author_id": int}
+        author_id はルーター側での XP 付与に使用する。
+    """
+    post = db.get(CommunityPost, post_id)
+    if not post:
+        raise HTTPException(status_code=404, detail="投稿が見つかりません")
+    if post.visibility == "private" and post.user_id != user_id:
+        raise HTTPException(status_code=404, detail="投稿が見つかりません")
+
+    existing = db.execute(
+        select(PostReaction)
+        .where(PostReaction.post_id == post_id)
+        .where(PostReaction.user_id == user_id)
+        .where(PostReaction.reaction_type == reaction_type)
+    ).scalar_one_or_none()
+
+    if existing:
+        # Toggle OFF (unlike / unsave)
+        db.delete(existing)
+        if reaction_type == "like":
+            post.like_count = max(0, (post.like_count or 0) - 1)
+            count = post.like_count
+        else:
+            post.save_count = max(0, (post.save_count or 0) - 1)
+            count = post.save_count
+        db.commit()
+        return {"active": False, "count": count, "author_id": post.user_id}
+    else:
+        # Toggle ON (like / save)
+        reaction = PostReaction(
+            post_id=post_id,
+            user_id=user_id,
+            reaction_type=reaction_type,
+            created_at=_now(),
+        )
+        db.add(reaction)
+        if reaction_type == "like":
+            post.like_count = (post.like_count or 0) + 1
+            count = post.like_count
+        else:
+            post.save_count = (post.save_count or 0) + 1
+            count = post.save_count
+        db.commit()
+        return {"active": True, "count": count, "author_id": post.user_id}
