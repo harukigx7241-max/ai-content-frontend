@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>公開広場 — プロンプトギルド</title>
   <link rel="stylesheet" href="/static/css/style.css">
+  <script src="/static/js/core/effects.js" defer></script>
 </head>
 <body>
 <div class="orb orb-1"></div>
@@ -19,16 +20,16 @@
     <div class="auth-nav">
       {% if user %}
         <span class="auth-user-name">{{ user.display_name }}</span>
-        <a href="/" class="auth-nav-btn outline">生成ツール</a>
+        <a href="/" class="auth-nav-btn outline">⚔ 工房</a>
         <a href="/mypage" class="auth-nav-btn outline">マイページ</a>
         {% if user.role in ('admin',) %}
-          <a href="/admin" class="auth-nav-btn outline" style="color:var(--accent-gold);border-color:rgba(251,191,36,0.4)">管理</a>
+          <a href="/admin" class="auth-nav-btn outline" style="color:var(--accent-gold);border-color:rgba(251,191,36,0.4)">管理本部</a>
         {% endif %}
         <button class="auth-nav-btn outline" id="logoutBtn">ログアウト</button>
       {% else %}
-        <a href="/" class="auth-nav-btn outline">生成ツール</a>
-        <a href="/login" class="auth-nav-btn outline">ログイン</a>
-        <a href="/register" class="auth-nav-btn primary">新規登録</a>
+        <a href="/" class="auth-nav-btn outline">⚔ 工房</a>
+        <a href="/login" class="auth-nav-btn outline">入館する</a>
+        <a href="/register" class="auth-nav-btn primary">⚔ ギルドに参加</a>
       {% endif %}
     </div>
   </div>
@@ -93,10 +94,13 @@
     </div>
   </div>
 
-  <!-- ── 結果カウント + ソート情報 ────────────────────────────── -->
+  <!-- ── ソートタブ + 結果カウント ────────────────────────────── -->
   <div class="sq-result-bar" id="resultBar" style="display:none">
     <span id="resultCount" class="sq-result-count"></span>
-    <span class="sq-result-order">新着順</span>
+    <div class="sq-sort-row">
+      <button class="sq-sort-btn active" id="sortNew" onclick="setSort('new')">🕐 新着順</button>
+      <button class="sq-sort-btn" id="sortPopular" onclick="setSort('popular')">❤️ 人気順</button>
+    </div>
   </div>
 
   <!-- ── 投稿リスト ────────────────────────────────────────────── -->
@@ -123,7 +127,16 @@
 <script>
 // ── 状態管理 ─────────────────────────────────────────────────────
 let currentPage = 1;
+let currentSort = 'new';
 const perPage = 20;
+
+function setSort(sort) {
+  currentSort = sort;
+  document.getElementById('sortNew').classList.toggle('active', sort === 'new');
+  document.getElementById('sortPopular').classList.toggle('active', sort === 'popular');
+  currentPage = 1;
+  fetchPosts(1);
+}
 
 // ── ラベル定数 ────────────────────────────────────────────────────
 const CAT_LABEL = {
@@ -146,7 +159,7 @@ async function fetchPosts(page) {
   const purpose  = document.getElementById('filterPurpose').value;
   const platform = document.getElementById('filterPlatform').value;
 
-  const params = new URLSearchParams({ page, per_page: perPage });
+  const params = new URLSearchParams({ page, per_page: perPage, sort: currentSort });
   if (q)        params.set('q', q);
   if (cat)      params.set('category', cat);
   if (purpose)  params.set('purpose', purpose);
@@ -216,6 +229,7 @@ function postCard(p) {
     ? `<p class="sq-card-desc">${esc(p.description.slice(0, 100))}${p.description.length > 100 ? '…' : ''}</p>`
     : '';
   const views = `<span class="sq-card-views">👁 ${p.view_count || 0}</span>`;
+  const likes = p.like_count ? `<span class="sq-card-likes">❤️ ${p.like_count}</span>` : '';
   const date  = new Date(p.created_at).toLocaleDateString('ja-JP');
 
   return `
@@ -226,6 +240,7 @@ function postCard(p) {
     ${ownBadge}
     <span class="sq-card-date">${date}</span>
     ${views}
+    ${likes}
   </div>
   <h3 class="sq-card-title">${esc(p.title)}</h3>
   ${desc}
@@ -284,6 +299,9 @@ document.getElementById('clearFilterBtn').addEventListener('click', () => {
   document.getElementById('filterPurpose').value    = '';
   document.getElementById('filterPlatform').value   = '';
   currentPage = 1;
+  currentSort = 'new';
+  document.getElementById('sortNew').classList.add('active');
+  document.getElementById('sortPopular').classList.remove('active');
   fetchPosts(1);
 });
 

@@ -51,6 +51,11 @@ COLUMN_MIGRATIONS: list[_Migration] = [
     # admin bootstrap
     _Migration("users.must_change_password",
                "ALTER TABLE users ADD COLUMN must_change_password BOOLEAN NOT NULL DEFAULT 0"),
+    # Like/Save system
+    _Migration("community_posts.like_count",
+               "ALTER TABLE community_posts ADD COLUMN like_count INTEGER NOT NULL DEFAULT 0"),
+    _Migration("community_posts.save_count",
+               "ALTER TABLE community_posts ADD COLUMN save_count INTEGER NOT NULL DEFAULT 0"),
 ]
 
 

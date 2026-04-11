@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>工房ログを投稿 — プロンプトギルド</title>
   <link rel="stylesheet" href="/static/css/style.css">
+  <script src="/static/js/core/effects.js" defer></script>
 </head>
 <body>
 <div class="orb orb-1"></div>
@@ -234,6 +235,7 @@ document.getElementById('postForm').addEventListener('submit', async e => {
     }
     sucEl.textContent = '投稿しました！ 詳細ページに移動します…';
     sucEl.style.display = '';
+    if (window.Effects) Effects.play('post');
     setTimeout(() => { location.href = `/square/${data.id}`; }, 1000);
   } catch {
     errEl.textContent = 'サーバーエラーが発生しました';

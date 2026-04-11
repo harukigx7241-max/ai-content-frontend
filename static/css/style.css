@@ -2624,3 +2624,218 @@ kbd {
   transition: var(--transition);
 }
 .guest-limit-close:hover { background: rgba(255,255,255,0.1); }
+
+/* ── Reaction Buttons (いいね / 保存) ──────────────────────────── */
+.sq-reaction-card {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: 14px 20px;
+}
+.sq-react-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border-radius: 24px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 0.88rem;
+  transition: var(--transition);
+  text-decoration: none;
+  font-family: inherit;
+}
+.sq-react-btn:hover {
+  border-color: rgba(168,85,247,0.45);
+  background: rgba(168,85,247,0.1);
+  color: var(--text-primary);
+  transform: translateY(-1px);
+}
+.sq-react-btn.active {
+  border-color: rgba(168,85,247,0.7);
+  background: rgba(168,85,247,0.18);
+  color: #d8b4fe;
+}
+.sq-react-btn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+  transform: none;
+}
+.sq-react-count {
+  font-size: 0.8rem;
+  font-weight: 600;
+  min-width: 16px;
+  text-align: center;
+}
+
+/* ── Square sort toggle ────────────────────────────────────────── */
+.sq-sort-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.sq-sort-btn {
+  padding: 6px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: inherit;
+}
+.sq-sort-btn.active,
+.sq-sort-btn:hover {
+  border-color: rgba(168,85,247,0.45);
+  background: rgba(168,85,247,0.12);
+  color: var(--text-primary);
+}
+.sq-sort-btn.active {
+  border-color: rgba(168,85,247,0.65);
+  color: #d8b4fe;
+}
+/* Like count on cards */
+.sq-card-likes {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+/* ── Card chips: 向いている人 / 作れるもの ───────────────────── */
+.card-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.card-chip-for,
+.card-chip-make {
+  font-size: 0.7rem;
+  padding: 2px 9px;
+  border-radius: 10px;
+  border: 1px solid;
+  white-space: nowrap;
+  line-height: 1.6;
+}
+.card-chip-for {
+  background: rgba(168,85,247,0.08);
+  border-color: rgba(168,85,247,0.25);
+  color: #c084fc;
+}
+.card-chip-make {
+  background: rgba(245,158,11,0.08);
+  border-color: rgba(245,158,11,0.25);
+  color: #fbbf24;
+}
+
+/* ── Guest limit modal benefits list ──────────────────────────── */
+.guest-limit-benefits {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 22px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.guest-limit-benefits li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 0.83rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+.glb-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ── Guild Guide Widget ────────────────────────────────────────── */
+.guild-guide-widget {
+  position: fixed;
+  bottom: 24px;
+  left: 24px;
+  width: 280px;
+  background: rgba(18,18,31,0.95);
+  border: 1px solid rgba(168,85,247,0.35);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 20px rgba(168,85,247,0.1);
+  z-index: 700;
+  overflow: hidden;
+  animation: gg-fadein 0.4s ease;
+  backdrop-filter: blur(12px);
+}
+@keyframes gg-fadein  { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+@keyframes gg-fadeout { from { opacity:1; transform:translateY(0); }  to { opacity:0; transform:translateY(12px); } }
+
+.gg-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: rgba(168,85,247,0.1);
+  border-bottom: 1px solid rgba(168,85,247,0.15);
+  cursor: pointer;
+}
+.gg-avatar { font-size: 1.2rem; }
+.gg-name   { font-size: 0.78rem; font-weight: 700; color: #c084fc; flex: 1; }
+.gg-toggle {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+  transition: var(--transition);
+}
+.gg-toggle:hover { color: var(--text-primary); }
+.gg-body { padding: 12px 14px; }
+.gg-text {
+  font-size: 0.79rem;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  margin: 0 0 10px;
+  transition: opacity 0.2s;
+  min-height: 60px;
+}
+.gg-footer {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.gg-next {
+  font-size: 0.72rem;
+  padding: 4px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(168,85,247,0.3);
+  background: rgba(168,85,247,0.08);
+  color: #c084fc;
+  cursor: pointer;
+  transition: var(--transition);
+  font-family: inherit;
+}
+.gg-next:hover { background: rgba(168,85,247,0.18); }
+.gg-dismiss {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 6px;
+  font-family: inherit;
+  transition: var(--transition);
+}
+.gg-dismiss:hover { color: var(--text-primary); }
+/* Push guest usage badge up when guide is visible */
+#guestUsageBadge { bottom: 170px; }
+@media (max-width: 639px) {
+  .guild-guide-widget { display: none; }
+  #guestUsageBadge { bottom: 90px; }
+}

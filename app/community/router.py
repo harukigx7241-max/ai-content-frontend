@@ -9,6 +9,8 @@ app/community/router.py — 公開広場 API ルーター (薄く保つ)
   PATCH  /api/community/posts/{id}       — 更新 (本人のみ)
   DELETE /api/community/posts/{id}       — 削除 (本人のみ, 204)
   POST   /api/community/posts/{id}/copy  — コピー記録 (受け皿, 将来 use_count++)
+  POST   /api/community/posts/{id}/like  — いいねトグル (要認証)
+  POST   /api/community/posts/{id}/save  — 保存トグル (要認証)
 
 重複ルート対応:
   /posts/mine は /posts/{id} より先に定義することで FastAPI が正しく解決する。
@@ -28,6 +30,7 @@ from app.community.schemas import (
     PostResponse,
     PostUpdateRequest,
 )
+from app.db.models.post import CommunityPost
 from app.db.models.user import User
 from app.db.session import get_db
 
@@ -62,6 +65,7 @@ def list_posts(
     target_platform: Optional[str] = Query(None),
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=50),
+    sort: str = Query("new", description="ソート: new (新着順) | popular (いいね降順)"),
     current_user: Optional[User] = Depends(get_current_user_soft),
     db: Session = Depends(get_db),
 ):
@@ -69,6 +73,7 @@ def list_posts(
     return community_service.list_posts(
         db, q, category, purpose, target_platform, page, per_page,
         current_user_id=current_user.id if current_user else None,
+        sort=sort,
     )
 
 
@@ -135,3 +140,39 @@ def copy_post(
         from app.gamification.constants import XPEvent as _XPE
         _gami.try_award(db, author_id, _XPE.COPY_RECEIVED, ref_id=post_id)
     return {"ok": True}
+
+
+@router.post("/posts/{post_id}/like", status_code=200)
+def like_post(
+    post_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """いいねをトグルする。認証必須。"""
+    result = community_service.toggle_reaction(db, post_id, current_user.id, "like")
+    # いいねされた場合、投稿者 (自分以外) に XP 付与
+    if result["active"] and settings.ENABLE_GAMIFICATION:
+        author_id = result["author_id"]
+        if author_id != current_user.id:
+            from app.gamification import service as _gami
+            from app.gamification.constants import XPEvent as _XPE
+            _gami.try_award(db, author_id, _XPE.POST_LIKED, ref_id=post_id)
+    return {"active": result["active"], "count": result["count"]}
+
+
+@router.post("/posts/{post_id}/save", status_code=200)
+def save_post(
+    post_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """保存をトグルする。認証必須。"""
+    result = community_service.toggle_reaction(db, post_id, current_user.id, "save")
+    # 保存された場合、投稿者 (自分以外) に XP 付与
+    if result["active"] and settings.ENABLE_GAMIFICATION:
+        author_id = result["author_id"]
+        if author_id != current_user.id:
+            from app.gamification import service as _gami
+            from app.gamification.constants import XPEvent as _XPE
+            _gami.try_award(db, author_id, _XPE.POST_SAVED, ref_id=post_id)
+    return {"active": result["active"], "count": result["count"]}

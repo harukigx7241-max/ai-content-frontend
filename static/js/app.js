@@ -281,6 +281,8 @@ const App = {
 
       // ゲスト利用カウントアップ（ログイン済みは無視）
       if (window.GuestUsage) window.GuestUsage.increment();
+      // 効果音
+      if (window.Effects) Effects.play('success');
 
       this.showToast('プロンプト生成完了！コピーして使おう ✓', 'success');
 
@@ -375,6 +377,7 @@ const App = {
       const prev = btn.textContent;
       btn.textContent = 'コピー済み ✓';
       setTimeout(() => { btn.textContent = prev; btn.classList.remove('copied'); }, 2000);
+      if (window.Effects) { Effects.play('copy'); Effects.ripple(btn); }
       this.showToast('クリップボードにコピーしました', 'success');
     }).catch(() => this.showToast('コピーに失敗しました', 'error'));
   },
