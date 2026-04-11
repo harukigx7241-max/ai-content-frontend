@@ -21,7 +21,7 @@
       <span class="auth-user-name" id="headerName">{{ user.display_name }}</span>
       <a href="/" class="auth-nav-btn outline">生成ツール</a>
       {% if user.role in ('admin',) %}
-      <a href="/admin" class="auth-nav-btn outline" style="color:var(--accent-gold);border-color:rgba(251,191,36,0.4)">管理</a>
+      <a href="/admin" class="auth-nav-btn outline" style="color:var(--accent-gold);border-color:rgba(251,191,36,0.4)">管理本部</a>
       {% endif %}
       <button class="auth-nav-btn outline" id="logoutBtn">ログアウト</button>
     </div>
@@ -116,6 +116,23 @@
         <div class="mypage-info-item" id="viewBioItem" style="{{ '' if user.bio else 'display:none' }};grid-column:1/-1">
           <label>自己紹介</label>
           <span id="viewBio" style="font-size:0.88rem;line-height:1.6;white-space:pre-wrap;word-break:break-all">{{ user.bio or '' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ランクミニカード -->
+    <div class="mypage-card" id="profileRankCard" style="display:none">
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <span id="profileRankBadge" class="gami-level-badge"></span>
+        <div style="flex:1;min-width:160px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+            <span id="profileTitle" style="font-size:0.88rem;font-weight:600;color:var(--text-primary)"></span>
+            <span id="profileXpText" style="font-size:0.75rem;color:var(--text-muted)"></span>
+          </div>
+          <div class="gami-bar-track" style="height:6px">
+            <div class="gami-bar-fill" id="profileBarFill" style="width:0%"></div>
+          </div>
+          <div id="profileNextLabel" style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;text-align:right"></div>
         </div>
       </div>
     </div>
@@ -614,6 +631,23 @@ async function loadGamification() {
     const heroTitle = document.getElementById('heroTitleBadge');
     if (heroRank)  { heroRank.textContent = `Lv.${d.level}`;  heroRank.style.display = ''; }
     if (heroTitle) { heroTitle.textContent = d.title;          heroTitle.style.display = ''; }
+
+    // プロフィールタブのランクミニカード
+    const pRankCard = document.getElementById('profileRankCard');
+    if (pRankCard) {
+      document.getElementById('profileRankBadge').textContent = `Lv.${d.level}`;
+      document.getElementById('profileTitle').textContent     = d.title;
+      if (d.xp_at_next_level !== null) {
+        document.getElementById('profileXpText').textContent  = `${d.xp} / ${d.xp_at_next_level} XP`;
+        document.getElementById('profileBarFill').style.width = `${d.progress_pct}%`;
+        document.getElementById('profileNextLabel').textContent = `次のレベルまで ${d.xp_to_next} XP`;
+      } else {
+        document.getElementById('profileXpText').textContent  = `${d.xp} XP`;
+        document.getElementById('profileBarFill').style.width = '100%';
+        document.getElementById('profileNextLabel').textContent = '最大レベル達成！';
+      }
+      pRankCard.style.display = '';
+    }
 
     // レベルバッジ (活動記録タブ内)
     const badge = document.getElementById('gamiLevelBadge');

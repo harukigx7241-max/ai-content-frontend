@@ -75,6 +75,12 @@
         {% endif %}
       </span>
       <span class="sq-detail-views">👁 {{ post.view_count or 0 }}</span>
+      {% if post.like_count %}
+        <span class="sq-detail-views">❤️ {{ post.like_count }}</span>
+      {% endif %}
+      {% if post.save_count %}
+        <span class="sq-detail-views">🔖 {{ post.save_count }}</span>
+      {% endif %}
     </div>
 
     {% if post.tags %}
@@ -231,6 +237,7 @@ document.getElementById('copyBtn').addEventListener('click', async () => {
     document.body.removeChild(ta);
     toast.style.display = '';
     setTimeout(() => { toast.style.display = 'none'; }, 2000);
+    if (window.Effects) Effects.play('copy');
   }
 });
 

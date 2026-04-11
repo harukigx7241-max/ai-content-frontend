@@ -1394,7 +1394,7 @@
         const isAdmin = user.role === 'admin';
         nav.innerHTML =
           `<span class="auth-user-name">${esc(user.display_name)}</span>` +
-          `<a href="/square" class="auth-nav-btn outline" style="font-size:0.8rem">⚔ 広場</a>` +
+          `<a href="/square" class="auth-nav-btn outline" style="font-size:0.8rem">⚔ ギルド広場</a>` +
           `<a href="/mypage" class="auth-nav-btn outline">マイページ</a>` +
           (isAdmin ? `<a href="/admin" class="auth-nav-btn outline" style="color:var(--accent-gold);border-color:rgba(251,191,36,0.4)">管理本部</a>` : '') +
           `<button class="auth-nav-btn outline" id="indexLogoutBtn">ログアウト</button>`;
