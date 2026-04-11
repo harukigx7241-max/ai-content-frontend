@@ -1,6 +1,6 @@
 # フェーズロードマップ (Roadmap Phases)
 
-> 最終更新: 2026-04-11  
+> 最終更新: 2026-04-11 (Phase 13 完了・第2回 Phase 0 監査後)  
 > ブランチ: `claude/phase13-mobile-game-ui`  
 > 方針詳細: `docs/fixed_requirements.md`
 
@@ -23,50 +23,39 @@
 | 10 | ナレッジベース Python ローダー | side-hustle-web-app-195e3 | cd60e28 |
 | 11 | トレンド注入スキャフォールド | side-hustle-web-app-195e3 | cd60e28 |
 | 12 | 管理トレンド収集室 | side-hustle-web-app-195e3 | cd60e28 |
-| 0 (再) | コードベース再監査・docs 整備 | phase13-mobile-game-ui | (本 PR) |
+| 0 (再・Phase 13 前) | コードベース再監査・docs 整備 | phase13-mobile-game-ui | bb46f6d |
+| **13** | **スマホ完全最適化** (ハンバーガー・ドロワー・ボトムナビ) | phase13-mobile-game-ui | **14e9bd8** |
+| 0 (再・Phase 13 後) | コードベース再監査・docs 更新 | phase13-mobile-game-ui | (本コミット) |
 
 ---
 
-## 進行中フェーズ
+## 次のフェーズ
 
-### Phase 13 — スマホ完全最適化 🔴 最高優先
+### Phase 14 — ゲーム UI 強化 🟠 高優先 ← **次に着手**
 
-**目的:** 全画面でモバイル体験を最優先にする  
-**ブランチ:** `claude/phase13-mobile-game-ui`
+**目的:** ロゴ・見出し・バッジ・ボタンにゲーム感を追加  
+**ブランチ:** `claude/phase13-mobile-game-ui` (継続) または新ブランチ
 
 実装内容:
-- [ ] CSS: ハンバーガーボタン・モバイルドロワー・ボトムナビ
-- [ ] `index.html`: ハンバーガー + ボトムナビ HTML
-- [ ] `square.html` / `mypage.html` / `admin`: モバイルヘッダー統一
-- [ ] 375px / 480px ブレークポイント強化
-- [ ] タッチターゲット 44px 保証
+- [ ] ロゴをゲーム風エンブレムデザインに
+- [ ] 見出しに装飾フレーム (レリーフ風ボーダー)
+- [ ] ランクバッジのビジュアル強化 (アイコン + カラーグロー)
+- [ ] 主要ボタンに光沢・立体感 (グラデーション + inset shadow)
+- [ ] 称号テキストに装飾エフェクト
 
 ---
 
 ## 予定フェーズ
-
-### Phase 14 — ゲーム UI 強化 🟠 高
-
-**目的:** ロゴ・見出し・バッジ・ボタンにゲーム感を追加
-
-実装内容:
-- [ ] ロゴをゲーム風エンブレムデザインに
-- [ ] 見出しに装飾フレーム (レリーフ風)
-- [ ] ランクバッジのビジュアル強化
-- [ ] 主要ボタンに光沢・立体感
-- [ ] 称号テキストに装飾エフェクト
-
----
 
 ### Phase 15 — ロール体系拡張 + HQ 権限分離 🔴 最高
 
 **目的:** 6ロール定義・admin / headquarters の権限分離
 
 実装内容:
-- [ ] DB: `role` カラムを 6 値に拡張 (migration)
+- [ ] DB: `role` カラムを 6 値に拡張 (Alembic migration)
 - [ ] `member_free` / `member_paid` / `member_master` / `headquarters` 追加
-- [ ] `ADMIN_ROLES` / `HQ_ROLES` / `MEMBER_ROLES` 分離
-- [ ] `require_hq` 依存性追加
+- [ ] `ADMIN_ROLES` / `HQ_ROLES` / `MEMBER_ROLES` 定数分離
+- [ ] `require_hq` FastAPI 依存性追加
 - [ ] HQ 専用エンドポイント `/api/hq/*`
 - [ ] 管理画面に HQ タブ追加
 
@@ -112,7 +101,7 @@
 
 ### Phase 19 — テンプレライブラリ 🟠 高
 
-**目的:** `templates_library/` ディレクトリ + テンプレ一覧 UI
+**目的:** `knowledge/templates/` + テンプレ一覧 UI
 
 実装内容:
 - [ ] `knowledge/templates/` にプリセット JSON 定義
@@ -122,12 +111,12 @@
 
 ---
 
-### Phase 20 — Prompt Doctor (AI 未接続でも動く版) 🟡 中
+### Phase 20 — Prompt Doctor (ルールベース版) 🟡 中
 
-**目的:** プロンプト改善診断ツール
+**目的:** プロンプト改善診断ツール (API 未接続でも動く)
 
 実装内容:
-- [ ] ルールベース診断 (API なし): 文字数・役割定義・具体性チェック
+- [ ] ルールベース診断: 文字数・役割定義・具体性チェック
 - [ ] スコア + 改善提案 UI
 - [ ] API 接続時: LLM による詳細診断
 
@@ -139,7 +128,7 @@
 
 実装内容:
 - [ ] プロンプトを使った SNS 告知文生成
-- [ ] 招待コード発行自動化
+- [ ] 招待コード発行自動化 (`ENABLE_INVITE_SYSTEM` ON)
 - [ ] HQ 専用パネル
 
 ---
@@ -154,3 +143,5 @@
 | クエスト未実装 | Phase 18 |
 | `role` カラムが 2 値のみ | Phase 15 |
 | HQ ロール未定義 | Phase 15 |
+| 広場ページネーション UI なし | Phase 19 以前に軽量修正推奨 |
+| コメント機能なし | Phase 18 以降 |
