@@ -1,0 +1,19 @@
+{
+  "_meta": {
+    "id": "note_sns_growth",
+    "label": "ゼロから始めるSNS運用術",
+    "workshop": "note",
+    "description": "SNSフォロワー増加・集客をテーマにした有料note記事テンプレート",
+    "tags": ["SNS", "集客", "フォロワー", "マーケティング"],
+    "difficulty": "intermediate"
+  },
+  "form": {
+    "theme": "ゼロから始めるX(Twitter)フォロワー1000人達成ロードマップ",
+    "age_range": "20代",
+    "situation": "副業やビジネスのためにSNSを始めたばかり、またはこれから始め���",
+    "concern": "何を投稿すればいいか分からない。フォロワーが全然増えない",
+    "tone": "です・ます調",
+    "free_chars": "2000字",
+    "paid_chars": "5000字"
+  }
+}

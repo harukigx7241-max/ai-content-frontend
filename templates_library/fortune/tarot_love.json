@@ -1,0 +1,18 @@
+{
+  "_meta": {
+    "id": "fortune_tarot_love",
+    "label": "タロット — 恋愛総合鑑定",
+    "workshop": "fortune",
+    "description": "ココナラ向けタロット恋愛鑑定書テンプレート",
+    "tags": ["タロット", "恋愛", "鑑定書", "ココナラ"],
+    "difficulty": "beginner"
+  },
+  "form": {
+    "fortune_type": "タロット",
+    "theme": "恋愛総合",
+    "concern": "好きな人との関係がどう発展するか知りたい",
+    "style": "温かく寄り添う",
+    "platform": "ココナラ",
+    "price": "3000"
+  }
+}

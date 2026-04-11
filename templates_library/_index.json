@@ -1,0 +1,49 @@
+{
+  "_meta": {
+    "version": "1.0",
+    "description": "テンプレートライブラリ インデックス。Phase 19 で /api/templates エンドポイントから公開予定。",
+    "total": 5
+  },
+  "templates": [
+    {
+      "id": "note_beginner_income",
+      "label": "AI副業入門 — 月5万円の作り方",
+      "workshop": "note",
+      "tags": ["副業", "AI", "初心者"],
+      "difficulty": "beginner",
+      "file": "note/beginner_income.json"
+    },
+    {
+      "id": "note_sns_growth",
+      "label": "ゼロから始めるSNS運用術",
+      "workshop": "note",
+      "tags": ["SNS", "集客", "フォロワー"],
+      "difficulty": "intermediate",
+      "file": "note/sns_growth.json"
+    },
+    {
+      "id": "cw_writer_proposal",
+      "label": "ライター案件 — 採用率アップ提案文",
+      "workshop": "cw",
+      "tags": ["ライター", "提案文"],
+      "difficulty": "beginner",
+      "file": "cw/writer_proposal.json"
+    },
+    {
+      "id": "fortune_tarot_love",
+      "label": "タロット — 恋愛総合鑑定",
+      "workshop": "fortune",
+      "tags": ["タロット", "恋愛"],
+      "difficulty": "beginner",
+      "file": "fortune/tarot_love.json"
+    },
+    {
+      "id": "sns_side_hustle_announce",
+      "label": "副業アカウント — 自己紹介・告知投稿",
+      "workshop": "sns",
+      "tags": ["副業", "告知"],
+      "difficulty": "beginner",
+      "file": "sns/side_hustle_announce.json"
+    }
+  ]
+}

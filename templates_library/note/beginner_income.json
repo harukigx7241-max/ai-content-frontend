@@ -1,0 +1,19 @@
+{
+  "_meta": {
+    "id": "note_beginner_income",
+    "label": "AI副業入門 — 月5万円の作り方",
+    "workshop": "note",
+    "description": "AI・副業初心者向けの有料note記事プロンプトのクイックスタートテンプレート",
+    "tags": ["副業", "AI", "初心者", "収益化"],
+    "difficulty": "beginner"
+  },
+  "form": {
+    "theme": "AI副業で月5万円を稼ぐ具体的な方法",
+    "age_range": "25〜35歳",
+    "situation": "会社員で副業をしたいが何から始めればいいか分からない",
+    "concern": "AIを使った副業に興味はあるが、稼げるか不安でなかなか踏み出せない",
+    "tone": "です・ます調",
+    "free_chars": "2000字",
+    "paid_chars": "5000字"
+  }
+}

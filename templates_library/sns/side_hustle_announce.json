@@ -1,0 +1,17 @@
+{
+  "_meta": {
+    "id": "sns_side_hustle_announce",
+    "label": "副業アカウント — 自己紹介・告知投稿",
+    "workshop": "sns",
+    "description": "副業・フリーランスSNSアカウントの告知投稿テンプレート",
+    "tags": ["副業", "自己紹介", "告知", "X", "Instagram"],
+    "difficulty": "beginner"
+  },
+  "form": {
+    "platform": "X",
+    "theme": "副業・AI活用・フリーランス",
+    "service_name": "AIプロンプト作成サービス",
+    "target": "副業初心者・AI活用に興味がある社会人",
+    "style": "親しみやすく・信頼感のある"
+  }
+}

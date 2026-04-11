@@ -1,0 +1,18 @@
+{
+  "_meta": {
+    "id": "cw_writer_proposal",
+    "label": "ライター案件 — 採用率アップ提案文",
+    "workshop": "cw",
+    "description": "クラウドワークスのライター案件向け提案文のクイックスタートテンプレート",
+    "tags": ["ライター", "提案文", "クラウドワークス", "採用"],
+    "difficulty": "beginner"
+  },
+  "form": {
+    "job_type": "Webライター",
+    "skills": "SEOライティング経験3年・月30記事以上の執筆実績",
+    "appeal": "締め切り厳守・修正対応迅速・クライアント目線のリサーチ力",
+    "experience": "ブログ運営2年・複数メディアへの寄稿経験あり",
+    "target_rate": "3000",
+    "monthly_goal": "30"
+  }
+}

@@ -1,6 +1,6 @@
 # フェーズロードマップ (Roadmap Phases)
 
-> 最終更新: 2026-04-11 (Phase 13 完了・第2回 Phase 0 監査後)  
+> 最終更新: 2026-04-11 (Phase 1 完了)  
 > ブランチ: `claude/phase13-mobile-game-ui`  
 > 方針詳細: `docs/fixed_requirements.md`
 
@@ -25,13 +25,15 @@
 | 12 | 管理トレンド収集室 | side-hustle-web-app-195e3 | cd60e28 |
 | 0 (再・Phase 13 前) | コードベース再監査・docs 整備 | phase13-mobile-game-ui | bb46f6d |
 | **13** | **スマホ完全最適化** (ハンバーガー・ドロワー・ボトムナビ) | phase13-mobile-game-ui | **14e9bd8** |
-| 0 (再・Phase 13 後) | コードベース再監査・docs 更新 | phase13-mobile-game-ui | (本コミット) |
+| 0 (再・Phase 13 後) | コードベース再監査・docs 更新 | phase13-mobile-game-ui | 1203f17 |
+| **1** | **サービス層整理 (FREE-first API-ready)** | phase13-mobile-game-ui | (本コミット) |
 
 ---
 
 ## 次のフェーズ
 
 ### Phase 14 — ゲーム UI 強化 🟠 高優先 ← **次に着手**
+
 
 **目的:** ロゴ・見出し・バッジ・ボタンにゲーム感を追加  
 **ブランチ:** `claude/phase13-mobile-game-ui` (継続) または新ブランチ

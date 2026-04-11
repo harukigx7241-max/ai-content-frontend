@@ -2,6 +2,11 @@
 app/services/knowledge_service.py
 ナレッジベース読み込みサービス。
 
+Tiers:
+  FREE  — knowledge/ ディレクトリからのファイル読み込み (既存実装、APIキー不要)
+  API   — 将来: ベクトル DB / RAG 検索 (未実装)
+  DISABLED — (フラグなし・常に有効)
+
 knowledge/ ディレクトリ以下の Markdown / JSON ファイルをアプリ内で
 利用するためのローダーモジュール。
 
@@ -76,3 +81,46 @@ def invalidate_cache(rel_path: Optional[str] = None) -> None:
         _cache.clear()
     else:
         _cache.pop(rel_path, None)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Phase 1: KnowledgeService — BaseService 準拠クラス
+# ─────────────────────────────────────────────────────────────────────────────
+
+from app.services.base import BaseService, ServiceMode, ServiceResult  # noqa: E402
+
+
+class KnowledgeService(BaseService):
+    """
+    ナレッジベースサービス (BaseService準拠)。
+    既存のモジュール関数との後方互換を保ちつつ ServiceResult を返す。
+    FLAG_KEY なし = 常に有効。
+    """
+    FLAG_KEY = ""  # フラグなし・常に有効
+
+    def load(self, rel_path: str) -> ServiceResult:
+        """任意パスのナレッジファイルを ServiceResult で返す。"""
+        content = _load(rel_path)
+        if content is None:
+            return ServiceResult.free(
+                content=None,
+                hint=f"ナレッジファイルが見つかりません: {rel_path}",
+            )
+        return ServiceResult.free(content=content)
+
+    def workshop_overview(self, workshop: str) -> ServiceResult:
+        return self.load(f"workshops/{workshop}/overview.md")
+
+    def workshop_rules(self, workshop: str) -> ServiceResult:
+        return self.load(f"workshops/{workshop}/rules.md")
+
+    def workshop_patterns(self, workshop: str) -> ServiceResult:
+        return self.load(f"workshops/{workshop}/patterns.json")
+
+    def _run_api(self, **_: object) -> ServiceResult:
+        """TODO: ベクトルDB/RAG検索 (未実装)。"""
+        return ServiceResult.not_implemented(ServiceMode.API)
+
+
+# グローバルシングルトン
+knowledge_service = KnowledgeService()

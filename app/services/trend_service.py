@@ -2,6 +2,11 @@
 app/services/trend_service.py
 トレンド注入サービス。
 
+Tiers:
+  FREE  — knowledge/workshops/*/trend_signals.json からファイルベースで読み込む (既存実装)
+  API   — Web スクレイピングによる自動トレンド更新 (未実装)
+  DISABLED — ENABLE_TREND_REFRESH=false 時
+
 knowledge/workshops/<workshop>/trend_signals.json から読み込んだ
 トレンドデータをプロンプトに付加するためのユーティリティ。
 
@@ -21,6 +26,7 @@ trend_signals.json 形式 (例):
 """
 
 from app.services.knowledge_service import get_trend_signals
+from app.services.base import BaseService, ServiceMode, ServiceResult
 
 # ワークショップごとのラベル (UI表示用)
 WORKSHOP_LABELS: dict[str, str] = {
@@ -76,3 +82,41 @@ def get_trend_hint(workshop: str) -> str:
 def get_all_trend_signals() -> dict[str, dict | None]:
     """全ワークショップのトレンドシグナルを辞書で返す (admin API用)。"""
     return {ws: get_trend_signals(ws) for ws in WORKSHOP_LABELS}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Phase 1: TrendService — BaseService 準拠クラス
+# ─────────────────────────────────────────────────────────────────────────────
+
+class TrendService(BaseService):
+    """
+    トレンドリフレッシュサービス (BaseService準拠)。
+    既存のモジュール関数との後方互換を保ちつつ ServiceResult を返す。
+    """
+    FLAG_KEY = "TREND_REFRESH"
+    PREFER_API = False  # 現時点では Web スクレイピング未実装のため FREE 固定
+
+    def get_hint(self, workshop: str) -> ServiceResult:
+        """指定工房のトレンドヒント文字列を ServiceResult で返す。"""
+        mode = self.get_mode()
+        if mode == ServiceMode.DISABLED:
+            return ServiceResult.disabled()
+        hint = get_trend_hint(workshop)
+        return ServiceResult.free(content={"hint": hint, "workshop": workshop})
+
+    def get_all(self) -> ServiceResult:
+        """全工房のトレンドシグナルを ServiceResult で返す。"""
+        mode = self.get_mode()
+        if mode == ServiceMode.DISABLED:
+            return ServiceResult.disabled()
+        return ServiceResult.free(content=get_all_trend_signals())
+
+    def _run_api(self, workshop: str = "", **_: object) -> ServiceResult:
+        """
+        TODO: Web スクレイピングで最新トレンドを取得して trend_signals.json を更新。
+        """
+        return ServiceResult.not_implemented(ServiceMode.API)
+
+
+# グローバルシングルトン
+trend_service = TrendService()
