@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{ post.title }} — 公開広場</title>
   <link rel="stylesheet" href="/static/css/style.css">
+  <script src="/static/js/core/effects.js" defer></script>
 </head>
 <body>
 <div class="orb orb-1"></div>
@@ -215,6 +216,7 @@ document.getElementById('copyBtn').addEventListener('click', async () => {
     await navigator.clipboard.writeText(text);
     toast.style.display = '';
     setTimeout(() => { toast.style.display = 'none'; }, 2000);
+    if (window.Effects) { Effects.play('copy'); Effects.ripple(document.getElementById('copyBtn')); }
     // コピーアクション受け皿 (将来 use_count++)
     fetch(`/api/community/posts/${POST_ID}/copy`, { method: 'POST' }).catch(() => {});
   } catch {
@@ -305,6 +307,10 @@ async function toggleReaction(type) {
     const data = await res.json();
     countEl.textContent = data.count;
     btn.classList.toggle('active', data.active);
+    if (window.Effects) {
+      Effects.play(data.active ? type : 'click');
+      if (data.active) Effects.ripple(btn);
+    }
   } catch {
     // silent fail — UX に影響なし
   } finally {

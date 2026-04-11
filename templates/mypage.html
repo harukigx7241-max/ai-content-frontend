@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>マイページ — プロンプトギルド</title>
   <link rel="stylesheet" href="/static/css/style.css">
+  <script src="/static/js/core/effects.js" defer></script>
 </head>
 <body>
 <div class="orb orb-1"></div>
@@ -325,6 +326,31 @@
         </div>
         <button type="submit" class="auth-submit-btn" id="pwBtn" style="max-width:180px">変更する</button>
       </form>
+    </div>
+
+    <!-- サウンド & アニメーション設定 -->
+    <div class="mypage-card">
+      <div class="mypage-section-title" style="margin-bottom:6px">🎵 サウンド & アニメーション</div>
+      <p style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:18px">設定はこのブラウザに保存されます。</p>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="mypage-stub-row">
+          <span class="mypage-stub-label">効果音</span>
+          <label class="dash-toggle">
+            <input type="checkbox" id="sfxToggle">
+            <span class="dash-toggle-slider"></span>
+          </label>
+        </div>
+        <div class="mypage-stub-row">
+          <span class="mypage-stub-label">アニメーション効果</span>
+          <label class="dash-toggle">
+            <input type="checkbox" id="animToggle">
+            <span class="dash-toggle-slider"></span>
+          </label>
+        </div>
+        <p style="font-size:0.76rem;color:var(--text-muted)">
+          ※ OSの「視差効果を減らす」設定が有効な場合、アニメーションは常に無効になります
+        </p>
+      </div>
     </div>
 
     <!-- AI設定 (stub) -->
@@ -772,6 +798,35 @@ document.getElementById('issueCodeBtn').addEventListener('click', async () => {
 
 // Storage.js が読み込まれていれば利用状況タブ初回表示時に自動ロード
 // (タブ切替イベントでも呼ばれるため、ここでは呼ばない)
+
+// ── サウンド & アニメーション設定 初期化 ─────────────────────────
+(function initEffectsToggles() {
+  const sfxCb  = document.getElementById('sfxToggle');
+  const animCb = document.getElementById('animToggle');
+  if (!sfxCb || !animCb) return;
+  // 設定タブが表示されたとき（またはすでに表示中のとき）に値を反映
+  function syncToggles() {
+    if (window.Effects) {
+      sfxCb.checked  = Effects.sfxEnabled();
+      animCb.checked = Effects.animEnabled();
+    }
+  }
+  sfxCb.addEventListener('change', () => {
+    if (window.Effects) {
+      Effects.setSfx(sfxCb.checked);
+      if (sfxCb.checked) Effects.play('click');
+    }
+  });
+  animCb.addEventListener('change', () => {
+    if (window.Effects) Effects.setAnim(animCb.checked);
+  });
+  // 設定タブが開かれたとき同期
+  document.querySelectorAll('[data-tab="settings"]').forEach(btn => {
+    btn.addEventListener('click', syncToggles);
+  });
+  // 既に設定タブが開いている場合
+  syncToggles();
+})();
 </script>
 </body>
 </html>
