@@ -3,9 +3,11 @@ app/admin/router.py — /api/admin/* エンドポイント (薄いルーター)
 重いロジックは admin/service.py に委譲。
 TODO: Phase 4+ メール通知 / 一括操作 / 監査ログ
 """
+import json
+import pathlib
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
@@ -128,3 +130,37 @@ def update_settings(
 ):
     """システム設定を更新する。None フィールドはスキップ。"""
     return admin_service.update_settings(db, body.model_dump(), admin.id)
+
+
+# ── トレンド管理 ──────────────────────────────────────────────────
+
+_KNOWLEDGE_ROOT = pathlib.Path(__file__).resolve().parent.parent.parent / "knowledge" / "workshops"
+_VALID_WORKSHOPS = {"note", "tips", "brain", "cw", "fortune", "sns", "sales"}
+
+
+@router.get("/trends")
+def get_all_trends(admin: User = Depends(require_admin)):
+    """全ワークショップの trend_signals.json を返す。"""
+    from app.services.trend_service import get_all_trend_signals
+    return JSONResponse(get_all_trend_signals())
+
+
+@router.put("/trends/{workshop}")
+def update_trend(
+    workshop: str,
+    body: dict,
+    admin: User = Depends(require_admin),
+):
+    """指定ワークショップの trend_signals.json を更新する。"""
+    if workshop not in _VALID_WORKSHOPS:
+        raise HTTPException(status_code=404, detail=f"Unknown workshop: {workshop}")
+
+    target = _KNOWLEDGE_ROOT / workshop / "trend_signals.json"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(body, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    # ナレッジキャッシュを無効化して次回アクセス時に再ロードさせる
+    from app.services.knowledge_service import invalidate_cache
+    invalidate_cache(f"workshops/{workshop}/trend_signals.json")
+
+    return JSONResponse({"message": f"{workshop} のトレンドデータを更新しました"})

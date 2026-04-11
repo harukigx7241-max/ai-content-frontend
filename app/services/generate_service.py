@@ -6,18 +6,20 @@ dispatch(p, builder_fn) の処理フロー:
   1. builder_fn(p) で基本プロンプト構築 (ai_suffix 込み)
   2. input_mode_service で補足文を追記
   3. output_mode に応じた処理:
-     - image_prompt  → ImagePromptService で置換
+     - image_prompt  → ImagePromptService で置換 (日本語サフィックス除外)
      - note_styled   → note_format_service で装飾
      - final_text    → output_suffix を追記
      - prompt (default) → 追加なし
   4. ai_plan_suffix を追記
-  5. (prompt, meta) を返す
+  5. japanese_first_suffix を追記 (image_prompt 以外)
+  6. (prompt, meta) を返す
 
 builders は変更不要。options が None の場合は既存動作と完全互換。
 """
 from typing import Any, Callable, Tuple
 
 from app.prompts.suffixes.ai_plan import ai_plan_suffix
+from app.prompts.suffixes.japanese import japanese_first_suffix
 from app.prompts.suffixes.output_rules import output_suffix
 from app.services.input_mode_service import get_supplement
 from app.services.note_format_service import apply_note_format_service
@@ -40,8 +42,9 @@ def dispatch(p: Any, builder_fn: Callable) -> Tuple[str, dict]:
     # ── 1. 基本プロンプト構築 ──────────────────────────────────────────
     prompt = builder_fn(p)
 
-    # options がなければ既存動作と完全互換
+    # options がなければ日本語サフィックスのみ追加して返す
     if opts is None:
+        prompt += japanese_first_suffix()
         return prompt, {
             "ai_mode": ai_mode,
             "output_mode": "prompt",
@@ -85,6 +88,10 @@ def dispatch(p: Any, builder_fn: Callable) -> Tuple[str, dict]:
     plan_sfx = ai_plan_suffix(opts.ai_plan)
     if plan_sfx:
         prompt += plan_sfx
+
+    # ── 5. 日本語ファースト強制 (画像プロンプトは除外) ───────────────
+    if opts.output_mode != "image_prompt":
+        prompt += japanese_first_suffix()
 
     meta = {
         "ai_mode": ai_mode,

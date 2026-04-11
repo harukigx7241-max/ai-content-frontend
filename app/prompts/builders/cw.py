@@ -1,5 +1,6 @@
 """app/prompts/builders/cw.py — Tab2: クラウドワークス系プロンプトビルダー"""
 from app.prompts.suffixes.ai_mode import ai_suffix
+from app.services.trend_service import get_trend_hint
 
 
 def build_cw_proposal_prompt(p) -> str:
@@ -40,7 +41,7 @@ def build_cw_proposal_prompt(p) -> str:
 他の応募者と差をつける一言アピールを3案
 
 Web検索でクラウドワークスの採用されやすい提案文のトレンドを調べ、
-最新の傾向を反映してください。{ai_suffix(p.ai_mode)}""".strip()
+最新の傾向を反映してください。{get_trend_hint('cw')}{ai_suffix(p.ai_mode)}""".strip()
 
 
 def build_cw_profile_prompt(p) -> str:

@@ -1,5 +1,6 @@
 """app/prompts/builders/fortune.py — Tab3: 占い副業系プロンプトビルダー"""
 from app.prompts.suffixes.ai_mode import ai_suffix
+from app.services.trend_service import get_trend_hint
 
 
 def build_fortune_reading_prompt(p) -> str:
@@ -35,7 +36,7 @@ def build_fortune_reading_prompt(p) -> str:
 ・温かく寄り添う文体で
 ・断定しすぎず、可能性を示す表現を使う
 ・希望が持てる前向きな内容にする
-・[相談者名]などのプレースホルダーを適切に配置する{ai_suffix(p.ai_mode)}""".strip()
+・[相談者名]などのプレースホルダーを適切に配置する{get_trend_hint('fortune')}{ai_suffix(p.ai_mode)}""".strip()
 
 
 def build_fortune_coconala_prompt(p) -> str:
