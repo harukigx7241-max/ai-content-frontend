@@ -1,148 +1,176 @@
 """
 app/services/feature_access_service.py
-機能アクセス制御サービス。ロールと機能フラグに基づいてアクセス可否を判定する。
+機能アクセス制御サービス。
 
-このサービスはフィーチャーフラグ + ロール + サブスク状態を組み合わせて
-「このユーザーはこの機能を使えるか」を一元管理する。
+【Phase 2 更新】
+  Phase 1 の inline ロール定義を app.core.roles に移動。
+  app.core.access_policy の FeaturePolicy / FEATURE_POLICIES を使用。
 
-Phase 15 のロール体系拡張後に本格稼働。
-現時点は "user" | "admin" の 2 ロールのみ対応。
+ロール定義 : app/core/roles.py
+ポリシー定義: app/core/access_policy.py
+依存性      : app/auth/dependencies.py
 """
 from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Optional
 
+from app.core.access_policy import (
+    FEATURE_POLICIES,
+    FeaturePolicy,
+    FeatureStatus,
+    get_policies_by_category,
+    get_policies_for_role,
+    get_policy,
+)
 from app.core.feature_flags import flags
+from app.core.roles import RoleRank, RoleValue, get_upgrade_hint
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# ロール定義 (Phase 15 で DB の role カラム値と同期)
+# AccessResult
 # ─────────────────────────────────────────────────────────────────────────────
-
-class Role:
-    GUEST          = "guest"
-    MEMBER_FREE    = "user"         # DB 現在値 (Phase 15 で member_free に変更予定)
-    MEMBER_PAID    = "member_paid"
-    MEMBER_MASTER  = "member_master"
-    ADMIN          = "admin"
-    HEADQUARTERS   = "headquarters"
-
-
-# ロール階層 (数値が高いほど上位)
-_ROLE_RANK: dict[str, int] = {
-    Role.GUEST:         0,
-    Role.MEMBER_FREE:   1,
-    Role.MEMBER_PAID:   2,
-    Role.MEMBER_MASTER: 3,
-    Role.ADMIN:         4,
-    Role.HEADQUARTERS:  5,
-}
-
 
 @dataclass
 class AccessResult:
     allowed: bool
-    reason: str = ""       # 拒否理由 (allowed=False の場合)
-    required_role: str = ""  # 必要なロール
+    reason: str = ""
+    required_role: str = ""
+    upgrade_hint: str = ""
+    feature_status: str = ""
 
     def to_dict(self) -> dict:
         return {
             "allowed": self.allowed,
             "reason": self.reason,
             "required_role": self.required_role,
+            "upgrade_hint": self.upgrade_hint,
+            "feature_status": self.feature_status,
         }
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# 機能ごとの最低必要ロール定義
+# FeatureAccessService
 # ─────────────────────────────────────────────────────────────────────────────
 
-_FEATURE_REQUIREMENTS: dict[str, str] = {
-    # 誰でも使える機能
-    "prompt_forge":       Role.GUEST,
-    "guild_guide":        Role.GUEST,
-    "congestion_display": Role.GUEST,
-
-    # 無料会員以上
-    "guild_square":       Role.MEMBER_FREE,
-    "save_prompt":        Role.MEMBER_FREE,
-    "prompt_history":     Role.MEMBER_FREE,
-    "prompt_doctor":      Role.MEMBER_FREE,
-    "language_quality":   Role.MEMBER_FREE,
-
-    # 有料会員以上
-    "campaign_forge":     Role.MEMBER_PAID,
-    "promotion_planner":  Role.MEMBER_PAID,
-    "article_draft":      Role.MEMBER_PAID,
-    "workshop_master":    Role.MEMBER_PAID,
-    "image_generation":   Role.MEMBER_PAID,
-
-    # マスター会員以上
-    "priority_queue":     Role.MEMBER_MASTER,
-    "bulk_generate":      Role.MEMBER_MASTER,
-
-    # 管理者以上
-    "admin_dashboard":    Role.ADMIN,
-    "user_management":    Role.ADMIN,
-    "trend_management":   Role.ADMIN,
-    "api_budget_view":    Role.ADMIN,
-
-    # 本部のみ
-    "hq_analytics":       Role.HEADQUARTERS,
-    "hq_campaign":        Role.HEADQUARTERS,
-}
-
-
 class FeatureAccessService:
-    """機能アクセス制御サービス。フィーチャーフラグ不要 (常に使用可能)。"""
+    """
+    機能アクセス制御サービス。
 
-    def check(self, feature: str, user_role: Optional[str] = None) -> AccessResult:
+    判定順序:
+      1. FEATURE_POLICIES に登録されているか
+      2. FeatureStatus が HIDDEN / MAINTENANCE → 全員拒否
+      3. 機能フラグ (feature_flags) が OFF → 拒否
+      4. ロールチェック (RoleRank.gte)
+    """
+
+    def check(
+        self,
+        feature: str,
+        user_role: Optional[str] = None,
+    ) -> AccessResult:
         """
         指定機能にアクセス可能かどうかを返す。
 
         Args:
-            feature:   機能キー (_FEATURE_REQUIREMENTS のキー)
-            user_role: ユーザーのロール文字列 (None = ゲスト扱い)
+            feature:   機能 ID (FEATURE_POLICIES のキー)
+            user_role: ユーザーの role 文字列 (None = ゲスト扱い)
         """
-        # 機能フラグチェック
-        flag_key = feature.upper()
-        if not flags.is_enabled(flag_key):
+        policy = get_policy(feature)
+
+        # ── ポリシー未登録の機能は一般会員以上で許可 ─────────────────
+        if policy is None:
+            role = user_role or RoleValue.GUEST
+            allowed = RoleRank.gte(role, RoleValue.MEMBER_FREE)
+            return AccessResult(
+                allowed=allowed,
+                reason="" if allowed else "会員登録が必要です",
+                required_role=RoleValue.MEMBER_FREE,
+                upgrade_hint="" if allowed else get_upgrade_hint(role, RoleValue.MEMBER_FREE),
+            )
+
+        # ── HIDDEN / MAINTENANCE は全員拒否 ─────────────────────────
+        if policy.status in (FeatureStatus.HIDDEN, FeatureStatus.MAINTENANCE):
+            return AccessResult(
+                allowed=False,
+                reason="この機能は現在利用できません",
+                feature_status=policy.status.value,
+            )
+
+        # ── 機能フラグチェック ────────────────────────────────────────
+        if policy.flag_key and not flags.is_enabled(policy.flag_key):
             return AccessResult(
                 allowed=False,
                 reason=f"機能 '{feature}' は現在無効です",
-                required_role="",
+                feature_status="disabled",
             )
 
-        role = user_role or Role.GUEST
-        required = _FEATURE_REQUIREMENTS.get(feature, Role.MEMBER_FREE)
-
-        user_rank = _ROLE_RANK.get(role, 0)
-        required_rank = _ROLE_RANK.get(required, 1)
-
-        if user_rank >= required_rank:
-            return AccessResult(allowed=True)
+        # ── ロールチェック ────────────────────────────────────────────
+        role = user_role or RoleValue.GUEST
+        if RoleRank.gte(role, policy.required_role):
+            return AccessResult(
+                allowed=True,
+                feature_status=policy.status.value,
+            )
 
         return AccessResult(
             allowed=False,
-            reason=f"この機能は {required} 以上のメンバーが利用できます",
-            required_role=required,
+            reason=f"この機能は {_role_label(policy.required_role)} 以上のメンバーが利用できます",
+            required_role=policy.required_role,
+            upgrade_hint=policy.upgrade_hint,
+            feature_status=policy.status.value,
         )
 
-    def is_admin(self, user_role: Optional[str]) -> bool:
-        return user_role in (Role.ADMIN, Role.HEADQUARTERS)
-
-    def is_hq(self, user_role: Optional[str]) -> bool:
-        return user_role == Role.HEADQUARTERS
+    def check_many(
+        self,
+        features: list[str],
+        user_role: Optional[str] = None,
+    ) -> dict[str, AccessResult]:
+        """複数機能を一括チェックする。"""
+        return {f: self.check(f, user_role) for f in features}
 
     def get_accessible_features(self, user_role: Optional[str]) -> list[str]:
-        """指定ロールがアクセスできる全機能のリストを返す。"""
-        role = user_role or Role.GUEST
-        rank = _ROLE_RANK.get(role, 0)
+        """指定ロールがアクセスできる機能 ID の一覧を返す。"""
         return [
-            feat for feat, req in _FEATURE_REQUIREMENTS.items()
-            if _ROLE_RANK.get(req, 1) <= rank
+            p.feature_id
+            for p in get_policies_for_role(user_role)
+            if not p.flag_key or flags.is_enabled(p.flag_key)
         ]
+
+    def get_feature_map(self, user_role: Optional[str]) -> dict[str, dict]:
+        """
+        全機能の accessible / status をまとめた dict を返す。
+        フロントエンドの /api/system/features で利用。
+        """
+        role = user_role or RoleValue.GUEST
+        result: dict[str, dict] = {}
+        for fid, policy in FEATURE_POLICIES.items():
+            r = self.check(fid, role)
+            result[fid] = {
+                "allowed": r.allowed,
+                "status": policy.status.value,
+                "status_badge": policy.status.ui_badge,
+                "required_role": policy.required_role,
+                "upgrade_hint": r.upgrade_hint,
+            }
+        return result
+
+    def is_admin(self, user_role: Optional[str]) -> bool:
+        from app.core.roles import ADMIN_ROLES
+        return user_role in ADMIN_ROLES
+
+    def is_hq(self, user_role: Optional[str]) -> bool:
+        from app.core.roles import HQ_ROLES
+        return user_role in HQ_ROLES
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ヘルパー
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _role_label(role: str) -> str:
+    from app.core.roles import get_role_meta
+    return get_role_meta(role).label
 
 
 # グローバルシングルトン
