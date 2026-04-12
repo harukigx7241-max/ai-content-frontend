@@ -3447,3 +3447,145 @@ input[type="checkbox"], input[type="radio"] {
   min-height: 36px;
 }
 
+/* ════════════════════════════════════════
+   Phase 3 — レスポンシブ全面見直し
+   4 段階ティア: 1024px / 768px / 480px / 375px
+   ════════════════════════════════════════ */
+
+/* ── グローバル overflow・box-sizing 防止 ───────────────── */
+html {
+  overflow-x: hidden;
+}
+*, *::before, *::after {
+  box-sizing: border-box;
+  min-width: 0; /* flex/grid アイテムがコンテンツ幅以下に縮めるように */
+}
+img, video, iframe, canvas {
+  max-width: 100%;
+}
+
+/* ── 1024px: タブレット横向き ────────────────────────────── */
+@media (max-width: 1024px) {
+  .tab-content-area   { padding: 24px 16px 80px; }
+  .tools-grid         { gap: 16px; }
+  .sq-container       { padding: 28px 16px 80px; }
+  .mypage-container   { padding: 20px 16px; }
+  .admin-container    { padding: 20px 16px; }
+  .auth-card          { padding: 32px 28px; }
+  .bundle-form .field-group { min-width: 160px; }
+}
+
+/* ── 768px: 補完ルール (Phase 13 ブロックに追加) ─────────── */
+@media (max-width: 768px) {
+  /* Hero CTA ── 新クラス名 .hero-cta-group に対応 */
+  .hero-cta-group {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .hero-cta-primary,
+  .hero-cta-secondary {
+    width: 100%;
+    max-width: 320px;
+    justify-content: center;
+  }
+
+  /* マイページ ヒーロー縦積み */
+  .mypage-hero {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  /* モーダル: スライドアップ式 (全画面風) */
+  .fullscreen-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+  .fullscreen-modal {
+    border-radius: 20px 20px 0 0;
+    max-width: 100%;
+    max-height: 92dvh;
+    max-height: 92vh; /* fallback */
+  }
+  .dash-modal-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+  .dash-modal {
+    border-radius: 20px 20px 0 0;
+    max-width: 100%;
+    max-height: 90dvh;
+    max-height: 90vh; /* fallback */
+  }
+
+  /* 認証カード余白 */
+  .auth-card { padding: 28px 20px; }
+
+  /* 管理詳細グリッド 2列 → 1列 */
+  .dash-detail-grid { grid-template-columns: 1fr; }
+
+  /* シミュレーター入力を可変幅に */
+  .sim-field { flex: 1 1 0; min-width: 0; }
+  .sim-field input { width: 100%; }
+  .sim-result-item { flex: 1 1 0; min-width: 0; }
+}
+
+/* ── 480px: スマホ標準 (Phase 13 ブロックに追加) ─────────── */
+@media (max-width: 480px) {
+  /* 認証ページ */
+  .auth-main {
+    padding: 40px 12px 20px;
+    align-items: flex-start;
+  }
+  .auth-card {
+    padding: 24px 16px;
+    border-radius: 16px;
+  }
+
+  /* マイページ アバター */
+  .mypage-avatar  { width: 44px; height: 44px; font-size: 1.2rem; }
+  .mypage-hero-left { gap: 10px; }
+
+  /* バンドルフォーム フル幅 */
+  .bundle-form .field-group { min-width: 0; width: 100%; }
+
+  /* 広場詳細 */
+  .sq-detail-title    { font-size: 1.15rem; }
+  .sq-detail-meta-row { flex-wrap: wrap; gap: 8px; }
+  .sq-detail-views    { margin-left: 0; }
+
+  /* カード内テキスト折り返し */
+  .tool-card,
+  .mypage-card,
+  .admin-card,
+  .dash-stat-card {
+    word-break: break-word;
+    overflow-wrap: break-word;
+  }
+
+  /* CTA ボタン フル幅 */
+  .hero-cta-primary,
+  .hero-cta-secondary { max-width: 100%; }
+}
+
+/* ── 480px 追加: 管理グリッド (クラス名修正) ─────────────── */
+@media (max-width: 480px) {
+  /* Phase 13 は .dash-stat-grid を参照しているが、実際は .dash-stats-grid */
+  .dash-stats-grid { grid-template-columns: repeat(2, 1fr); }
+  /* 管理タブバーの折り返し */
+  .admin-filter-bar { flex-wrap: wrap; gap: 6px; }
+}
+
+/* ── 375px: 小型スマホ (Phase 13 ブロックに追加) ─────────── */
+@media (max-width: 375px) {
+  .auth-card    { padding: 20px 14px; }
+  .hero-cta-group { gap: 8px; }
+  .tab-content-area { padding: 14px 8px 80px; }
+  .bundle-form  { flex-direction: column; }
+  .bundle-btn   { width: 100%; }
+  .sim-inputs   { flex-direction: column; }
+  .sim-result-item { min-width: 0; }
+  .dash-stats-grid { grid-template-columns: 1fr; }
+}
+

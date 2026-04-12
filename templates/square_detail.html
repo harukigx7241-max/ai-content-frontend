@@ -233,6 +233,24 @@
 
 </main>
 
+<!-- モバイルボトムナビ (広場詳細ページ) -->
+<nav class="mobile-bottom-nav" id="mobileBottomNav" aria-label="ボトムナビ">
+  <div class="mobile-bottom-nav-inner">
+    <a href="/" class="mbn-btn">
+      <span class="mbn-icon">⚒</span>
+      <span class="mbn-label">工房</span>
+    </a>
+    <a href="/square" class="mbn-btn active" aria-current="page">
+      <span class="mbn-icon">⚔</span>
+      <span class="mbn-label">広場</span>
+    </a>
+    <a href="/mypage" class="mbn-btn">
+      <span class="mbn-icon">👤</span>
+      <span class="mbn-label">マイページ</span>
+    </a>
+  </div>
+</nav>
+
 <script>
 const POST_ID = {{ post.id }};
 
@@ -329,7 +347,8 @@ document.getElementById('drawerLogoutBtn')?.addEventListener('click', async () =
 });
 {% endif %}
 
-// ── モバイルハンバーガーメニュー ─────────────────────────────────
+// ── モバイル: ボトムナビ + ハンバーガー ──────────────────────────
+document.body.classList.add('has-bottom-nav');
 (function() {
   const btn    = document.getElementById('hamburgerBtn');
   const drawer = document.getElementById('mobileDrawer');

@@ -1,6 +1,6 @@
 # Phase 0 — コードベース再監査レポート
 
-> 最終更新: 2026-04-11 (Phase 13 完了後・第2回監査)  
+> 最終更新: 2026-04-12 (Phase 3 完了後)  
 > 目的: 実装済み / 仮実装 / 骨組みのみ / 未実装 を再確認し、以後のフェーズで認識ズレを防ぐ
 
 ---
@@ -25,10 +25,13 @@
 
 | 機能 | 主要ファイル |
 |------|------------|
-| **スマホ完全最適化** (Phase 13) | `static/css/style.css`, `templates/*.html` |
-| ハンバーガー + モバイルドロワー | `templates/index.html`, `templates/square.html`, `templates/mypage.html`, `templates/admin/dashboard.html` |
-| モバイルボトムナビ (6ボタン) | `static/css/style.css` (`.mobile-bottom-nav`), `static/js/app.js` |
-| ブレークポイント 375 / 480 / 520 / 768px | `static/css/style.css` (Phase 13 mobile block) |
+| **スマホ完全最適化** (Phase 13 + Phase 3) | `static/css/style.css`, `templates/*.html` |
+| ハンバーガー + モバイルドロワー | 全ページ対応: `index` / `square*` / `square_new` / `mypage` / `admin/*` |
+| モバイルボトムナビ | `index` / `mypage` / `square` / `square_detail` / `square_new` |
+| ブレークポイント 1024 / 768 / 480 / 375px (4 段階) | `static/css/style.css` (Phase 3 block) |
+| hero CTA (.hero-cta-group) モバイル縦積み | `static/css/style.css` (Phase 3 block) |
+| モーダル スライドアップ式 (768px 以下) | `.fullscreen-modal` / `.dash-modal` |
+| overflow-x 完全防止 (`html` + `*`) | `static/css/style.css` (Phase 3 block) |
 | タッチターゲット 44px 保証 | `static/css/style.css` |
 | ロゴ / 見出し演出 (gradient + orb) | `templates/index.html`, `static/css/style.css` |
 | ギルド世界観 UI (琥珀色テーマ) | `static/css/style.css` (`:root` warm lodge variables) |

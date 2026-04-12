@@ -22,8 +22,38 @@
       <a href="/square" class="auth-nav-btn outline">← ギルド広場に戻る</a>
       <button class="auth-nav-btn outline" id="logoutBtn">ログアウト</button>
     </div>
+    <button class="hamburger-btn" id="hamburgerBtn" aria-label="メニューを開く" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
   </div>
 </header>
+
+<!-- モバイルドロワー -->
+<div class="mobile-drawer" id="mobileDrawer" aria-hidden="true">
+  <div class="mobile-drawer-user">⚔ {{ user.display_name }}</div>
+  <a href="/"       class="auth-nav-btn outline">⚒ 工房</a>
+  <a href="/square" class="auth-nav-btn outline">⚔ ギルド広場</a>
+  <a href="/mypage" class="auth-nav-btn outline">👤 マイページ</a>
+  <button class="auth-nav-btn outline" id="drawerLogoutBtn">ログアウト</button>
+</div>
+
+<!-- モバイルボトムナビ -->
+<nav class="mobile-bottom-nav" id="mobileBottomNav" aria-label="ボトムナビ">
+  <div class="mobile-bottom-nav-inner">
+    <a href="/" class="mbn-btn">
+      <span class="mbn-icon">⚒</span>
+      <span class="mbn-label">工房</span>
+    </a>
+    <a href="/square" class="mbn-btn active" aria-current="page">
+      <span class="mbn-icon">⚔</span>
+      <span class="mbn-label">広場</span>
+    </a>
+    <a href="/mypage" class="mbn-btn">
+      <span class="mbn-icon">👤</span>
+      <span class="mbn-label">マイページ</span>
+    </a>
+  </div>
+</nav>
 
 <main class="mypage-container">
 
@@ -251,6 +281,32 @@ document.getElementById('logoutBtn').addEventListener('click', async () => {
   await fetch('/api/auth/logout', { method: 'POST' });
   location.href = '/';
 });
+
+// ── モバイル: ボトムナビ + ハンバーガー ──────────────────────────
+document.body.classList.add('has-bottom-nav');
+(function() {
+  const btn    = document.getElementById('hamburgerBtn');
+  const drawer = document.getElementById('mobileDrawer');
+  if (!btn || !drawer) return;
+  btn.addEventListener('click', () => {
+    const isOpen = drawer.classList.toggle('open');
+    btn.classList.toggle('open', isOpen);
+    btn.setAttribute('aria-expanded', isOpen);
+    drawer.setAttribute('aria-hidden', !isOpen);
+    document.body.style.overflow = isOpen ? 'hidden' : '';
+  });
+  document.addEventListener('click', e => {
+    if (drawer.classList.contains('open') && !drawer.contains(e.target) && !btn.contains(e.target)) {
+      drawer.classList.remove('open'); btn.classList.remove('open');
+      btn.setAttribute('aria-expanded','false'); drawer.setAttribute('aria-hidden','true');
+      document.body.style.overflow = '';
+    }
+  });
+  drawer.querySelector('#drawerLogoutBtn')?.addEventListener('click', async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    location.href = '/';
+  });
+})();
 </script>
 </body>
 </html>
