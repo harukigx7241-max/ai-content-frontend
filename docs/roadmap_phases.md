@@ -28,7 +28,8 @@
 | 0 (再・Phase 13 後) | コードベース再監査・docs 更新 | phase13-mobile-game-ui | 1203f17 |
 | **1** | **サービス層整理 (FREE-first API-ready)** | phase13-mobile-game-ui | 8ec368f |
 | **2** | **ロール体系 + アクセスポリシー整備** | phase13-mobile-game-ui | abfa0eb |
-| **3** | **レスポンシブ全面見直し** (4 段階ティア・モーダル・ボトムナビ拡充) | phase13-mobile-game-ui | (本コミット) |
+| **3** | **レスポンシブ全面見直し** (4 段階ティア・モーダル・ボトムナビ拡充) | phase13-mobile-game-ui | b813eee |
+| **4** | **ゲーム UI 強化** (SVG ロゴ・Cinzel フォント・レアリティバッジ・カード台帳風) | phase13-mobile-game-ui | (本コミット) |
 
 ---
 

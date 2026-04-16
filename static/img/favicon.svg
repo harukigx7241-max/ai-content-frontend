@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="b" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#d4a843"/>
+      <stop offset="50%"  stop-color="#c27318"/>
+      <stop offset="100%" stop-color="#d4a843"/>
+    </linearGradient>
+    <linearGradient id="f" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%"   stop-color="#fffdf8"/>
+      <stop offset="100%" stop-color="#f0e8d8"/>
+    </linearGradient>
+  </defs>
+  <!-- 外リング -->
+  <circle cx="16" cy="16" r="15.5" fill="url(#b)"/>
+  <!-- 内背景 -->
+  <circle cx="16" cy="16" r="13"   fill="#2c1206"/>
+  <!-- パーチメント -->
+  <circle cx="16" cy="16" r="11"   fill="url(#f)"/>
+  <!-- ハンマー柄 -->
+  <g transform="translate(16,16) rotate(-38)">
+    <rect x="-1.2" y="-8" width="2.4" height="10" rx="1.2" fill="#78350f"/>
+    <rect x="-4"   y="-10" width="8" height="4"   rx="1.5" fill="#451a03"/>
+    <rect x="-3.5" y="-10" width="7" height="1.5" rx="0.8" fill="rgba(255,255,255,0.25)"/>
+  </g>
+  <!-- 羽根ペン -->
+  <g transform="translate(16,16) rotate(38)">
+    <ellipse cx="0" cy="-5" rx="2.5" ry="7" fill="#c27318" opacity="0.9"/>
+    <path d="M-1.2,2 L0,5 L1.2,2 Z" fill="#451a03"/>
+  </g>
+  <!-- 中心点 -->
+  <circle cx="16" cy="16" r="2"   fill="#c27318"/>
+  <circle cx="16" cy="16" r="1"   fill="#fef3c7"/>
+</svg>

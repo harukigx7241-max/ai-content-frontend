@@ -3,7 +3,7 @@
    Warm Lodge / Guild Hall — 明るい工房・集会所テーマ
    =================================================== */
 
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&family=Noto+Serif+JP:wght@700&family=Inter:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&family=Noto+Serif+JP:wght@700&family=Inter:wght@400;600;700&family=Cinzel:wght@600;700;900&display=swap');
 
 /* ─── CSS Variables ─── */
 :root {
@@ -53,6 +53,20 @@
   --font: 'Noto Sans JP','Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif;
   --font-serif: 'Noto Serif JP','Yu Mincho',serif;
   --font-mono: 'Courier New',monospace;
+  --font-game: 'Cinzel','Georgia','Times New Roman',serif; /* 英語見出し・バッジ用 */
+
+  /* ── Phase 4: ランクレアリティカラー ── */
+  --rank-bronze:    #cd7f32;
+  --rank-silver:    #9ca3af;
+  --rank-gold:      #f59e0b;
+  --rank-platinum:  #a78bfa;
+  --rank-legendary: #c084fc;
+  --rank-mythic:    #f472b6;
+
+  /* ── Phase 4: 光沢・エンボス ── */
+  --btn-shine: inset 0 1px 0 rgba(255,255,255,0.35), inset 0 -1px 0 rgba(0,0,0,0.12);
+  --emboss-border: 1px solid rgba(255,255,255,0.25);
+  --guild-ornament: rgba(194,115,24,0.30);
 }
 
 /* ─── Reset ─── */
@@ -3587,5 +3601,568 @@ img, video, iframe, canvas {
   .sim-inputs   { flex-direction: column; }
   .sim-result-item { min-width: 0; }
   .dash-stats-grid { grid-template-columns: 1fr; }
+}
+
+
+
+/* ════════════════════════════════════════════════════════════════
+   Phase 4 — ゲーム UI 強化
+   Guild Hall Fantasy Typography & Visual System
+   ════════════════════════════════════════════════════════════════ */
+
+/* ──────────────────────────────────────────────────────────────
+   1. ロゴ — ギルド紋章
+   ────────────────────────────────────────────────────────────── */
+.logo-emblem {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  transition: transform 0.3s ease, filter 0.3s ease;
+  filter: drop-shadow(0 1px 4px rgba(194,115,24,0.30));
+}
+.logo-emblem:hover {
+  transform: scale(1.07) rotate(-3deg);
+  filter: drop-shadow(0 2px 8px rgba(194,115,24,0.55));
+}
+.logo-text {
+  font-family: var(--font-game);
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: 0.06em;
+  background: linear-gradient(135deg, #c27318 0%, #78350f 50%, #c27318 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+/* モバイルではロゴテキストを短縮 */
+@media (max-width: 480px) {
+  .logo-text { font-size: 0.92rem; letter-spacing: 0.04em; }
+}
+
+/* ──────────────────────────────────────────────────────────────
+   2. タイポグラフィ — ゲーム風見出しシステム
+   ────────────────────────────────────────────────────────────── */
+
+/* ── メジャー見出し (工房名・セクション名) ── */
+.guild-heading {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--text-primary);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.guild-heading::before,
+.guild-heading::after {
+  content: '';
+  display: block;
+  height: 2px;
+  width: 28px;
+  background: linear-gradient(90deg, transparent, var(--accent-gold));
+  border-radius: 1px;
+  flex-shrink: 0;
+}
+.guild-heading::after {
+  background: linear-gradient(90deg, var(--accent-gold), transparent);
+}
+
+/* ── セクションタイトル (カード内・サブ見出し) ── */
+.guild-section-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-game);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent-gold);
+  padding: 3px 12px;
+  border: 1px solid rgba(194,115,24,0.35);
+  border-radius: 4px;
+  background: rgba(194,115,24,0.06);
+  margin-bottom: 10px;
+}
+.guild-section-label::before { content: '⚒'; font-style: normal; }
+
+/* ── ヒーロータイトル強化 ── */
+.hero-title {
+  text-shadow: 0 2px 12px rgba(194,115,24,0.25);
+}
+
+/* ── CTA ボタン: 光沢・立体感 ── */
+.hero-cta-primary {
+  box-shadow: var(--btn-shine), 0 0 24px rgba(251,191,36,0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s;
+  border: var(--emboss-border);
+  position: relative;
+  overflow: hidden;
+}
+.hero-cta-primary::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -60%;
+  width: 40%;
+  height: 200%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+  transform: skewX(-20deg);
+  animation: btnShine 4s ease-in-out infinite;
+}
+@keyframes btnShine {
+  0%, 100% { left: -60%; opacity: 0; }
+  40%       { left: -60%; opacity: 0; }
+  60%       { left:  110%; opacity: 1; }
+  80%       { left:  110%; opacity: 0; }
+}
+
+/* ── 生成ボタン: 光沢強化 ── */
+.generate-btn,
+.auth-submit-btn {
+  box-shadow: var(--btn-shine), 0 4px 16px rgba(194,115,24,0.30) !important;
+  border: var(--emboss-border) !important;
+  position: relative;
+  overflow: hidden;
+  letter-spacing: 0.04em;
+}
+.generate-btn::after,
+.auth-submit-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, transparent 60%);
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   3. タブナビ — 工房タブ ゲーム感
+   ────────────────────────────────────────────────────────────── */
+.tab-btn {
+  font-family: var(--font-serif);
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  border-radius: 8px 8px 0 0;
+  border-bottom: 2px solid transparent;
+  transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.15s;
+}
+.tab-btn.active {
+  transform: translateY(-1px);
+  font-weight: 700;
+}
+.tab-btn.active[data-tab="note"] {
+  box-shadow: 0 -2px 12px rgba(109,40,217,0.18), var(--btn-shine);
+  border-bottom-color: #6d28d9;
+}
+.tab-btn.active[data-tab="cw"] {
+  box-shadow: 0 -2px 12px rgba(30,80,162,0.18), var(--btn-shine);
+  border-bottom-color: #1e50a2;
+}
+.tab-btn.active[data-tab="fortune"] {
+  box-shadow: 0 -2px 12px rgba(190,18,60,0.18), var(--btn-shine);
+  border-bottom-color: #be123c;
+}
+.tab-btn.active[data-tab="sns"] {
+  box-shadow: 0 -2px 12px rgba(21,128,61,0.18), var(--btn-shine);
+  border-bottom-color: #15803d;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   4. ツールカード — 依頼書・工房依頼板風
+   ────────────────────────────────────────────────────────────── */
+.tool-card {
+  position: relative;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(100,60,20,0.08), 0 1px 3px rgba(100,60,20,0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.tool-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 24px rgba(100,60,20,0.14), 0 2px 6px rgba(100,60,20,0.08);
+}
+/* 上辺 真鍮ピン装飾 */
+.tool-card::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, rgba(194,115,24,0.6), transparent);
+  border-radius: 0 0 4px 4px;
+}
+/* カードヘッダーに工房タブ対応アクセント線 */
+.card-header {
+  border-bottom: 2px solid var(--glass-border);
+  position: relative;
+}
+[data-tab="note"]    .card-header { border-bottom-color: rgba(109,40,217,0.25); }
+[data-tab="cw"]      .card-header { border-bottom-color: rgba(30,80,162,0.25);  }
+[data-tab="fortune"] .card-header { border-bottom-color: rgba(190,18,60,0.25);  }
+[data-tab="sns"]     .card-header { border-bottom-color: rgba(21,128,61,0.25);  }
+
+/* ツールカードタイトル ゲームフォント */
+.tool-card-title,
+.card-title {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   5. ランクバッジ — レアリティシステム
+   ────────────────────────────────────────────────────────────── */
+
+/* ベース: Cinzelフォントに変更 */
+.gami-level-badge {
+  font-family: var(--font-game);
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-weight: 700;
+  position: relative;
+  overflow: hidden;
+}
+.gami-level-badge::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.20) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+/* レベル別レアリティ (JS側で data-rank="bronze" 等を付与) */
+.gami-level-badge[data-rank="bronze"] {
+  background: linear-gradient(135deg, rgba(205,127,50,0.18), rgba(205,127,50,0.08));
+  border: 1px solid rgba(205,127,50,0.50);
+  color: var(--rank-bronze);
+  box-shadow: 0 0 12px rgba(205,127,50,0.20);
+}
+.gami-level-badge[data-rank="silver"] {
+  background: linear-gradient(135deg, rgba(156,163,175,0.18), rgba(156,163,175,0.08));
+  border: 1px solid rgba(156,163,175,0.50);
+  color: var(--rank-silver);
+  box-shadow: 0 0 12px rgba(156,163,175,0.20);
+}
+.gami-level-badge[data-rank="gold"] {
+  background: linear-gradient(135deg, rgba(245,158,11,0.20), rgba(245,158,11,0.08));
+  border: 1px solid rgba(245,158,11,0.55);
+  color: var(--rank-gold);
+  box-shadow: 0 0 16px rgba(245,158,11,0.28);
+}
+.gami-level-badge[data-rank="platinum"] {
+  background: linear-gradient(135deg, rgba(167,139,250,0.20), rgba(167,139,250,0.08));
+  border: 1px solid rgba(167,139,250,0.55);
+  color: var(--rank-platinum);
+  box-shadow: 0 0 16px rgba(167,139,250,0.28);
+}
+.gami-level-badge[data-rank="legendary"] {
+  background: linear-gradient(135deg, rgba(192,132,252,0.22), rgba(244,114,182,0.14));
+  border: 1px solid rgba(192,132,252,0.55);
+  color: var(--rank-legendary);
+  box-shadow: 0 0 20px rgba(192,132,252,0.35);
+  animation: legendaryPulse 3s ease-in-out infinite;
+}
+@keyframes legendaryPulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(192,132,252,0.35); }
+  50%       { box-shadow: 0 0 32px rgba(192,132,252,0.55), 0 0 12px rgba(244,114,182,0.30); }
+}
+
+/* ── 称号テキスト 装飾 ── */
+.gami-title-text {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  background: linear-gradient(135deg, var(--accent-gold), #b45309);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 0.95rem;
+}
+
+/* ── XP バー 強化 ── */
+.gami-bar-track {
+  height: 10px;
+  border-radius: 5px;
+  background: rgba(100,60,20,0.10);
+  box-shadow: inset 0 1px 3px rgba(100,60,20,0.15);
+  border: 1px solid rgba(100,60,20,0.10);
+}
+.gami-bar-fill {
+  background: linear-gradient(90deg, #c27318, #f59e0b, #fbbf24);
+  box-shadow: 0 0 10px rgba(251,191,36,0.50), inset 0 1px 0 rgba(255,255,255,0.25);
+  border-radius: 5px;
+}
+
+/* ── バッジアイテム 強化 ── */
+.gami-badge-item {
+  border-radius: 12px;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  background: rgba(250,246,239,0.8);
+  border: 1px solid rgba(194,115,24,0.18);
+}
+.gami-badge-item:hover {
+  transform: translateY(-3px) scale(1.04);
+  box-shadow: 0 4px 16px rgba(194,115,24,0.20);
+  border-color: rgba(194,115,24,0.40);
+}
+.gami-badge-item.earned {
+  background: linear-gradient(135deg, rgba(194,115,24,0.10), rgba(251,191,36,0.06));
+  border-color: rgba(194,115,24,0.35);
+  box-shadow: 0 0 12px rgba(194,115,24,0.14);
+}
+.gami-badge-icon { font-size: 1.6rem; filter: drop-shadow(0 1px 3px rgba(100,60,20,0.25)); }
+.gami-badge-name {
+  font-family: var(--font-serif);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   6. ギルド広場カード — 冒険者台帳風
+   ────────────────────────────────────────────────────────────── */
+.sq-card {
+  border-radius: 12px !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+  position: relative;
+  overflow: hidden;
+}
+.sq-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(194,115,24,0.45), transparent);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.sq-card:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 6px 24px rgba(100,60,20,0.14), 0 2px 6px rgba(100,60,20,0.08) !important;
+}
+.sq-card:hover::before { opacity: 1; }
+
+.sq-card-title {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--text-primary) !important;
+}
+
+/* カテゴリバッジ 強化 */
+.sq-cat-badge {
+  font-family: var(--font-game);
+  font-size: 0.62rem !important;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  border-radius: 4px;
+}
+
+/* ── ヒーロー/注目セクション ── */
+.sq-hero-title {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+.sq-featured-card {
+  border-radius: 12px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.sq-featured-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(100,60,20,0.14);
+}
+.sq-featured-card-title {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   7. マイページ — 冒険者台帳
+   ────────────────────────────────────────────────────────────── */
+.mypage-title {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  font-size: 1.35rem;
+  background: linear-gradient(135deg, var(--text-primary), var(--accent-wood));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.mypage-section-title {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  position: relative;
+  padding-bottom: 8px;
+}
+.mypage-section-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0;
+  width: 32px; height: 2px;
+  background: linear-gradient(90deg, var(--accent-gold), transparent);
+  border-radius: 1px;
+}
+
+/* マイページカード: 台帳風上辺 */
+.mypage-card {
+  border-top: 3px solid rgba(194,115,24,0.28);
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
+  transition: box-shadow 0.2s ease;
+}
+.mypage-card:hover {
+  box-shadow: 0 4px 20px rgba(100,60,20,0.12) !important;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   8. ヘッダー / ナビ強化
+   ────────────────────────────────────────────────────────────── */
+.site-header {
+  border-bottom: 1px solid rgba(194,115,24,0.20);
+  box-shadow: 0 2px 12px rgba(100,60,20,0.08);
+}
+
+/* 認証ボタン 強化 */
+.auth-nav-btn.primary {
+  box-shadow: var(--btn-shine), 0 2px 10px rgba(194,115,24,0.28);
+  border: var(--emboss-border);
+  font-family: var(--font-serif);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  position: relative;
+  overflow: hidden;
+}
+.auth-nav-btn.primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 60%);
+  pointer-events: none;
+  border-radius: inherit;
+}
+.auth-nav-btn.outline {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   9. 工房ガイド (workshop guide) 強化
+   ────────────────────────────────────────────────────────────── */
+.hwg-lead {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  font-size: 1rem;
+}
+.hwg-card {
+  border-radius: 12px;
+  border: 1px solid rgba(194,115,24,0.20);
+  position: relative;
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  overflow: hidden;
+}
+.hwg-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.10) 0%, transparent 50%);
+  pointer-events: none;
+}
+.hwg-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  border-color: rgba(194,115,24,0.45);
+  box-shadow: 0 6px 20px rgba(100,60,20,0.16);
+}
+.hwg-name {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   10. ボトムナビ ゲーム感
+   ────────────────────────────────────────────────────────────── */
+.mbn-btn.active {
+  color: var(--accent-gold) !important;
+  background: rgba(194,115,24,0.10) !important;
+}
+.mbn-icon { filter: drop-shadow(0 1px 2px rgba(100,60,20,0.15)); }
+.mbn-label { font-family: var(--font-serif); letter-spacing: 0.04em; }
+
+/* ──────────────────────────────────────────────────────────────
+   11. フォーム / 結果エリア強化
+   ────────────────────────────────────────────────────────────── */
+.field-label {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: 0.80rem;
+  letter-spacing: 0.04em;
+}
+
+/* 結果エリア: 羊皮紙ラベル */
+.result-label {
+  font-family: var(--font-game);
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent-gold);
+  opacity: 0.8;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   12. 管理ダッシュボード 強化
+   ────────────────────────────────────────────────────────────── */
+.admin-title {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+.dash-stat-value {
+  font-family: var(--font-game);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   13. 認証ページ強化
+   ────────────────────────────────────────────────────────────── */
+.auth-title {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+.auth-card {
+  border-top: 3px solid rgba(194,115,24,0.35);
+  border-radius: 0 0 20px 20px;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   14. セクションタイトル (hero-workshop-guide 内など)
+   ────────────────────────────────────────────────────────────── */
+.section-title {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+/* ──────────────────────────────────────────────────────────────
+   15. モバイルドロワー強化
+   ────────────────────────────────────────────────────────────── */
+.mobile-drawer {
+  border-top: 3px solid rgba(194,115,24,0.30);
+}
+.mobile-drawer-user {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  letter-spacing: 0.04em;
 }
 

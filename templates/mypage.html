@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>マイページ — プロンプトギルド</title>
+  <title>冒険者台帳 — プロンプトギルド</title>
+  <link rel="icon" type="image/svg+xml" href="/static/img/favicon.svg">
   <link rel="stylesheet" href="/static/css/style.css">
   <script src="/static/js/core/effects.js" defer></script>
 </head>
@@ -13,8 +14,8 @@
 
 <header class="site-header">
   <div class="header-inner">
-    <a href="/" class="logo" style="text-decoration:none">
-      <span class="logo-icon">✦</span>
+    <a href="/" class="logo" style="text-decoration:none" aria-label="プロンプトギルド トップへ">
+      <img src="/static/img/guild-emblem.svg" alt="" class="logo-emblem" width="44" height="44">
       <span class="logo-text">プロンプトギルド</span>
     </a>
     <div class="auth-nav">
@@ -660,16 +661,32 @@ async function loadGamification() {
     _gamiLoaded = true;
     loading.style.display = 'none';
 
+    // レベルからレアリティ判定
+    function getRankTier(lv) {
+      if (lv >= 81) return 'legendary';
+      if (lv >= 51) return 'platinum';
+      if (lv >= 26) return 'gold';
+      if (lv >= 11) return 'silver';
+      return 'bronze';
+    }
+    const rankTier = getRankTier(d.level);
+
     // ヒーローのランク表示
     const heroRank  = document.getElementById('heroRankBadge');
     const heroTitle = document.getElementById('heroTitleBadge');
-    if (heroRank)  { heroRank.textContent = `Lv.${d.level}`;  heroRank.style.display = ''; }
-    if (heroTitle) { heroTitle.textContent = d.title;          heroTitle.style.display = ''; }
+    if (heroRank)  {
+      heroRank.textContent = `Lv.${d.level}`;
+      heroRank.dataset.rank = rankTier;
+      heroRank.style.display = '';
+    }
+    if (heroTitle) { heroTitle.textContent = d.title; heroTitle.style.display = ''; }
 
     // プロフィールタブのランクミニカード
     const pRankCard = document.getElementById('profileRankCard');
     if (pRankCard) {
-      document.getElementById('profileRankBadge').textContent = `Lv.${d.level}`;
+      const pBadge = document.getElementById('profileRankBadge');
+      pBadge.textContent    = `Lv.${d.level}`;
+      pBadge.dataset.rank   = rankTier;
       document.getElementById('profileTitle').textContent     = d.title;
       if (d.xp_at_next_level !== null) {
         document.getElementById('profileXpText').textContent  = `${d.xp} / ${d.xp_at_next_level} XP`;
@@ -685,8 +702,9 @@ async function loadGamification() {
 
     // レベルバッジ (活動記録タブ内)
     const badge = document.getElementById('gamiLevelBadge');
-    badge.textContent = `Lv.${d.level}`;
-    badge.style.display = '';
+    badge.textContent    = `Lv.${d.level}`;
+    badge.dataset.rank   = rankTier;
+    badge.style.display  = '';
 
     // XP バー
     const xpSec = document.getElementById('gamiXpSection');
