@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "id": "fortune_authority_coconala",
+    "title": "占い師権威ページ — ブランディング＆実績訴求",
+    "category": "fortune",
+    "subcategory": "authority",
+    "platform": ["ココナラ", "SNS"],
+    "target_audience": "ココナラで鑑定単価を上げたいプロ占い師",
+    "goal": "実績・スタイル・信頼性を訴求する占い師ページを作成する",
+    "tone": "神秘的・温かく・プロフェッショナル",
+    "difficulty": "intermediate",
+    "tags": ["占い師", "ブランディング", "ココナラ", "権威"],
+    "seasonality": "all_year",
+    "last_updated": "2026-04-16",
+    "requires_ai": true,
+    "free_available": false,
+    "rarity": "uncommon",
+    "knowledge_ref": null
+  },
+  "form": {
+    "fortune_type": "占いの種類（例: タロット・西洋占星術・数秘術）",
+    "name": "占い師名・ニックネーム",
+    "specialty": "得意分野・強み",
+    "style": "鑑定スタイル（例: 温かく寄り添う・本質直撃型）",
+    "achievements": "実績（例: 鑑定数・評価数・リピート率）",
+    "platform": "ココナラ",
+    "price": "鑑定単価（円）"
+  }
+}

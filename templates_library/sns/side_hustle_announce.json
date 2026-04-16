@@ -1,11 +1,21 @@
 {
   "_meta": {
     "id": "sns_side_hustle_announce",
-    "label": "副業アカウント — 自己紹介・告知投稿",
-    "workshop": "sns",
-    "description": "副業・フリーランスSNSアカウントの告知投稿テンプレート",
+    "title": "副業アカウント — 自己紹介・告知投稿",
+    "category": "sns",
+    "subcategory": "announcement",
+    "platform": ["X", "Instagram"],
+    "target_audience": "副業をSNSで告知したい人",
+    "goal": "フォロワーを増やす自己紹介投稿を作成する",
+    "tone": "親しみやすく・信頼感のある",
+    "difficulty": "beginner",
     "tags": ["副業", "自己紹介", "告知", "X", "Instagram"],
-    "difficulty": "beginner"
+    "seasonality": "all_year",
+    "last_updated": "2026-04-16",
+    "requires_ai": true,
+    "free_available": true,
+    "rarity": "common",
+    "knowledge_ref": null
   },
   "form": {
     "platform": "X",

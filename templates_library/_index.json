@@ -1,49 +1,243 @@
 {
   "_meta": {
-    "version": "1.0",
-    "description": "テンプレートライブラリ インデックス。Phase 19 で /api/templates エンドポイントから公開予定。",
-    "total": 5
+    "version": "2.0",
+    "description": "テンプレートライブラリ インデックス。Phase 5 で全面改訂。",
+    "last_updated": "2026-04-16",
+    "total": 21,
+    "schema_version": "2.0",
+    "schema_ref": "_schema.json"
   },
   "templates": [
     {
       "id": "note_beginner_income",
-      "label": "AI副業入門 — 月5万円の作り方",
-      "workshop": "note",
-      "tags": ["副業", "AI", "初心者"],
+      "title": "AI副業入門 — 月5万円の作り方",
+      "category": "note",
+      "subcategory": "beginner",
       "difficulty": "beginner",
+      "rarity": "common",
+      "tags": ["副業", "AI", "初心者", "収益化"],
+      "platform": ["note"],
       "file": "note/beginner_income.json"
     },
     {
       "id": "note_sns_growth",
-      "label": "ゼロから始めるSNS運用術",
-      "workshop": "note",
-      "tags": ["SNS", "集客", "フォロワー"],
+      "title": "ゼロから始めるSNS運用術",
+      "category": "note",
+      "subcategory": "educational",
       "difficulty": "intermediate",
+      "rarity": "common",
+      "tags": ["SNS", "集客", "フォロワー", "マーケティング"],
+      "platform": ["note"],
       "file": "note/sns_growth.json"
     },
     {
-      "id": "cw_writer_proposal",
-      "label": "ライター案件 — 採用率アップ提案文",
-      "workshop": "cw",
-      "tags": ["ライター", "提案文"],
-      "difficulty": "beginner",
-      "file": "cw/writer_proposal.json"
+      "id": "note_educational_howto",
+      "title": "教育型ハウツー — スキル解説有料note",
+      "category": "note",
+      "subcategory": "educational",
+      "difficulty": "intermediate",
+      "rarity": "uncommon",
+      "tags": ["ハウツー", "スキル", "解説", "教育"],
+      "platform": ["note"],
+      "file": "note/educational.json"
     },
     {
-      "id": "fortune_tarot_love",
-      "label": "タロット — 恋愛総合鑑定",
-      "workshop": "fortune",
-      "tags": ["タロット", "恋愛"],
+      "id": "note_seasonal_yearend",
+      "title": "年末年始特集 — 振り返り＆来年の目標",
+      "category": "note",
+      "subcategory": "seasonal",
       "difficulty": "beginner",
-      "file": "fortune/tarot_love.json"
+      "rarity": "rare",
+      "tags": ["年末", "振り返り", "新年", "目標設定"],
+      "platform": ["note"],
+      "file": "note/seasonal.json"
+    },
+    {
+      "id": "tips_beginner_digital",
+      "title": "tips入門 — デジタル教材・PDF販売",
+      "category": "tips",
+      "subcategory": "beginner",
+      "difficulty": "beginner",
+      "rarity": "common",
+      "tags": ["tips", "デジタル教材", "PDF", "販売"],
+      "platform": ["tips"],
+      "file": "tips/beginner.json"
+    },
+    {
+      "id": "tips_premium_bundle",
+      "title": "tips上級 — バンドル商品・高単価設計",
+      "category": "tips",
+      "subcategory": "premium",
+      "difficulty": "advanced",
+      "rarity": "rare",
+      "tags": ["tips", "バンドル", "高単価", "プレミアム"],
+      "platform": ["tips"],
+      "file": "tips/premium.json"
+    },
+    {
+      "id": "brain_authority_sales",
+      "title": "Brain権威者ページ — 実績・信頼性訴求",
+      "category": "brain",
+      "subcategory": "authority",
+      "difficulty": "intermediate",
+      "rarity": "rare",
+      "tags": ["Brain", "権威", "実績", "情報商材"],
+      "platform": ["Brain"],
+      "file": "brain/authority.json"
+    },
+    {
+      "id": "brain_conversion_funnel",
+      "title": "Brainコンバージョン — 購買転換設計",
+      "category": "brain",
+      "subcategory": "conversion",
+      "difficulty": "advanced",
+      "rarity": "epic",
+      "tags": ["Brain", "コンバージョン", "CTA", "購買"],
+      "platform": ["Brain"],
+      "file": "brain/conversion.json"
     },
     {
       "id": "sns_side_hustle_announce",
-      "label": "副業アカウント — 自己紹介・告知投稿",
-      "workshop": "sns",
-      "tags": ["副業", "告知"],
+      "title": "副業アカウント — 自己紹介・告知投稿",
+      "category": "sns",
+      "subcategory": "announcement",
       "difficulty": "beginner",
+      "rarity": "common",
+      "tags": ["副業", "自己紹介", "告知", "X", "Instagram"],
+      "platform": ["X", "Instagram"],
       "file": "sns/side_hustle_announce.json"
+    },
+    {
+      "id": "sns_campaign_launch",
+      "title": "SNSキャンペーン — 商品発売告知シリーズ",
+      "category": "sns",
+      "subcategory": "campaign",
+      "difficulty": "intermediate",
+      "rarity": "uncommon",
+      "tags": ["キャンペーン", "発売告知", "SNS", "プロモーション"],
+      "platform": ["X", "Instagram", "Threads"],
+      "file": "sns/campaign.json"
+    },
+    {
+      "id": "sns_announcement_profile",
+      "title": "SNSプロフィール最適化 — フォロワー獲得導線",
+      "category": "sns",
+      "subcategory": "announcement",
+      "difficulty": "beginner",
+      "rarity": "common",
+      "tags": ["プロフィール", "フォロワー", "導線", "最適化"],
+      "platform": ["X", "Instagram"],
+      "file": "sns/announcement.json"
+    },
+    {
+      "id": "sales_landing_page_digital",
+      "title": "ランディングページ — デジタル商品LP文",
+      "category": "sales",
+      "subcategory": "conversion",
+      "difficulty": "intermediate",
+      "rarity": "rare",
+      "tags": ["LP", "ランディングページ", "セールスライティング", "CRO"],
+      "platform": ["note", "tips", "Brain", "独自LP"],
+      "file": "sales/landing_page.json"
+    },
+    {
+      "id": "fortune_tarot_love",
+      "title": "タロット — 恋愛総合鑑定",
+      "category": "fortune",
+      "subcategory": "beginner",
+      "difficulty": "beginner",
+      "rarity": "common",
+      "tags": ["タロット", "恋愛", "鑑定書", "ココナラ"],
+      "platform": ["ココナラ"],
+      "file": "fortune/tarot_love.json"
+    },
+    {
+      "id": "fortune_authority_coconala",
+      "title": "占い師権威ページ — ブランディング＆実績訴求",
+      "category": "fortune",
+      "subcategory": "authority",
+      "difficulty": "intermediate",
+      "rarity": "uncommon",
+      "tags": ["占い師", "ブランディング", "ココナラ", "権威"],
+      "platform": ["ココナラ", "SNS"],
+      "file": "fortune/authority.json"
+    },
+    {
+      "id": "cw_writer_proposal",
+      "title": "ライター案件 — 採用率アップ提案文",
+      "category": "cw",
+      "subcategory": "beginner",
+      "difficulty": "beginner",
+      "rarity": "common",
+      "tags": ["ライター", "提案文", "クラウドワークス", "採用"],
+      "platform": ["クラウドワークス"],
+      "file": "cw/writer_proposal.json"
+    },
+    {
+      "id": "cw_conversion_profile",
+      "title": "CWプロフィール — 高単価案件獲得設計",
+      "category": "cw",
+      "subcategory": "conversion",
+      "difficulty": "intermediate",
+      "rarity": "uncommon",
+      "tags": ["クラウドワークス", "プロフィール", "高単価", "案件獲得"],
+      "platform": ["クラウドワークス"],
+      "file": "cw/conversion.json"
+    },
+    {
+      "id": "blog_beginner_seo",
+      "title": "ブログ入門 — SEO対策済み記事構成",
+      "category": "blog",
+      "subcategory": "beginner",
+      "difficulty": "beginner",
+      "rarity": "common",
+      "tags": ["ブログ", "SEO", "記事作成", "検索上位"],
+      "platform": ["WordPress", "はてなブログ", "Ameba"],
+      "file": "blog/beginner.json"
+    },
+    {
+      "id": "email_newsletter_weekly",
+      "title": "メルマガ週刊 — 読者との関係構築シリーズ",
+      "category": "email",
+      "subcategory": "campaign",
+      "difficulty": "intermediate",
+      "rarity": "uncommon",
+      "tags": ["メルマガ", "LINE", "ニュースレター", "関係構築"],
+      "platform": ["メルマガ", "LINE公式"],
+      "file": "email/newsletter.json"
+    },
+    {
+      "id": "common_authority_profile",
+      "title": "権威プロフィール — SNS・コンテンツ共通",
+      "category": "common",
+      "subcategory": "authority",
+      "difficulty": "intermediate",
+      "rarity": "uncommon",
+      "tags": ["プロフィール", "権威", "ブランディング", "自己紹介"],
+      "platform": ["note", "X", "Instagram", "ブログ"],
+      "file": "common/authority.json"
+    },
+    {
+      "id": "common_story_template",
+      "title": "ストーリー型自己開示 — 共感を生む体験談",
+      "category": "common",
+      "subcategory": "story",
+      "difficulty": "beginner",
+      "rarity": "common",
+      "tags": ["ストーリー", "体験談", "共感", "自己開示"],
+      "platform": ["note", "X", "Instagram", "ブログ"],
+      "file": "common/story.json"
+    },
+    {
+      "id": "forge_role_definition_expert",
+      "title": "役割定義マスター — 専門家AI演出",
+      "category": "prompt_forge",
+      "subcategory": "premium",
+      "difficulty": "intermediate",
+      "rarity": "epic",
+      "tags": ["役割定義", "プロンプトエンジニアリング", "AI活用", "品質向上"],
+      "platform": ["ChatGPT", "Claude", "Gemini"],
+      "file": "prompt_forge/role_definition.json"
     }
   ]
 }

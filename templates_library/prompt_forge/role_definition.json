@@ -1,0 +1,28 @@
+{
+  "_meta": {
+    "id": "forge_role_definition_expert",
+    "title": "役割定義マスター — 専門家AI演出",
+    "category": "prompt_forge",
+    "subcategory": "premium",
+    "platform": ["ChatGPT", "Claude", "Gemini"],
+    "target_audience": "AIプロンプトの品質を上げたい全レベル",
+    "goal": "AIに最高の専門家として振る舞わせる役割定義を作成する",
+    "tone": "明確・指示的",
+    "difficulty": "intermediate",
+    "tags": ["役割定義", "プロンプトエンジニアリング", "AI活用", "品質向上"],
+    "seasonality": "all_year",
+    "last_updated": "2026-04-16",
+    "requires_ai": false,
+    "free_available": true,
+    "rarity": "epic",
+    "knowledge_ref": null
+  },
+  "form": {
+    "domain": "専門分野（例: noteライティング・占い・SEO）",
+    "persona_title": "AIに演じさせる肩書き（例: カリスマnoteクリエイター）",
+    "achievements": "架空の実績・数字（例: 月収50万円・販売1000件）",
+    "output_type": "生成させたいコンテンツの種類",
+    "target_ai": "使用するAI（ChatGPT / Gemini / Claude）",
+    "output_format": "出力形式の指定（例: マークダウン / 箇条書き）"
+  }
+}

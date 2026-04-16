@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "id": "common_authority_profile",
+    "title": "権威プロフィール — SNS・コンテンツ共通",
+    "category": "common",
+    "subcategory": "authority",
+    "platform": ["note", "X", "Instagram", "ブログ"],
+    "target_audience": "専門家・クリエイターとしてブランディングしたい人",
+    "goal": "信頼感・権威性を高めるプロフィール文を作成する",
+    "tone": "プロフェッショナル・自信に満ちた",
+    "difficulty": "intermediate",
+    "tags": ["プロフィール", "権威", "ブランディング", "自己紹介"],
+    "seasonality": "all_year",
+    "last_updated": "2026-04-16",
+    "requires_ai": true,
+    "free_available": true,
+    "rarity": "uncommon",
+    "knowledge_ref": null
+  },
+  "form": {
+    "name": "あなたの名前・ニックネーム",
+    "expertise": "専門分野・得意領域",
+    "achievements": "実績・数字（例: 月収50万円達成・フォロワー1万人等）",
+    "target_audience": "どんな人に役立てたいか",
+    "unique_value": "他と差別化できる強み・視点",
+    "platform": "X",
+    "char_limit": "160字以内"
+  }
+}

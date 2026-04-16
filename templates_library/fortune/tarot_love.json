@@ -1,11 +1,21 @@
 {
   "_meta": {
     "id": "fortune_tarot_love",
-    "label": "タロット — 恋愛総合鑑定",
-    "workshop": "fortune",
-    "description": "ココナラ向けタロット恋愛鑑定書テンプレート",
+    "title": "タロット — 恋愛総合鑑定",
+    "category": "fortune",
+    "subcategory": "beginner",
+    "platform": ["ココナラ"],
+    "target_audience": "タロット占い師としてデビューしたい人",
+    "goal": "恋愛総合鑑定書テンプレートを作成する",
+    "tone": "温かく寄り添う",
+    "difficulty": "beginner",
     "tags": ["タロット", "恋愛", "鑑定書", "ココナラ"],
-    "difficulty": "beginner"
+    "seasonality": "all_year",
+    "last_updated": "2026-04-16",
+    "requires_ai": true,
+    "free_available": true,
+    "rarity": "common",
+    "knowledge_ref": null
   },
   "form": {
     "fortune_type": "タロット",

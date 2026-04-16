@@ -1,0 +1,30 @@
+{
+  "_meta": {
+    "id": "sales_landing_page_digital",
+    "title": "ランディングページ — デジタル商品LP文",
+    "category": "sales",
+    "subcategory": "conversion",
+    "platform": ["note", "tips", "Brain", "独自LP"],
+    "target_audience": "デジタル商品の販売ページを改善したいクリエイター",
+    "goal": "コンバージョン率の高いLP本文を作成する",
+    "tone": "説得力ある・感情に訴える",
+    "difficulty": "intermediate",
+    "tags": ["LP", "ランディングページ", "セールスライティング", "CRO"],
+    "seasonality": "all_year",
+    "last_updated": "2026-04-16",
+    "requires_ai": true,
+    "free_available": false,
+    "rarity": "rare",
+    "knowledge_ref": null
+  },
+  "form": {
+    "product_title": "商品名・タイトル",
+    "main_keyword": "ターゲットキーワード",
+    "pain_point": "読者の抱える悩み・問題",
+    "solution": "商品が提供する解決策",
+    "benefits": "得られるメリット（3〜5点）",
+    "social_proof": "実績・レビュー・購入者数",
+    "price": "価格（円）",
+    "cta_text": "ボタンテキスト（例: 今すぐ手に入れる）"
+  }
+}

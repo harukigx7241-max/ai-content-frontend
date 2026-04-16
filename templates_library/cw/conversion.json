@@ -1,0 +1,28 @@
+{
+  "_meta": {
+    "id": "cw_conversion_profile",
+    "title": "CWプロフィール — 高単価案件獲得設計",
+    "category": "cw",
+    "subcategory": "conversion",
+    "platform": ["クラウドワークス"],
+    "target_audience": "クラウドワークスの単価を上げたい中級フリーランサー",
+    "goal": "高単価案件を引き寄せるプロフィールページを作成する",
+    "tone": "プロフェッショナル・実績重視",
+    "difficulty": "intermediate",
+    "tags": ["クラウドワークス", "プロフィール", "高単価", "案件獲得"],
+    "seasonality": "all_year",
+    "last_updated": "2026-04-16",
+    "requires_ai": true,
+    "free_available": true,
+    "rarity": "uncommon",
+    "knowledge_ref": null
+  },
+  "form": {
+    "job_type": "フリーランスの職種・スキル領域",
+    "skills": "主要スキルと経験年数",
+    "appeal": "差別化ポイント・強み",
+    "achievements": "具体的な実績・数字",
+    "target_rate": "希望単価（円/文字 or 時間）",
+    "monthly_goal": "月間稼働時間の目安"
+  }
+}

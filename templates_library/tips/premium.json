@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "id": "tips_premium_bundle",
+    "title": "tips上級 — バンドル商品・高単価設計",
+    "category": "tips",
+    "subcategory": "premium",
+    "platform": ["tips"],
+    "target_audience": "tipsで月10万円以上を狙う中上級者",
+    "goal": "高単価バンドル商品のランディングページ文を作成する",
+    "tone": "高品質・権威ある",
+    "difficulty": "advanced",
+    "tags": ["tips", "バンドル", "高単価", "プレミアム"],
+    "seasonality": "all_year",
+    "last_updated": "2026-04-16",
+    "requires_ai": true,
+    "free_available": false,
+    "rarity": "rare",
+    "knowledge_ref": null
+  },
+  "form": {
+    "platform": "tips",
+    "product_type": "バンドル商品",
+    "product_title": "バンドルパッケージ名",
+    "included_items": "含まれる商品・コンテンツの一覧",
+    "total_value": "個別購入合計額",
+    "bundle_price": "バンドル価格",
+    "target": "この商品を必要とする具体的な読者像"
+  }
+}

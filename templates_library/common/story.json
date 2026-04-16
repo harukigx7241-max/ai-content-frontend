@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "id": "common_story_template",
+    "title": "ストーリー型自己開示 — 共感を生む体験談",
+    "category": "common",
+    "subcategory": "story",
+    "platform": ["note", "X", "Instagram", "ブログ"],
+    "target_audience": "自分の経験を活かしてファンを獲得したい人",
+    "goal": "共感を生む体験談・ストーリーコンテンツを作成する",
+    "tone": "率直・情感豊か",
+    "difficulty": "beginner",
+    "tags": ["ストーリー", "体験談", "共感", "自己開示"],
+    "seasonality": "all_year",
+    "last_updated": "2026-04-16",
+    "requires_ai": true,
+    "free_available": true,
+    "rarity": "common",
+    "knowledge_ref": null
+  },
+  "form": {
+    "before_state": "過去の状態・悩み（具体的に）",
+    "turning_point": "転換点となった出来事・気づき",
+    "after_state": "現在の状態・達成したこと（数字を含む）",
+    "lesson": "読者に伝えたい学び・教訓",
+    "target_reader": "誰に読んでほしいか",
+    "platform": "note",
+    "tone": "です・ます調"
+  }
+}

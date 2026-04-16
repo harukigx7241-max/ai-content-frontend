@@ -1,0 +1,36 @@
+{
+  "_meta": {
+    "version": "2.0",
+    "description": "テンプレートライブラリ メタデータスキーマ定義 (Phase 5)",
+    "last_updated": "2026-04-16"
+  },
+  "categories": ["note","tips","brain","sns","sales","fortune","cw","blog","common","email","prompt_forge"],
+  "subcategories": ["beginner","educational","authority","story","review","conversion","seasonal","premium","campaign","announcement"],
+  "platforms": ["note","tips","brain","x","instagram","threads","coconala","blog","email","generic"],
+  "tones": ["です・ます調","だ・である調","カジュアル","フォーマル","親しみやすい","権威的"],
+  "difficulties": ["beginner","intermediate","advanced"],
+  "seasonality_values": ["通年","春","夏","秋","冬","年末年始","大型連休","受験シーズン"],
+  "rarity_values": ["common","uncommon","rare","epic","legendary"],
+  "template_schema": {
+    "_meta": {
+      "id":              "string — 一意キー (例: note_authority_expert)",
+      "title":           "string — 日本語タイトル",
+      "category":        "string — categories のいずれか",
+      "subcategory":     "string — subcategories のいずれか",
+      "platform":        "array[string] — 対応媒体リスト",
+      "target_audience": "string — 想定読者・ターゲット層",
+      "goal":            "string — このテンプレートの目的",
+      "tone":            "string — 推奨文体",
+      "difficulty":      "string — 難易度",
+      "tags":            "array[string] — 検索用タグ",
+      "seasonality":     "string — 季節性",
+      "last_updated":    "string — YYYY-MM-DD",
+      "requires_ai":     "boolean — AI APIが必要か",
+      "free_available":  "boolean — 無料会員で利用可能か",
+      "rarity":          "string — rarity_values のいずれか",
+      "knowledge_ref":   "string | null — 対応する knowledge/ パス"
+    },
+    "form":        "object — 対応するフォームのデフォルト値",
+    "description": "string — テンプレート説明文 (UI表示用)"
+  }
+}

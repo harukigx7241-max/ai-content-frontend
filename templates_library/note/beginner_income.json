@@ -1,11 +1,21 @@
 {
   "_meta": {
     "id": "note_beginner_income",
-    "label": "AI副業入門 — 月5万円の作り方",
-    "workshop": "note",
-    "description": "AI・副業初心者向けの有料note記事プロンプトのクイックスタートテンプレート",
+    "title": "AI副業入門 — 月5万円の作り方",
+    "category": "note",
+    "subcategory": "beginner",
+    "platform": ["note"],
+    "target_audience": "副業を始めたい25〜35歳の会社員",
+    "goal": "有料note記事で月5万円の副収入を得る",
+    "tone": "です・ます調",
+    "difficulty": "beginner",
     "tags": ["副業", "AI", "初心者", "収益化"],
-    "difficulty": "beginner"
+    "seasonality": "all_year",
+    "last_updated": "2026-04-16",
+    "requires_ai": true,
+    "free_available": true,
+    "rarity": "common",
+    "knowledge_ref": "workshops/note/overview.md"
   },
   "form": {
     "theme": "AI副業で月5万円を稼ぐ具体的な方法",

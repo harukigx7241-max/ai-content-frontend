@@ -117,6 +117,21 @@ class KnowledgeService(BaseService):
     def workshop_patterns(self, workshop: str) -> ServiceResult:
         return self.load(f"workshops/{workshop}/patterns.json")
 
+    def template_parts(self, filename: str) -> ServiceResult:
+        """
+        templates_library/_parts/ の部品ファイルを返す。
+        ナレッジとテンプレートの橋渡し用メソッド。
+        filename 例: "hooks.json" / "examples.md"
+        """
+        from app.services.template_service import get_part
+        data = get_part(filename)
+        if data is None:
+            return ServiceResult.free(
+                content=None,
+                hint=f"テンプレート部品が見つかりません: {filename}",
+            )
+        return ServiceResult.free(content=data)
+
     def _run_api(self, **_: object) -> ServiceResult:
         """TODO: ベクトルDB/RAG検索 (未実装)。"""
         return ServiceResult.not_implemented(ServiceMode.API)

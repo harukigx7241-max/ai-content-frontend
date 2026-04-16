@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "id": "note_seasonal_yearend",
+    "title": "年末年始特集 — 振り返り＆来年の目標",
+    "category": "note",
+    "subcategory": "seasonal",
+    "platform": ["note"],
+    "target_audience": "年末に振り返りコンテンツを書きたいクリエイター",
+    "goal": "年末年始の節目に売れる季節特化note記事を作成する",
+    "tone": "温かく・回顧的",
+    "difficulty": "beginner",
+    "tags": ["年末", "振り返り", "新年", "目標設定"],
+    "seasonality": "year_end",
+    "last_updated": "2026-04-16",
+    "requires_ai": true,
+    "free_available": true,
+    "rarity": "rare",
+    "knowledge_ref": null
+  },
+  "form": {
+    "theme": "今年の○○活動まとめと来年の戦略",
+    "age_range": "25〜40歳",
+    "situation": "今年1年の副業・クリエイター活動を振り返りたい",
+    "concern": "来年どこに注力すべきかわからない",
+    "tone": "です・ます調",
+    "free_chars": "2000字",
+    "paid_chars": "3000字"
+  }
+}

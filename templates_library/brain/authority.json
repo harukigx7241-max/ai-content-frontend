@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "id": "brain_authority_sales",
+    "title": "Brain権威者ページ — 実績・信頼性訴求",
+    "category": "brain",
+    "subcategory": "authority",
+    "platform": ["Brain"],
+    "target_audience": "Brainで高単価情報商材を販売したい専門家",
+    "goal": "実績・権威を活かした販売ページ文を作成する",
+    "tone": "自信に満ちた・実績ベース",
+    "difficulty": "intermediate",
+    "tags": ["Brain", "権威", "実績", "情報商材"],
+    "seasonality": "all_year",
+    "last_updated": "2026-04-16",
+    "requires_ai": true,
+    "free_available": false,
+    "rarity": "rare",
+    "knowledge_ref": null
+  },
+  "form": {
+    "platform": "Brain",
+    "product_title": "情報商材タイトル",
+    "expertise": "専門分野",
+    "achievements": "実績・数字（具体的に）",
+    "product_content": "商品内容・得られる成果",
+    "price": "価格（円）",
+    "target": "ターゲット読者の具体的な悩み"
+  }
+}

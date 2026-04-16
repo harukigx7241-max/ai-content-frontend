@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "id": "brain_conversion_funnel",
+    "title": "Brainコンバージョン — 購買転換設計",
+    "category": "brain",
+    "subcategory": "conversion",
+    "platform": ["Brain"],
+    "target_audience": "Brainの購買率を改善したいコンテンツクリエイター",
+    "goal": "購買率を最大化するCTA・クロージング文を作成する",
+    "tone": "説得力ある・感情訴求",
+    "difficulty": "advanced",
+    "tags": ["Brain", "コンバージョン", "CTA", "購買"],
+    "seasonality": "all_year",
+    "last_updated": "2026-04-16",
+    "requires_ai": true,
+    "free_available": false,
+    "rarity": "epic",
+    "knowledge_ref": null
+  },
+  "form": {
+    "platform": "Brain",
+    "product_title": "商品タイトル",
+    "main_benefit": "購入者が得られる最大のメリット",
+    "pain_point": "解決する悩み・課題",
+    "social_proof": "実績・レビュー数・購入者数",
+    "price": "価格（円）",
+    "urgency": "限定性・緊急性の理由（あれば）"
+  }
+}

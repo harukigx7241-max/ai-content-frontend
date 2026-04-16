@@ -1,0 +1,28 @@
+{
+  "_meta": {
+    "id": "blog_beginner_seo",
+    "title": "ブログ入門 — SEO対策済み記事構成",
+    "category": "blog",
+    "subcategory": "beginner",
+    "platform": ["WordPress", "はてなブログ", "Ameba"],
+    "target_audience": "SEOライティングを学びたいブログ初心者",
+    "goal": "検索上位を狙えるSEO記事のプロンプトを生成する",
+    "tone": "です・ます調・読みやすい",
+    "difficulty": "beginner",
+    "tags": ["ブログ", "SEO", "記事作成", "検索上位"],
+    "seasonality": "all_year",
+    "last_updated": "2026-04-16",
+    "requires_ai": true,
+    "free_available": true,
+    "rarity": "common",
+    "knowledge_ref": null
+  },
+  "form": {
+    "theme": "記事のテーマ・トピック",
+    "main_keyword": "メインキーワード（例: 副業 始め方）",
+    "sub_keywords": "サブキーワード（例: 在宅 スマホ 初心者）",
+    "target": "読者の検索意図・悩み",
+    "article_length": "3000",
+    "tone": "です・ます調"
+  }
+}

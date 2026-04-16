@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "id": "note_educational_howto",
+    "title": "教育型ハウツー — スキル解説有料note",
+    "category": "note",
+    "subcategory": "educational",
+    "platform": ["note"],
+    "target_audience": "スキルを学びたい中級者・実務者",
+    "goal": "特定スキルを体系的に教える有料note記事を作成する",
+    "tone": "丁寧・解説重視",
+    "difficulty": "intermediate",
+    "tags": ["ハウツー", "スキル", "解説", "教育"],
+    "seasonality": "all_year",
+    "last_updated": "2026-04-16",
+    "requires_ai": true,
+    "free_available": true,
+    "rarity": "uncommon",
+    "knowledge_ref": "workshops/note/overview.md"
+  },
+  "form": {
+    "theme": "教えたいスキル・テーマ",
+    "age_range": "25〜35歳",
+    "situation": "そのスキルを学びたいが独学で行き詰まっている",
+    "concern": "体系的に学べるリソースが少なく、何を参考にすればいいかわからない",
+    "tone": "です・ます調",
+    "free_chars": "2000字",
+    "paid_chars": "5000字"
+  }
+}

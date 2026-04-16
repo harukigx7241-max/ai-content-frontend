@@ -1,0 +1,28 @@
+{
+  "_meta": {
+    "id": "email_newsletter_weekly",
+    "title": "メルマガ週刊 — 読者との関係構築シリーズ",
+    "category": "email",
+    "subcategory": "campaign",
+    "platform": ["メルマガ", "LINE公式"],
+    "target_audience": "メルマガ・LINE読者との関係を深めたいビジネスオーナー",
+    "goal": "継続的に読まれる週刊メルマガ文を作成する",
+    "tone": "親しみやすく・有益な",
+    "difficulty": "intermediate",
+    "tags": ["メルマガ", "LINE", "ニュースレター", "関係構築"],
+    "seasonality": "all_year",
+    "last_updated": "2026-04-16",
+    "requires_ai": true,
+    "free_available": true,
+    "rarity": "uncommon",
+    "knowledge_ref": null
+  },
+  "form": {
+    "sender_name": "差出人名・ブランド名",
+    "theme": "今号のメインテーマ",
+    "main_content": "読者に伝えたい主な情報・ノウハウ",
+    "story_hook": "冒頭の掴みエピソード（あれば）",
+    "cta": "メール末尾の行動喚起（例: 返信 / リンク誘導）",
+    "reader_profile": "読者の属性・関心"
+  }
+}

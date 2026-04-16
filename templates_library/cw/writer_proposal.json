@@ -1,11 +1,21 @@
 {
   "_meta": {
     "id": "cw_writer_proposal",
-    "label": "ライター案件 — 採用率アップ提案文",
-    "workshop": "cw",
-    "description": "クラウドワークスのライター案件向け提案文のクイックスタートテンプレート",
+    "title": "ライター案件 — 採用率アップ提案文",
+    "category": "cw",
+    "subcategory": "beginner",
+    "platform": ["クラウドワークス"],
+    "target_audience": "クラウドワークスでライター案件を受注したいフリーランサー",
+    "goal": "採用率を上げる提案文を作成する",
+    "tone": "丁寧・ビジネスライク",
+    "difficulty": "beginner",
     "tags": ["ライター", "提案文", "クラウドワークス", "採用"],
-    "difficulty": "beginner"
+    "seasonality": "all_year",
+    "last_updated": "2026-04-16",
+    "requires_ai": true,
+    "free_available": true,
+    "rarity": "common",
+    "knowledge_ref": null
   },
   "form": {
     "job_type": "Webライター",

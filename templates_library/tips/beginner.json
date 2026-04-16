@@ -1,0 +1,28 @@
+{
+  "_meta": {
+    "id": "tips_beginner_digital",
+    "title": "tips入門 — デジタル教材・PDF販売",
+    "category": "tips",
+    "subcategory": "beginner",
+    "platform": ["tips"],
+    "target_audience": "tipsでデジタルコンテンツを販売したい初心者",
+    "goal": "tipsでの商品説明文・価格設定・CV改善のプロンプトを生成する",
+    "tone": "わかりやすく・実践的",
+    "difficulty": "beginner",
+    "tags": ["tips", "デジタル教材", "PDF", "販売"],
+    "seasonality": "all_year",
+    "last_updated": "2026-04-16",
+    "requires_ai": true,
+    "free_available": true,
+    "rarity": "common",
+    "knowledge_ref": null
+  },
+  "form": {
+    "platform": "tips",
+    "product_type": "PDF教材",
+    "product_title": "商品タイトル",
+    "product_content": "商品内容の概要",
+    "price": "500",
+    "target": "ターゲット読者"
+  }
+}

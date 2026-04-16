@@ -1,0 +1,28 @@
+{
+  "_meta": {
+    "id": "sns_announcement_profile",
+    "title": "SNSプロフィール最適化 — フォロワー獲得導線",
+    "category": "sns",
+    "subcategory": "announcement",
+    "platform": ["X", "Instagram"],
+    "target_audience": "SNSのフォロワーを増やしたいビジネス初心者",
+    "goal": "プロフィール文を最適化してフォロワー獲得率を上げる",
+    "tone": "親しみやすく・専門性も見せる",
+    "difficulty": "beginner",
+    "tags": ["プロフィール", "フォロワー", "導線", "最適化"],
+    "seasonality": "all_year",
+    "last_updated": "2026-04-16",
+    "requires_ai": true,
+    "free_available": true,
+    "rarity": "common",
+    "knowledge_ref": null
+  },
+  "form": {
+    "platform": "X",
+    "theme": "発信テーマ（例: 副業・AI・フリーランス）",
+    "target": "フォローしてほしい読者像",
+    "achievements": "実績・数字（なければ現在の目標）",
+    "cta": "プロフィールからの行動喚起（例: リンクから無料記事配信中）",
+    "char_limit": "160字以内"
+  }
+}
