@@ -4891,3 +4891,270 @@ img, video, iframe, canvas {
   .forge-path-option { padding: 10px 12px; font-size: 0.8rem; }
   .forge-path-result-card { padding: 10px 12px; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Phase 8 — 診断 Lite CSS
+   DiagnoseModal · ScoreGauge · IssueList · UpgradeBanner
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Diagnose tool button (extends forge-tool-btn) ───────────────────── */
+.forge-tool-btn.diagnose-btn {
+  background: rgba(34,197,94,0.12);
+  border-color: rgba(34,197,94,0.3);
+  color: #d1fae5;
+}
+.forge-tool-btn.diagnose-btn:hover {
+  background: rgba(34,197,94,0.25);
+  box-shadow: 0 0 12px rgba(34,197,94,0.35);
+}
+
+/* ── Diagnose modal tabs ─────────────────────────────────────────────── */
+.diag-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  padding-bottom: 12px;
+}
+.diag-tab {
+  padding: 7px 16px;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 20px;
+  background: none;
+  color: rgba(255,255,255,0.5);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+.diag-tab.active {
+  background: rgba(34,197,94,0.2);
+  border-color: rgba(34,197,94,0.5);
+  color: #6ee7b7;
+  font-weight: 700;
+}
+.diag-panel { display: none; }
+.diag-panel.active { display: block; }
+
+/* ── Input area ──────────────────────────────────────────────────────── */
+.diag-textarea {
+  width: 100%;
+  min-height: 130px;
+  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  color: #e2d9f3;
+  padding: 12px 14px;
+  font-size: 0.84rem;
+  font-family: inherit;
+  line-height: 1.65;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+.diag-textarea:focus { border-color: rgba(34,197,94,0.5); }
+.diag-char-count {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.35);
+  text-align: right;
+  margin-top: 4px;
+  margin-bottom: 12px;
+}
+
+/* ── Run button ──────────────────────────────────────────────────────── */
+.diag-run-btn {
+  padding: 10px 22px;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+}
+.diag-run-btn:hover { opacity: 0.88; transform: translateY(-1px); }
+.diag-run-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+/* ── Result area ─────────────────────────────────────────────────────── */
+.diag-result { margin-top: 20px; }
+
+/* Score gauge row */
+.diag-score-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.diag-score-circle {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-weight: 900;
+  border: 3px solid;
+}
+.diag-score-circle.score-high  { background: rgba(34,197,94,0.15);  border-color: #22c55e; color: #22c55e; }
+.diag-score-circle.score-mid   { background: rgba(245,158,11,0.15); border-color: #f59e0b; color: #f59e0b; }
+.diag-score-circle.score-low   { background: rgba(239,68,68,0.15);  border-color: #ef4444; color: #ef4444; }
+.diag-score-num  { font-size: 1.45rem; line-height: 1; }
+.diag-score-unit { font-size: 0.62rem; font-weight: 400; opacity: 0.7; }
+.diag-score-meta { flex: 1; }
+.diag-stars { font-size: 1.1rem; letter-spacing: 2px; margin-bottom: 4px; }
+.diag-grade {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 10px;
+  margin-bottom: 4px;
+}
+.diag-grade.grade-S { background: rgba(168,85,247,0.3); color: #d8b4fe; }
+.diag-grade.grade-A { background: rgba(34,197,94,0.25);  color: #6ee7b7; }
+.diag-grade.grade-B { background: rgba(59,130,246,0.25); color: #93c5fd; }
+.diag-grade.grade-C { background: rgba(245,158,11,0.25); color: #fcd34d; }
+.diag-grade.grade-D { background: rgba(239,68,68,0.25);  color: #fca5a5; }
+.diag-tone-badge {
+  font-size: 0.72rem;
+  background: rgba(255,255,255,0.08);
+  padding: 2px 8px;
+  border-radius: 8px;
+  color: rgba(255,255,255,0.55);
+}
+
+/* Progress bar */
+.diag-bar-wrap {
+  height: 6px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+.diag-bar-fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.6s ease;
+}
+.diag-bar-fill.score-high { background: linear-gradient(90deg, #22c55e, #4ade80); }
+.diag-bar-fill.score-mid  { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.diag-bar-fill.score-low  { background: linear-gradient(90deg, #ef4444, #f87171); }
+
+/* Issues / hints / strengths lists */
+.diag-section-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 14px 0 7px;
+}
+.diag-section-title.issues-title   { color: #fca5a5; }
+.diag-section-title.hints-title    { color: #fcd34d; }
+.diag-section-title.strengths-title { color: #6ee7b7; }
+.diag-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.diag-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  font-size: 0.81rem;
+  line-height: 1.55;
+  color: rgba(255,255,255,0.75);
+}
+.diag-list li::before { flex-shrink: 0; margin-top: 1px; }
+.diag-list.issues-list   li::before { content: "⚠️"; }
+.diag-list.hints-list    li::before { content: "💡"; }
+.diag-list.strengths-list li::before { content: "✅"; }
+.diag-list.suggestions-list li::before { content: "✏️"; }
+.diag-empty-ok {
+  font-size: 0.82rem;
+  color: #6ee7b7;
+  padding: 8px 12px;
+  background: rgba(34,197,94,0.1);
+  border-radius: 8px;
+}
+
+/* ── Upgrade banner (Lite → AI版) ────────────────────────────────────── */
+.diag-upgrade-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 20px;
+  padding: 13px 15px;
+  background: rgba(168,85,247,0.08);
+  border: 1px solid rgba(168,85,247,0.22);
+  border-radius: 12px;
+}
+.diag-upgrade-icon { font-size: 1.4rem; flex-shrink: 0; }
+.diag-upgrade-body { flex: 1; min-width: 0; }
+.diag-upgrade-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #c4b5fd;
+  margin-bottom: 3px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.diag-upgrade-badge {
+  font-size: 0.62rem;
+  background: rgba(168,85,247,0.3);
+  padding: 1px 6px;
+  border-radius: 6px;
+  color: #d8b4fe;
+}
+.diag-upgrade-text { font-size: 0.76rem; color: rgba(255,255,255,0.45); line-height: 1.5; }
+
+/* ── Mode badge inside modal header ─────────────────────────────────── */
+.diag-mode-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 8px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+.diag-mode-badge.mode-free { background: rgba(34,197,94,0.2); color: #6ee7b7; }
+.diag-mode-badge.mode-lite { background: rgba(59,130,246,0.2); color: #93c5fd; }
+.diag-mode-badge.mode-api  { background: rgba(168,85,247,0.25); color: #d8b4fe; }
+
+/* ── Loading state ───────────────────────────────────────────────────── */
+.diag-loading {
+  text-align: center;
+  padding: 24px;
+  color: rgba(255,255,255,0.45);
+  font-size: 0.85rem;
+}
+.diag-loading::after {
+  content: "";
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(34,197,94,0.3);
+  border-top-color: #22c55e;
+  border-radius: 50%;
+  animation: diagSpin 0.8s linear infinite;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+@keyframes diagSpin { to { transform: rotate(360deg); } }
+
+/* ── Responsive ──────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .diag-score-circle { width: 58px; height: 58px; }
+  .diag-score-num { font-size: 1.2rem; }
+  .diag-textarea { min-height: 100px; }
+}
+@media (max-width: 480px) {
+  .diag-tabs { flex-wrap: wrap; }
+  .diag-score-row { flex-direction: column; align-items: flex-start; gap: 10px; }
+}

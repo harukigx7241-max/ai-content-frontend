@@ -261,6 +261,11 @@
       保管庫
       <span class="forge-tool-badge" id="forgeVaultBadge">0</span>
     </button>
+    <button class="forge-tool-btn diagnose-btn" id="diagnoseLaunchBtn">
+      <span class="forge-tool-icon">🩺</span>
+      診断 Lite
+      <span class="forge-tool-badge">FREE</span>
+    </button>
   </div>
 </div>
 
@@ -1499,6 +1504,7 @@
 <script src="/static/js/components/enhance.js"></script>
 <script src="/static/data/examples.js"></script>
 <script src="/static/js/forge.js"></script>
+<script src="/static/js/diagnose.js"></script>
 <script>
   // config.js で window.Config が設定された後に初期化
   document.addEventListener('DOMContentLoaded', () => {
@@ -1758,6 +1764,40 @@
         保管庫は空です。<br>生成したプロンプトを 💾 ボタンで保存しましょう。
       </div>
       <div class="forge-vault-list" id="vaultList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ⑤ Diagnose Lite -->
+<div class="forge-modal-overlay" id="diagnoseLiteModal">
+  <div class="forge-modal-card">
+    <div class="forge-modal-header">
+      <div class="forge-modal-title">
+        🩺 診断 Lite
+        <span class="diag-mode-badge mode-free" id="diagModeBadge">FREE</span>
+      </div>
+      <button class="forge-modal-close" data-close="diagnoseLiteModal">✕</button>
+    </div>
+
+    <div class="diag-tabs">
+      <button class="diag-tab active" data-panel="diagPromptPanel">📋 プロンプト診断</button>
+      <button class="diag-tab" data-panel="diagQualityPanel">🇯🇵 日本語品質</button>
+    </div>
+
+    <!-- ── プロンプト診断 ── -->
+    <div class="diag-panel active" id="diagPromptPanel">
+      <textarea class="diag-textarea" id="diagPromptInput" placeholder="診断したいプロンプトを貼り付けてください…&#10;&#10;例: あなたはnoteで月50万円稼ぐライターです。以下のテーマで記事を書いてください…"></textarea>
+      <div class="diag-char-count"><span id="diagPromptChars">0</span> 字</div>
+      <button class="diag-run-btn" id="diagPromptRunBtn">🩺 プロンプトを診断する</button>
+      <div id="diagPromptResult"></div>
+    </div>
+
+    <!-- ── 日本語品質 ── -->
+    <div class="diag-panel" id="diagQualityPanel">
+      <textarea class="diag-textarea" id="diagQualityInput" placeholder="品質チェックしたいテキストを貼り付けてください…&#10;&#10;例: もちろんです。非常に非常に素晴らしい内容ということができます…"></textarea>
+      <div class="diag-char-count"><span id="diagQualityChars">0</span> 字</div>
+      <button class="diag-run-btn" id="diagQualityRunBtn">🔍 日本語品質をチェックする</button>
+      <div id="diagQualityResult"></div>
     </div>
   </div>
 </div>
