@@ -238,6 +238,30 @@
   <div class="tmpl-cards-grid" id="tmplCardsGrid">
     <div class="tmpl-cards-loading">テンプレートを読み込んでいます…</div>
   </div>
+
+  <!-- ── Forge tools row ── -->
+  <div class="forge-tools-row">
+    <button class="forge-tool-btn" id="forgeMixerBtn">
+      <span class="forge-tool-icon">⚗️</span>
+      テンプレ鍛冶場
+      <span class="forge-tool-badge">Mixer</span>
+    </button>
+    <button class="forge-tool-btn" id="forgePathBtn">
+      <span class="forge-tool-icon">🧭</span>
+      おすすめエンジン
+      <span class="forge-tool-badge">Path</span>
+    </button>
+    <button class="forge-tool-btn" id="forgeCompareBtn">
+      <span class="forge-tool-icon">⚖️</span>
+      比較分析
+      <span class="forge-tool-badge">A/B</span>
+    </button>
+    <button class="forge-tool-btn" id="forgeVaultBtn">
+      <span class="forge-tool-icon">💾</span>
+      保管庫
+      <span class="forge-tool-badge" id="forgeVaultBadge">0</span>
+    </button>
+  </div>
 </div>
 
 <!-- ═══ MAIN CONTENT ═══ -->
@@ -1474,6 +1498,7 @@
 <script src="/static/js/app.js"></script>
 <script src="/static/js/components/enhance.js"></script>
 <script src="/static/data/examples.js"></script>
+<script src="/static/js/forge.js"></script>
 <script>
   // config.js で window.Config が設定された後に初期化
   document.addEventListener('DOMContentLoaded', () => {
@@ -1541,5 +1566,204 @@
   }
 })();
 </script>
+
+<!-- ═══ Forge Modals ═══ -->
+
+<!-- ① Mixer / テンプレ鍛冶場 -->
+<div class="forge-modal-overlay" id="forgeMixerModal">
+  <div class="forge-modal-card">
+    <div class="forge-modal-header">
+      <div class="forge-modal-title">⚗️ テンプレ鍛冶場 <span style="font-size:0.75rem;font-weight:400;color:rgba(255,255,255,0.45);margin-left:6px;">選ぶだけでプロンプト下書き完成</span></div>
+      <button class="forge-modal-close" data-close="forgeMixerModal">✕</button>
+    </div>
+
+    <div class="forge-section-label">🎣 フック（書き出し）</div>
+    <div class="forge-chip-group" id="mixerHookGroup">
+      <div class="forge-chip selected" data-group="hook" data-val="question">❓ 問いかけ型</div>
+      <div class="forge-chip" data-group="hook" data-val="story">📖 ストーリー型</div>
+      <div class="forge-chip" data-group="hook" data-val="data">📊 データ型</div>
+      <div class="forge-chip" data-group="hook" data-val="shock">⚡ 衝撃型</div>
+    </div>
+
+    <div class="forge-section-label">📝 構成テンプレ</div>
+    <div class="forge-chip-group" id="mixerIntroGroup">
+      <div class="forge-chip selected" data-group="intro" data-val="pas">🔥 PAS（問題→扇動→解決）</div>
+      <div class="forge-chip" data-group="intro" data-val="aida">💡 AIDA（注目→興味→欲求→行動）</div>
+      <div class="forge-chip" data-group="intro" data-val="star">⭐ STAR（状況→問題→行動→結果）</div>
+      <div class="forge-chip" data-group="intro" data-val="bridge">🌉 ビフォーアフター型</div>
+    </div>
+
+    <div class="forge-section-label">📣 CTA（締め方）</div>
+    <div class="forge-chip-group" id="mixerCtaGroup">
+      <div class="forge-chip selected" data-group="cta" data-val="action">🚀 今すぐ行動</div>
+      <div class="forge-chip" data-group="cta" data-val="follow">👆 フォロー誘導</div>
+      <div class="forge-chip" data-group="cta" data-val="buy">💰 購入誘導</div>
+      <div class="forge-chip" data-group="cta" data-val="share">🔁 シェア促進</div>
+    </div>
+
+    <div class="forge-section-label">🌡️ 温度感（トーン）</div>
+    <div class="forge-chip-group" id="mixerToneGroup">
+      <div class="forge-chip selected" data-group="tone" data-val="warm">🤗 温かみ・共感</div>
+      <div class="forge-chip" data-group="tone" data-val="expert">🎓 専門家・権威</div>
+      <div class="forge-chip" data-group="tone" data-val="casual">😊 カジュアル・親近感</div>
+      <div class="forge-chip" data-group="tone" data-val="urgent">⏰ 緊急性・限定感</div>
+    </div>
+
+    <div class="forge-section-label">📱 媒体</div>
+    <div class="forge-chip-group" id="mixerPlatformGroup">
+      <div class="forge-chip selected" data-group="platform" data-val="note">📝 note</div>
+      <div class="forge-chip" data-group="platform" data-val="x">🐦 X (Twitter)</div>
+      <div class="forge-chip" data-group="platform" data-val="instagram">📸 Instagram</div>
+      <div class="forge-chip" data-group="platform" data-val="cw">💼 クラウドワークス</div>
+      <div class="forge-chip" data-group="platform" data-val="blog">✍️ ブログ</div>
+    </div>
+
+    <div class="forge-section-label">👥 ターゲット読者</div>
+    <div class="forge-chip-group" id="mixerReaderGroup">
+      <div class="forge-chip selected" data-group="reader" data-val="beginner">🌱 初心者・ゼロから</div>
+      <div class="forge-chip" data-group="reader" data-val="intermediate">📈 中級者・伸び悩み</div>
+      <div class="forge-chip" data-group="reader" data-val="busy">⏱️ 忙しい会社員</div>
+      <div class="forge-chip" data-group="reader" data-val="sidehustle">💰 副業を始めたい</div>
+    </div>
+
+    <div class="forge-section-label">🎯 目的</div>
+    <div class="forge-chip-group" id="mixerGoalGroup">
+      <div class="forge-chip selected" data-group="goal" data-val="sell">💴 販売・収益化</div>
+      <div class="forge-chip" data-group="goal" data-val="attract">🧲 集客・認知拡大</div>
+      <div class="forge-chip" data-group="goal" data-val="educate">📚 教育・価値提供</div>
+      <div class="forge-chip" data-group="goal" data-val="trust">🤝 信頼構築</div>
+    </div>
+
+    <div class="forge-section-label">🔑 テーマキーワード（任意）</div>
+    <input type="text" id="mixerKeyword" placeholder="例: 副業, 在宅ワーク, フリーランス…" style="width:100%;background:rgba(0,0,0,0.3);border:1px solid rgba(168,85,247,0.25);border-radius:10px;color:#e2d9f3;padding:10px 12px;font-size:0.85rem;font-family:inherit;outline:none;box-sizing:border-box;">
+
+    <div class="forge-mixer-preview placeholder" id="mixerPreview">← 上の選択肢を選ぶと、プロンプトの下書きがここに組み立てられます</div>
+
+    <div class="forge-mixer-actions">
+      <button class="forge-action-btn primary" id="mixerBuildBtn">⚗️ 下書きを組み立てる</button>
+      <button class="forge-action-btn secondary" id="mixerCopyBtn" style="display:none">📋 コピー</button>
+      <button class="forge-action-btn secondary" id="mixerSaveBtn" style="display:none">💾 保管庫へ保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ② Path / おすすめエンジン -->
+<div class="forge-modal-overlay" id="forgePathModal">
+  <div class="forge-modal-card">
+    <div class="forge-modal-header">
+      <div class="forge-modal-title">🧭 おすすめエンジン <span style="font-size:0.75rem;font-weight:400;color:rgba(255,255,255,0.45);margin-left:6px;">4問でベストテンプレを発見</span></div>
+      <button class="forge-modal-close" data-close="forgePathModal">✕</button>
+    </div>
+
+    <!-- Progress dots -->
+    <div class="forge-path-progress" id="pathProgress">
+      <div class="forge-path-step-dot active" data-step="0">1</div>
+      <div class="forge-path-connector"></div>
+      <div class="forge-path-step-dot" data-step="1">2</div>
+      <div class="forge-path-connector"></div>
+      <div class="forge-path-step-dot" data-step="2">3</div>
+      <div class="forge-path-connector"></div>
+      <div class="forge-path-step-dot" data-step="3">4</div>
+    </div>
+
+    <!-- Question area -->
+    <div id="pathQuestionArea">
+      <div class="forge-path-question" id="pathQuestion"></div>
+      <div class="forge-path-options" id="pathOptions"></div>
+    </div>
+
+    <!-- Results area (hidden until done) -->
+    <div id="pathResultsArea" style="display:none">
+      <div class="forge-path-question">✨ あなたにおすすめのテンプレート TOP 5</div>
+      <div class="forge-path-results" id="pathResults"></div>
+      <div class="forge-mixer-actions" style="margin-top:18px">
+        <button class="forge-action-btn secondary" id="pathRetryBtn">🔄 もう一度</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ③ Compare / 比較分析 -->
+<div class="forge-modal-overlay" id="forgeCompareModal">
+  <div class="forge-modal-card">
+    <div class="forge-modal-header">
+      <div class="forge-modal-title">⚖️ 比較分析 <span style="font-size:0.75rem;font-weight:400;color:rgba(255,255,255,0.45);margin-left:6px;">タイトル・CTA・導入を比べる</span></div>
+      <button class="forge-modal-close" data-close="forgeCompareModal">✕</button>
+    </div>
+
+    <div class="forge-compare-tabs">
+      <button class="forge-compare-tab active" data-panel="titlePanel">📌 タイトル</button>
+      <button class="forge-compare-tab" data-panel="ctaPanel">📣 CTA</button>
+      <button class="forge-compare-tab" data-panel="introPanel">📝 導入文</button>
+    </div>
+
+    <!-- Title compare -->
+    <div class="forge-compare-panel active" id="titlePanel">
+      <div class="forge-section-label">タイトル A と B を入力してください</div>
+      <div class="forge-compare-input-row">
+        <input type="text" id="titleA" placeholder="タイトル A…" style="background:rgba(0,0,0,0.3);border:1px solid rgba(168,85,247,0.25);border-radius:10px;color:#e2d9f3;padding:10px 12px;font-size:0.85rem;font-family:inherit;outline:none;">
+        <input type="text" id="titleB" placeholder="タイトル B…" style="background:rgba(0,0,0,0.3);border:1px solid rgba(168,85,247,0.25);border-radius:10px;color:#e2d9f3;padding:10px 12px;font-size:0.85rem;font-family:inherit;outline:none;">
+      </div>
+      <button class="forge-action-btn primary" id="compareTitleBtn">⚖️ 比較する</button>
+      <div class="forge-compare-results-grid" id="titleResults" style="display:none;margin-top:16px">
+        <div class="forge-compare-result-col" id="titleResultA"></div>
+        <div class="forge-compare-result-col" id="titleResultB"></div>
+      </div>
+    </div>
+
+    <!-- CTA compare -->
+    <div class="forge-compare-panel" id="ctaPanel">
+      <div class="forge-section-label">CTA パターン A と B を入力してください</div>
+      <div class="forge-compare-input-row">
+        <textarea id="ctaA" placeholder="CTA A…"></textarea>
+        <textarea id="ctaB" placeholder="CTA B…"></textarea>
+      </div>
+      <button class="forge-action-btn primary" id="compareCtaBtn">⚖️ 比較する</button>
+      <div class="forge-compare-results-grid" id="ctaResults" style="display:none;margin-top:16px">
+        <div class="forge-compare-result-col" id="ctaResultA"></div>
+        <div class="forge-compare-result-col" id="ctaResultB"></div>
+      </div>
+    </div>
+
+    <!-- Intro compare -->
+    <div class="forge-compare-panel" id="introPanel">
+      <div class="forge-section-label">導入文 A と B を入力してください</div>
+      <div class="forge-compare-input-row">
+        <textarea id="introA" placeholder="導入文 A…"></textarea>
+        <textarea id="introB" placeholder="導入文 B…"></textarea>
+      </div>
+      <button class="forge-action-btn primary" id="compareIntroBtn">⚖️ 比較する</button>
+      <div class="forge-compare-results-grid" id="introResults" style="display:none;margin-top:16px">
+        <div class="forge-compare-result-col" id="introResultA"></div>
+        <div class="forge-compare-result-col" id="introResultB"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ④ Vault / 保管庫 -->
+<div class="forge-modal-overlay" id="forgeVaultModal">
+  <div class="forge-modal-card">
+    <div class="forge-modal-header">
+      <div class="forge-modal-title">💾 保管庫</div>
+      <button class="forge-modal-close" data-close="forgeVaultModal">✕</button>
+    </div>
+    <div class="forge-vault-header">
+      <span class="forge-vault-count" id="vaultCount">0 / 30 件</span>
+      <button class="forge-action-btn secondary" id="vaultClearBtn" style="font-size:0.75rem;padding:6px 12px">🗑️ 全削除</button>
+    </div>
+    <div id="vaultListContainer">
+      <div class="forge-vault-empty" id="vaultEmpty">
+        <span class="forge-vault-empty-icon">📭</span>
+        保管庫は空です。<br>生成したプロンプトを 💾 ボタンで保存しましょう。
+      </div>
+      <div class="forge-vault-list" id="vaultList"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Forge toast -->
+<div class="forge-toast" id="forgeToast"></div>
+
 </body>
 </html>

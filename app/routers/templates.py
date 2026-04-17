@@ -95,6 +95,24 @@ def get_packs():
     return JSONResponse({"packs": simplified})
 
 
+@router.get("/parts/{filename}")
+def get_template_part(filename: str):
+    """_parts/ ディレクトリのファイルを返す。拡張子は .json または .md を自動補完。"""
+    from app.services.template_service import get_part
+    data = get_part(filename)
+    if data is None:
+        # 拡張子なしで試みた場合、.json / .md を補完して再試行
+        for ext in (".json", ".md"):
+            if not filename.endswith(ext):
+                data = get_part(filename + ext)
+                if data is not None:
+                    filename = filename + ext
+                    break
+    if data is None:
+        raise HTTPException(status_code=404, detail=f"Part '{filename}' not found")
+    return JSONResponse({"filename": filename, "data": data})
+
+
 @router.get("/{template_id}/form")
 def get_template_form(template_id: str):
     """テンプレートのフォームデフォルト値を返す。"""
