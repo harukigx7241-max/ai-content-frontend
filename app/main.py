@@ -16,7 +16,7 @@ from pydantic import ValidationError
 from app.core.config import settings
 from app.core.exceptions import general_exception_handler, validation_exception_handler
 from app.core.maintenance import maintenance_middleware
-from app.routers import note, cw, fortune, sns, project, remix, system, enhance
+from app.routers import note, cw, fortune, sns, project, remix, system, enhance, templates
 
 # ── アプリ生成 ──────────────────────────────────────────────────────
 app = FastAPI(
@@ -54,7 +54,8 @@ app.include_router(fortune.router)  # /api/fortune/*
 app.include_router(sns.router)      # /api/sns/*
 app.include_router(project.router)  # /api/project/*
 app.include_router(remix.router)    # /api/remix
-app.include_router(enhance.router)  # /api/enhance/*
+app.include_router(enhance.router)    # /api/enhance/*
+app.include_router(templates.router)  # /api/templates/*
 
 # ── 認証システム (ENABLE_AUTH_SYSTEM=false で全体を無効化可能) ────────
 if settings.ENABLE_AUTH_SYSTEM:

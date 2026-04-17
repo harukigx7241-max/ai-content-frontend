@@ -1,0 +1,26 @@
+{
+  "_meta": {
+    "id": "sns_x_thread_story",
+    "title": "Xスレッド体験談 — バズる連続投稿の構成",
+    "category": "sns",
+    "subcategory": "story",
+    "platform": ["X"],
+    "target_audience": "Xのスレッド形式で体験談を発信してバズを狙いたい人",
+    "goal": "RTされやすい体験談スレッド投稿シリーズを生成する",
+    "tone": "率直・感情豊か",
+    "difficulty": "intermediate",
+    "tags": ["X", "スレッド", "体験談", "バズ"],
+    "seasonality": "all_year",
+    "last_updated": "2026-04-17",
+    "requires_ai": true,
+    "free_available": true,
+    "rarity": "uncommon",
+    "knowledge_ref": null
+  },
+  "form": {
+    "topic": "月0円→月20万円に変えた私の3年間の記録（スレッド）",
+    "genre": "副業・ビジネス",
+    "style": "ストーリー",
+    "length": "280字"
+  }
+}

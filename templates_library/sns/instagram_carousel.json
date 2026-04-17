@@ -1,0 +1,25 @@
+{
+  "_meta": {
+    "id": "sns_instagram_carousel",
+    "title": "Instagram保存される投稿 — carousel構成テンプレ",
+    "category": "sns",
+    "subcategory": "educational",
+    "platform": ["Instagram"],
+    "target_audience": "Instagramで副業・ライフスタイル情報を発信したいクリエイター",
+    "goal": "保存数・フォロワーが増えるInstagram carousel投稿を生成する",
+    "tone": "わかりやすく・視覚的",
+    "difficulty": "intermediate",
+    "tags": ["Instagram", "carousel", "保存", "インフォグラフィック"],
+    "seasonality": "all_year",
+    "last_updated": "2026-04-17",
+    "requires_ai": true,
+    "free_available": true,
+    "rarity": "uncommon",
+    "knowledge_ref": null
+  },
+  "form": {
+    "theme": "副業初心者でも月5万円稼げる3つの方法（保存版）",
+    "mood": "カジュアル",
+    "audience": "副業に興味ある20〜30代会社員"
+  }
+}

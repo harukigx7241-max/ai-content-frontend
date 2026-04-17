@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "id": "note_testimonial_story",
+    "title": "体験談ストーリーnote — ゼロから変化した実録",
+    "category": "note",
+    "subcategory": "story",
+    "platform": ["note"],
+    "target_audience": "自分の成功体験を記事にして共感とフォロワーを獲得したい人",
+    "goal": "読者が「私もできそう」と感じる体験談・ビフォーアフター記事を生成する",
+    "tone": "です・ます調",
+    "difficulty": "beginner",
+    "tags": ["体験談", "ストーリー", "ビフォーアフター", "共感"],
+    "seasonality": "all_year",
+    "last_updated": "2026-04-17",
+    "requires_ai": true,
+    "free_available": true,
+    "rarity": "common",
+    "knowledge_ref": null
+  },
+  "form": {
+    "theme": "ゼロから6ヶ月で月20万円を達成した私のリアルな記録",
+    "age_range": "25〜35歳",
+    "situation": "副業でゼロから月20万円以上を稼ぎたい人",
+    "concern": "本当に自分でもできるのか半信半疑で踏み出せない",
+    "tone": "です・ます調",
+    "free_chars": "2000字",
+    "paid_chars": "5000字"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "id": "blog_testimonial_case",
+    "title": "事例・体験談ブログ — 再現性ある成功記録の書き方",
+    "category": "blog",
+    "subcategory": "story",
+    "platform": ["WordPress", "はてなブログ", "Ameba"],
+    "target_audience": "自分の体験をブログ記事にして読者を増やしたいブロガー",
+    "goal": "読者が「自分にも再現できそう」と感じる事例・体験談記事を生成する",
+    "tone": "率直・信頼感",
+    "difficulty": "beginner",
+    "tags": ["体験談", "事例", "再現性", "ブログ"],
+    "seasonality": "all_year",
+    "last_updated": "2026-04-17",
+    "requires_ai": true,
+    "free_available": true,
+    "rarity": "common",
+    "knowledge_ref": null
+  },
+  "form": {
+    "theme": "副業で月10万円達成: 実際にやった方法を時系列で全公開",
+    "age_range": "25〜35歳",
+    "situation": "副業で成果を出したいが具体的にどうすればいいか分からない",
+    "concern": "成功した人の具体的な行動録を知りたいが表面的な情報しか見つからない",
+    "tone": "です・ます調",
+    "free_chars": "2000字",
+    "paid_chars": "5000字"
+  }
+}

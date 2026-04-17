@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "id": "common_cta_paid_wall",
+    "title": "有料壁CTA特化 — 購入率を上げる境界文の書き方",
+    "category": "common",
+    "subcategory": "conversion",
+    "platform": ["note", "tips", "Brain"],
+    "target_audience": "有料記事の購入率が伸び悩んでいるコンテンツクリエイター",
+    "goal": "読者を自然に有料エリアへ誘導するCTA文を生成する",
+    "tone": "説得力ある・自然な流れ",
+    "difficulty": "intermediate",
+    "tags": ["CTA", "有料壁", "購入率", "誘導文"],
+    "seasonality": "all_year",
+    "last_updated": "2026-04-17",
+    "requires_ai": true,
+    "free_available": true,
+    "rarity": "uncommon",
+    "knowledge_ref": "templates_library/_parts/cta_templates.json"
+  },
+  "form": {
+    "theme": "有料エリアCTA強化: 読者を自然に購入へ誘導する書き方",
+    "age_range": "25〜35歳",
+    "situation": "有料記事の購入率が伸び悩んでいる中〜上級ライター",
+    "concern": "無料と有料の境界の書き方が分からない",
+    "tone": "です・ます調",
+    "free_chars": "1000字",
+    "paid_chars": "5000字"
+  }
+}

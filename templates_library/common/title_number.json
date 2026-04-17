@@ -1,0 +1,25 @@
+{
+  "_meta": {
+    "id": "common_title_number",
+    "title": "数字系タイトル — クリック率2倍の具体的タイトル術",
+    "category": "common",
+    "subcategory": "educational",
+    "platform": ["note", "ブログ", "X", "Instagram"],
+    "target_audience": "タイトルで読まれるかどうかが変わると知っているが上手く書けない人",
+    "goal": "数字・具体性を活かしたクリック率の高いタイトル案を生成する",
+    "tone": "具体的・インパクト重視",
+    "difficulty": "beginner",
+    "tags": ["タイトル", "数字", "クリック率", "SEO"],
+    "seasonality": "all_year",
+    "last_updated": "2026-04-17",
+    "requires_ai": true,
+    "free_available": true,
+    "rarity": "common",
+    "knowledge_ref": "templates_library/_parts/title_templates.json"
+  },
+  "form": {
+    "genre": "副業・お金",
+    "keyword": "月5万円 副業 初心者 方法",
+    "target": "副業で収入を増やしたい25〜35歳の会社員"
+  }
+}

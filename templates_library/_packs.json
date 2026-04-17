@@ -1,0 +1,107 @@
+{
+  "_meta": {
+    "version": "1.0",
+    "description": "テンプレートパック定義。各パックは10本のテンプレートIDを持つキュレーションコレクション。",
+    "last_updated": "2026-04-17"
+  },
+  "packs": {
+    "starter_beginner": {
+      "label": "初心者スターター10選",
+      "emoji": "🎯",
+      "description": "副業・コンテンツ販売を始めたばかりの方向け。難しい設定不要ですぐ使える基本テンプレ10本。",
+      "template_ids": [
+        "note_beginner_income",
+        "sns_side_hustle_announce",
+        "cw_writer_proposal",
+        "fortune_tarot_love",
+        "blog_beginner_seo",
+        "common_story_template",
+        "sns_x_daily_post",
+        "common_intro_pas",
+        "common_title_number",
+        "common_closing_action"
+      ]
+    },
+    "starter_popular": {
+      "label": "売れやすい10選",
+      "emoji": "🔥",
+      "description": "実際に収益につながりやすいテーマ・手法を厳選。売上アップを狙う方はここから。",
+      "template_ids": [
+        "note_sales_premium",
+        "note_sns_growth",
+        "sns_campaign_launch",
+        "cw_conversion_profile",
+        "note_monetize_funnel",
+        "sns_x_thread_story",
+        "common_cta_paid_wall",
+        "sales_funnel_free_paid",
+        "fortune_authority_coconala",
+        "sales_landing_page_digital"
+      ]
+    },
+    "starter_saved": {
+      "label": "保存されやすい10選",
+      "emoji": "💾",
+      "description": "SNSで保存・シェアされやすいコンテンツタイプに特化。フォロワー増加を狙う方向け。",
+      "template_ids": [
+        "note_testimonial_story",
+        "sns_instagram_carousel",
+        "common_cta_follow",
+        "note_comparison_review",
+        "blog_comparison_seo",
+        "common_title_secret",
+        "common_closing_empathy",
+        "sns_instagram_reel",
+        "note_educational_howto",
+        "common_authority_profile"
+      ]
+    },
+    "workshop_pick": {
+      "label": "工房別おすすめ10選",
+      "emoji": "⚒️",
+      "description": "販売・営業・占術・SNSの各工房から最も効果的なテンプレを1〜3本ずつピック。",
+      "template_ids": [
+        "note_beginner_income",
+        "tips_premium_bundle",
+        "brain_conversion_funnel",
+        "cw_conversion_profile",
+        "fortune_authority_coconala",
+        "sns_campaign_launch",
+        "sns_operations_strategy",
+        "email_newsletter_weekly",
+        "forge_role_definition_expert",
+        "sales_landing_page_digital"
+      ]
+    },
+    "best_pack": {
+      "label": "殿堂入りBEST10",
+      "emoji": "👑",
+      "description": "品質・汎用性・成果実績の総合評価でトップに選ばれたエリートテンプレ10本。",
+      "template_ids": [
+        "forge_role_definition_expert",
+        "brain_conversion_funnel",
+        "sales_funnel_free_paid",
+        "note_monetize_funnel",
+        "sns_operations_strategy",
+        "note_sales_premium",
+        "sales_landing_page_digital",
+        "common_cta_paid_wall",
+        "note_comparison_review",
+        "sns_x_thread_story"
+      ]
+    },
+    "seasonal_pack": {
+      "label": "季節イベント特集",
+      "emoji": "🌸",
+      "description": "春・夏・年末など季節の節目に売れやすい時節テンプレ集。タイミングを味方につけよう。",
+      "template_ids": [
+        "note_spring_special",
+        "fortune_spring_reading",
+        "sales_summer_campaign",
+        "sales_funnel_free_paid",
+        "note_seasonal_yearend",
+        "sns_campaign_launch"
+      ]
+    }
+  }
+}

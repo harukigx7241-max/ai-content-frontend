@@ -867,3 +867,182 @@ const App = {
 };
 
 document.addEventListener('DOMContentLoaded', () => App.init());
+
+/* ═══════════════════════════════════════════════════════════════════════
+   PHASE 6 — テンプレート武器庫 Discovery Panel
+   ═══════════════════════════════════════════════════════════════════════ */
+
+const TemplateLibrary = (() => {
+  // category → workshop tab mapping
+  const CAT_TO_TAB = {
+    note: 'note', tips: 'note', brain: 'note',
+    blog: 'note', sales: 'note', email: 'note',
+    common: 'note', prompt_forge: 'note',
+    cw: 'cw',
+    fortune: 'fortune',
+    sns: 'sns',
+  };
+
+  const DIFF_LABELS = { beginner: '★ 初級', intermediate: '★★ 中級', advanced: '★★★ 上級' };
+  const DIFF_CLASS  = { beginner: 'diff-beginner', intermediate: 'diff-intermediate', advanced: 'diff-advanced' };
+
+  let allTemplates = [];   // full list from API
+  let currentPack  = 'starter_beginner';
+  let freeOnly     = true;
+
+  // ── Fetch ─────────────────────────────────────────────────────────
+  async function fetchPack(packId) {
+    const url = packId === 'all'
+      ? '/api/templates'
+      : `/api/templates?pack=${packId}`;
+    try {
+      const res  = await fetch(url);
+      const data = await res.json();
+      return data.templates || [];
+    } catch {
+      return [];
+    }
+  }
+
+  async function fetchFormDefaults(templateId) {
+    try {
+      const res  = await fetch(`/api/templates/${templateId}/form`);
+      const data = await res.json();
+      return data.form || {};
+    } catch {
+      return {};
+    }
+  }
+
+  // ── Render Card ───────────────────────────────────────────────────
+  function renderCard(t) {
+    const freeAttr  = t.free_available ? 'true' : 'false';
+    const badgeHtml = t.free_available
+      ? '<span class="tmpl-badge-free">FREE</span>'
+      : '<span class="tmpl-badge-paid">LITE+</span>';
+
+    return `
+      <div class="tmpl-card" data-id="${t.id}" data-category="${t.category}" data-free="${freeAttr}">
+        <div class="tmpl-card-top">
+          <span class="tmpl-rarity rarity-${t.rarity}">${t.rarity}</span>
+          ${badgeHtml}
+        </div>
+        <div class="tmpl-card-title">${t.title}</div>
+        <div class="tmpl-card-bottom">
+          <span class="tmpl-diff ${DIFF_CLASS[t.difficulty] || ''}">${DIFF_LABELS[t.difficulty] || t.difficulty}</span>
+          <button class="tmpl-use-btn" data-id="${t.id}" data-category="${t.category}">工房で使う →</button>
+        </div>
+      </div>`;
+  }
+
+  // ── Display ───────────────────────────────────────────────────────
+  async function showPack(packId) {
+    const grid = document.getElementById('tmplCardsGrid');
+    if (!grid) return;
+
+    grid.innerHTML = '<div class="tmpl-cards-loading">読み込み中…</div>';
+    const templates = await fetchPack(packId);
+    allTemplates = templates;
+
+    renderGrid();
+
+    // Update count badge
+    const countEl = document.getElementById('tmplCount');
+    if (countEl) {
+      const visibleCount = freeOnly ? templates.filter(t => t.free_available).length : templates.length;
+      countEl.textContent = `${visibleCount}本`;
+    }
+  }
+
+  function renderGrid() {
+    const grid = document.getElementById('tmplCardsGrid');
+    if (!grid) return;
+
+    const filtered = freeOnly ? allTemplates.filter(t => t.free_available) : allTemplates;
+
+    if (filtered.length === 0) {
+      grid.innerHTML = '<div class="tmpl-cards-empty">テンプレートが見つかりませんでした</div>';
+      return;
+    }
+
+    grid.innerHTML = filtered.map(renderCard).join('');
+
+    // Update count
+    const countEl = document.getElementById('tmplCount');
+    if (countEl) countEl.textContent = `${filtered.length}本`;
+
+    // Bind use buttons
+    grid.querySelectorAll('.tmpl-use-btn').forEach(btn => {
+      btn.addEventListener('click', () => applyTemplate(btn.dataset.id, btn.dataset.category));
+    });
+  }
+
+  // ── Apply Template ────────────────────────────────────────────────
+  async function applyTemplate(templateId, category) {
+    const tabId  = CAT_TO_TAB[category] || 'note';
+    const form   = await fetchFormDefaults(templateId);
+
+    // Switch tab
+    if (typeof App !== 'undefined' && App.switchTab) {
+      App.switchTab(tabId);
+    }
+
+    // Fill matching form fields in the active tab panel
+    const panel = document.getElementById(`tab-${tabId}`);
+    if (panel) {
+      let filled = 0;
+      Object.entries(form).forEach(([name, val]) => {
+        const el = panel.querySelector(`[name="${name}"]`);
+        if (el) { el.value = val; filled++; }
+      });
+
+      // Trigger quality score update on first card in the panel
+      const firstCard = panel.querySelector('.card');
+      if (firstCard && typeof App !== 'undefined' && App.updateQualityScore) {
+        App.updateQualityScore(firstCard);
+      }
+    }
+
+    // Scroll to workshop
+    const workArea = document.querySelector('.tab-content-area');
+    if (workArea) workArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    if (typeof App !== 'undefined' && App.showToast) {
+      App.showToast('テンプレートを工房に適用しました！', 'success');
+    }
+  }
+
+  // ── Init ──────────────────────────────────────────────────────────
+  function init() {
+    const packTabsEl = document.getElementById('tmplPackTabs');
+    const freeToggle = document.getElementById('tmplFreeOnly');
+
+    if (!packTabsEl) return;
+
+    // Pack tab clicks
+    packTabsEl.addEventListener('click', e => {
+      const btn = e.target.closest('.tmpl-pack-tab');
+      if (!btn) return;
+      packTabsEl.querySelectorAll('.tmpl-pack-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentPack = btn.dataset.pack;
+      showPack(currentPack);
+    });
+
+    // Free-only toggle
+    if (freeToggle) {
+      freeOnly = freeToggle.checked;
+      freeToggle.addEventListener('change', () => {
+        freeOnly = freeToggle.checked;
+        renderGrid();
+      });
+    }
+
+    // Initial load
+    showPack(currentPack);
+  }
+
+  return { init };
+})();
+
+document.addEventListener('DOMContentLoaded', () => TemplateLibrary.init());

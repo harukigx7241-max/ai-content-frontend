@@ -1,0 +1,26 @@
+{
+  "_meta": {
+    "id": "sns_operations_strategy",
+    "title": "SNS運用戦略設計 — ゼロから3ヶ月でフォロワー1000人",
+    "category": "sns",
+    "subcategory": "educational",
+    "platform": ["X", "Instagram"],
+    "target_audience": "SNSのフォロワーが伸び悩んでいる副業・ビジネス発信者",
+    "goal": "3ヶ月でフォロワー1000人達成するSNS運用戦略プロンプトを生成する",
+    "tone": "戦略的・実践的",
+    "difficulty": "intermediate",
+    "tags": ["SNS運用", "フォロワー", "戦略", "3ヶ月"],
+    "seasonality": "all_year",
+    "last_updated": "2026-04-17",
+    "requires_ai": true,
+    "free_available": true,
+    "rarity": "rare",
+    "knowledge_ref": null
+  },
+  "form": {
+    "platform": "X",
+    "niche": "AI副業・プロンプト活用・コンテンツ販売",
+    "title": "AIプロンプトの魔法使い｜月収7桁クリエイター",
+    "target": "AIで副業収入を増やしたい会社員・フリーランス志望"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "id": "blog_comparison_seo",
+    "title": "比較検証SEOブログ — 保存される比較まとめ記事",
+    "category": "blog",
+    "subcategory": "educational",
+    "platform": ["WordPress", "はてなブログ"],
+    "target_audience": "SEO対策した比較記事でアクセスを集めたいブロガー",
+    "goal": "検索上位に表示され保存・シェアされる比較検証記事を生成する",
+    "tone": "客観的・読みやすい",
+    "difficulty": "intermediate",
+    "tags": ["比較", "SEO", "ブログ", "まとめ"],
+    "seasonality": "all_year",
+    "last_updated": "2026-04-17",
+    "requires_ai": true,
+    "free_available": true,
+    "rarity": "uncommon",
+    "knowledge_ref": null
+  },
+  "form": {
+    "theme": "AIツール5選徹底比較: ChatGPT・Gemini・Claude・Copilot・Perplexity完全ガイド",
+    "age_range": "25〜40歳",
+    "situation": "AIツールを業務や副業に活用したいが何を選べばいいか悩んでいる",
+    "concern": "それぞれのAIの特徴や使い分けが分からない",
+    "tone": "です・ます調",
+    "free_chars": "2000字",
+    "paid_chars": "5000字"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "id": "common_closing_empathy",
+    "title": "共感型締め文 — 読者の心に残るリピーター育成クロージング",
+    "category": "common",
+    "subcategory": "story",
+    "platform": ["note", "ブログ", "メルマガ"],
+    "target_audience": "フォロワーやリピーターを増やしたいクリエイター",
+    "goal": "読者が「また読みたい」と思う共感・温かみのある締め文を生成する",
+    "tone": "温かく・寄り添う",
+    "difficulty": "beginner",
+    "tags": ["締め文", "共感", "リピーター", "感謝"],
+    "seasonality": "all_year",
+    "last_updated": "2026-04-17",
+    "requires_ai": true,
+    "free_available": true,
+    "rarity": "common",
+    "knowledge_ref": "templates_library/_parts/closings.json"
+  },
+  "form": {
+    "theme": "共感型締め文: 読者の心に寄り添い再訪を促すクロージング",
+    "age_range": "25〜35歳",
+    "situation": "フォロワーやリピーターを増やしたいクリエイター",
+    "concern": "冷たい感じの締め方になってしまい親近感が生まれない",
+    "tone": "です・ます調",
+    "free_chars": "1000字",
+    "paid_chars": "3000字"
+  }
+}

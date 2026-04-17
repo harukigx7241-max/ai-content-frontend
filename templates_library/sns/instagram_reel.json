@@ -1,0 +1,25 @@
+{
+  "_meta": {
+    "id": "sns_instagram_reel",
+    "title": "Instagram Reel台本 — 30秒で刺さる短尺動画スクリプト",
+    "category": "sns",
+    "subcategory": "campaign",
+    "platform": ["Instagram"],
+    "target_audience": "Reels動画で副業・スキルを発信してフォロワーを爆増させたい人",
+    "goal": "再生数・フォロワー獲得に直結するReels台本を生成する",
+    "tone": "テンポよく・インパクト重視",
+    "difficulty": "intermediate",
+    "tags": ["Instagram", "Reels", "動画", "台本"],
+    "seasonality": "all_year",
+    "last_updated": "2026-04-17",
+    "requires_ai": true,
+    "free_available": true,
+    "rarity": "rare",
+    "knowledge_ref": null
+  },
+  "form": {
+    "theme": "AI副業で月10万円達成した方法を30秒で解説",
+    "mood": "テンポよく・インパクト重視",
+    "audience": "AI活用に興味がある全年代"
+  }
+}

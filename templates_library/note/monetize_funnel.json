@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "id": "note_monetize_funnel",
+    "title": "note収益化ファネル — 読者を購入・登録へ変換する",
+    "category": "note",
+    "subcategory": "conversion",
+    "platform": ["note", "LINE公式", "メルマガ"],
+    "target_audience": "noteのビュー数はあるが実際の収益に繋がっていないクリエイター",
+    "goal": "無料読者を有料購入者・LINE登録者に変換する導線記事を生成する",
+    "tone": "です・ます調",
+    "difficulty": "intermediate",
+    "tags": ["収益化", "導線", "LINE", "ファネル"],
+    "seasonality": "all_year",
+    "last_updated": "2026-04-17",
+    "requires_ai": true,
+    "free_available": true,
+    "rarity": "rare",
+    "knowledge_ref": null
+  },
+  "form": {
+    "theme": "noteからLINE登録へ: 読者を見込み客に変える3ステップ",
+    "age_range": "25〜40歳",
+    "situation": "noteのビュー数はあるが実際の収益に繋がっていない",
+    "concern": "記事は読まれているのに購入・登録につながらない",
+    "tone": "です・ます調",
+    "free_chars": "2000字",
+    "paid_chars": "5000字"
+  }
+}

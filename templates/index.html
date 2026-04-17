@@ -209,6 +209,37 @@
   </div>
 </div>
 
+<!-- ═══ TEMPLATE LIBRARY PANEL ═══ -->
+<div class="tmpl-library-panel" id="tmplLibraryPanel">
+  <div class="tmpl-library-header">
+    <div class="tmpl-library-title">
+      <span class="tmpl-library-icon">📚</span>
+      <span>テンプレート武器庫</span>
+      <span class="tmpl-library-count" id="tmplCount">46本</span>
+    </div>
+    <label class="tmpl-free-toggle" title="無料会員でも使えるテンプレートのみ表示">
+      <input type="checkbox" id="tmplFreeOnly" checked>
+      <span>無料のみ表示</span>
+    </label>
+  </div>
+
+  <!-- Pack Tabs -->
+  <div class="tmpl-pack-tabs" id="tmplPackTabs">
+    <button class="tmpl-pack-tab active" data-pack="starter_beginner">🎯 初心者向け</button>
+    <button class="tmpl-pack-tab" data-pack="starter_popular">🔥 売れやすい</button>
+    <button class="tmpl-pack-tab" data-pack="starter_saved">💾 保存されやすい</button>
+    <button class="tmpl-pack-tab" data-pack="workshop_pick">⚒️ 工房別おすすめ</button>
+    <button class="tmpl-pack-tab" data-pack="best_pack">👑 殿堂入り</button>
+    <button class="tmpl-pack-tab" data-pack="seasonal_pack">🌸 季節イベント</button>
+    <button class="tmpl-pack-tab" data-pack="all">📋 全テンプレート</button>
+  </div>
+
+  <!-- Template Cards (JS rendered) -->
+  <div class="tmpl-cards-grid" id="tmplCardsGrid">
+    <div class="tmpl-cards-loading">テンプレートを読み込んでいます…</div>
+  </div>
+</div>
+
 <!-- ═══ MAIN CONTENT ═══ -->
 <main class="tab-content-area">
 

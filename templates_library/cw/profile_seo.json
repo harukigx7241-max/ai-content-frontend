@@ -1,0 +1,26 @@
+{
+  "_meta": {
+    "id": "cw_profile_seo",
+    "title": "SEOライタープロフィール — 高単価案件を引き寄せる自己紹介",
+    "category": "cw",
+    "subcategory": "beginner",
+    "platform": ["クラウドワークス"],
+    "target_audience": "クラウドワークスでSEOライター案件を受注したい初心者〜中級者",
+    "goal": "SEOライターとしての実績・強みを伝えるプロフィール文を生成する",
+    "tone": "プロフェッショナル・実績アピール",
+    "difficulty": "beginner",
+    "tags": ["クラウドワークス", "SEOライター", "プロフィール", "案件獲得"],
+    "seasonality": "all_year",
+    "last_updated": "2026-04-17",
+    "requires_ai": true,
+    "free_available": true,
+    "rarity": "common",
+    "knowledge_ref": null
+  },
+  "form": {
+    "job_type": "Webライター",
+    "experience_years": "1〜3年",
+    "specialty": "SEO記事・コンテンツマーケティング・キーワード選定",
+    "achievements": "月30記事執筆・複数メディア掲載・GoogleSEO上位表示実績"
+  }
+}

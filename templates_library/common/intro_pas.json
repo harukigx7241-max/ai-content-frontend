@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "id": "common_intro_pas",
+    "title": "PAS型導入文 — 1秒で心を掴む問題提起フック",
+    "category": "common",
+    "subcategory": "beginner",
+    "platform": ["note", "X", "Instagram", "ブログ"],
+    "target_audience": "記事の離脱率が高く最後まで読まれない悩みを持つクリエイター",
+    "goal": "読者が思わず読み続けるPAS構造の導入文を生成する",
+    "tone": "共感的・問題提起型",
+    "difficulty": "beginner",
+    "tags": ["導入文", "PAS", "フック", "冒頭"],
+    "seasonality": "all_year",
+    "last_updated": "2026-04-17",
+    "requires_ai": true,
+    "free_available": true,
+    "rarity": "common",
+    "knowledge_ref": "templates_library/_parts/intro_templates.json"
+  },
+  "form": {
+    "theme": "PAS型導入文: 読者を1秒で引き込む問題提起→煽り→解決の書き方",
+    "age_range": "25〜35歳",
+    "situation": "記事の離脱率が高く最後まで読まれない",
+    "concern": "導入文で読者の心を掴めていない",
+    "tone": "です・ます調",
+    "free_chars": "2000字",
+    "paid_chars": "5000字"
+  }
+}

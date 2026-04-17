@@ -4166,3 +4166,258 @@ img, video, iframe, canvas {
   letter-spacing: 0.04em;
 }
 
+
+
+/* ═══════════════════════════════════════════════════════════════════════
+   PHASE 6 — テンプレート武器庫 Discovery Panel
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Library Panel Wrapper ─────────────────────────────────────────── */
+.tmpl-library-panel {
+  max-width: 1200px;
+  margin: 0 auto 32px;
+  padding: 0 24px;
+}
+
+.tmpl-library-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.tmpl-library-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.04em;
+}
+
+.tmpl-library-icon { font-size: 1.3rem; }
+
+.tmpl-library-count {
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  background: rgba(168,85,247,0.15);
+  border: 1px solid rgba(168,85,247,0.3);
+  border-radius: 100px;
+  color: var(--accent-purple);
+  font-weight: 600;
+}
+
+/* ── Free-only toggle ──────────────────────────────────────────────── */
+.tmpl-free-toggle {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  user-select: none;
+}
+.tmpl-free-toggle input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--accent-purple);
+  cursor: pointer;
+}
+.tmpl-free-toggle:hover { color: var(--text-primary); }
+
+/* ── Pack Tabs ─────────────────────────────────────────────────────── */
+.tmpl-pack-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+.tmpl-pack-tab {
+  padding: 6px 14px;
+  background: var(--glass-fill);
+  border: 1px solid var(--glass-border);
+  border-radius: 100px;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+.tmpl-pack-tab:hover {
+  background: var(--glass-hover);
+  color: var(--text-primary);
+  border-color: rgba(168,85,247,0.35);
+}
+.tmpl-pack-tab.active {
+  background: linear-gradient(135deg, rgba(168,85,247,0.25), rgba(99,102,241,0.2));
+  border-color: rgba(168,85,247,0.6);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* ── Cards Grid ────────────────────────────────────────────────────── */
+.tmpl-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.tmpl-cards-loading {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  padding: 32px;
+}
+
+.tmpl-cards-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  padding: 32px;
+}
+
+/* ── Template Card ─────────────────────────────────────────────────── */
+.tmpl-card {
+  background: var(--glass-fill);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: var(--transition);
+  cursor: default;
+}
+.tmpl-card:hover {
+  background: var(--glass-hover);
+  border-color: rgba(168,85,247,0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+}
+
+/* hidden initially for free-only filter */
+.tmpl-card[data-free="false"].hide-paid { display: none; }
+
+/* ── Card Top Row (badges) ─────────────────────────────────────────── */
+.tmpl-card-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* Rarity chips */
+.tmpl-rarity {
+  font-size: 0.63rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 100px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.rarity-common   { background: rgba(205,127,50,0.18); color: #cd7f32; border: 1px solid rgba(205,127,50,0.35); }
+.rarity-uncommon { background: rgba(156,163,175,0.18); color: #9ca3af; border: 1px solid rgba(156,163,175,0.35); }
+.rarity-rare     { background: rgba(245,158,11,0.18); color: #f59e0b; border: 1px solid rgba(245,158,11,0.35); }
+.rarity-epic     { background: rgba(167,139,250,0.2); color: #a78bfa; border: 1px solid rgba(167,139,250,0.4); }
+.rarity-legendary{ background: rgba(192,132,252,0.22); color: #c084fc; border: 1px solid rgba(192,132,252,0.5); animation: legendaryPulse 3s ease-in-out infinite; }
+
+/* Free / Paid badges */
+.tmpl-badge-free {
+  font-size: 0.63rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 100px;
+  background: rgba(16,185,129,0.18);
+  color: #10b981;
+  border: 1px solid rgba(16,185,129,0.35);
+  letter-spacing: 0.04em;
+}
+.tmpl-badge-paid {
+  font-size: 0.63rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 100px;
+  background: rgba(251,191,36,0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(251,191,36,0.3);
+  letter-spacing: 0.04em;
+}
+
+/* ── Card Body ─────────────────────────────────────────────────────── */
+.tmpl-card-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.tmpl-card-for,
+.tmpl-card-makes {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+  display: flex;
+  gap: 4px;
+}
+
+/* ── Card Bottom ────────────────────────────────────────────────────── */
+.tmpl-card-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+  padding-top: 4px;
+}
+
+.tmpl-diff {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 100px;
+}
+.diff-beginner     { background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+.diff-intermediate { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+.diff-advanced     { background: rgba(239,68,68,0.15);  color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+
+.tmpl-use-btn {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 5px 11px;
+  background: linear-gradient(135deg, var(--accent-purple), #6366f1);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+.tmpl-use-btn:hover {
+  box-shadow: 0 0 14px rgba(168,85,247,0.5);
+  transform: translateY(-1px);
+}
+
+/* ── Responsive ─────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .tmpl-library-panel { padding: 0 16px; }
+  .tmpl-cards-grid    { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+  .tmpl-pack-tabs     { gap: 5px; }
+  .tmpl-pack-tab      { font-size: 0.75rem; padding: 5px 11px; }
+}
+@media (max-width: 480px) {
+  .tmpl-cards-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .tmpl-card       { padding: 11px; }
+  .tmpl-card-title { font-size: 0.78rem; }
+  .tmpl-card-for, .tmpl-card-makes { display: none; }
+}
+@media (max-width: 375px) {
+  .tmpl-cards-grid { grid-template-columns: 1fr; }
+}

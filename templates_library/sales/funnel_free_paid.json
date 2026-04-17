@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "id": "sales_funnel_free_paid",
+    "title": "無料→有料ファネル設計 — 5ステップ収益化の完全解説",
+    "category": "sales",
+    "subcategory": "conversion",
+    "platform": ["note", "tips", "Brain", "LINE公式"],
+    "target_audience": "無料コンテンツを発信しているが有料商品が売れないクリエイター",
+    "goal": "無料コンテンツから有料商品への橋渡し記事・メール設計を生成する",
+    "tone": "戦略的・ステップ解説",
+    "difficulty": "intermediate",
+    "tags": ["ファネル", "収益化", "セールス導線", "無料→有料"],
+    "seasonality": "all_year",
+    "last_updated": "2026-04-17",
+    "requires_ai": true,
+    "free_available": true,
+    "rarity": "rare",
+    "knowledge_ref": null
+  },
+  "form": {
+    "theme": "無料→有料への最短ルート: 5ステップ収益化ファネル完全解説",
+    "age_range": "25〜40歳",
+    "situation": "無料コンテンツを発信しているが有料商品が売れない",
+    "concern": "無料コンテンツから有料へのブリッジが作れていない",
+    "tone": "です・ます調",
+    "free_chars": "2000字",
+    "paid_chars": "8000字"
+  }
+}

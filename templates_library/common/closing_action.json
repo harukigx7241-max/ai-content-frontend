@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "id": "common_closing_action",
+    "title": "行動促進型締め文 — 読者を今すぐ動かすクロージング",
+    "category": "common",
+    "subcategory": "conversion",
+    "platform": ["note", "ブログ", "X", "Instagram"],
+    "target_audience": "記事を読んでもらえるが実際の行動に繋がっていない悩みを持つ人",
+    "goal": "読了後に読者が即座に行動したくなる締め文を生成する",
+    "tone": "背中を押す・前向き",
+    "difficulty": "beginner",
+    "tags": ["締め文", "行動促進", "CTA", "クロージング"],
+    "seasonality": "all_year",
+    "last_updated": "2026-04-17",
+    "requires_ai": true,
+    "free_available": true,
+    "rarity": "common",
+    "knowledge_ref": "templates_library/_parts/closings.json"
+  },
+  "form": {
+    "theme": "行動を促す締め文: 読んだ後に動かす「今日からできる3アクション」",
+    "age_range": "25〜35歳",
+    "situation": "記事を読んでもらえるが実際の行動に繋がっていない",
+    "concern": "読者に行動してもらえる締め文が書けない",
+    "tone": "です・ます調",
+    "free_chars": "1000字",
+    "paid_chars": "3000字"
+  }
+}

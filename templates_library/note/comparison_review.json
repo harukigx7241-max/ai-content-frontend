@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "id": "note_comparison_review",
+    "title": "比較検証note記事 — 読まれる・保存されるフォーマット",
+    "category": "note",
+    "subcategory": "educational",
+    "platform": ["note"],
+    "target_audience": "AIツール・副業手法などを比較して紹介したいクリエイター",
+    "goal": "読者が保存・シェアしたくなる比較検証記事のプロンプトを生成する",
+    "tone": "です・ます調",
+    "difficulty": "intermediate",
+    "tags": ["比較", "検証", "まとめ", "保存"],
+    "seasonality": "all_year",
+    "last_updated": "2026-04-17",
+    "requires_ai": true,
+    "free_available": true,
+    "rarity": "uncommon",
+    "knowledge_ref": null
+  },
+  "form": {
+    "theme": "AIツール徹底比較: ChatGPT vs Gemini vs Claude どれが一番使える？",
+    "age_range": "25〜35歳",
+    "situation": "AIツールをビジネスに活用したいが何を選べばいいか迷っている",
+    "concern": "複数のAIツールの違いがよく分からない。使い分けができていない",
+    "tone": "です・ます調",
+    "free_chars": "2000字",
+    "paid_chars": "5000字"
+  }
+}

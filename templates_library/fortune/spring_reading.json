@@ -1,0 +1,25 @@
+{
+  "_meta": {
+    "id": "fortune_spring_reading",
+    "title": "春の開運鑑定 — 新年度スタートの総合占い",
+    "category": "fortune",
+    "subcategory": "seasonal",
+    "platform": ["ココナラ", "SNS"],
+    "target_audience": "春の新スタートに開運や方向性を知りたい人",
+    "goal": "春の節目に売れる季節特化の開運鑑定書テンプレートを生成する",
+    "tone": "希望に満ちた・前向き",
+    "difficulty": "beginner",
+    "tags": ["春", "開運", "季節鑑定", "新年度"],
+    "seasonality": "spring",
+    "last_updated": "2026-04-17",
+    "requires_ai": true,
+    "free_available": true,
+    "rarity": "rare",
+    "knowledge_ref": null
+  },
+  "form": {
+    "divination_type": "タロット",
+    "category": "2026年春の総合運",
+    "direction": "前向き・行動促進"
+  }
+}

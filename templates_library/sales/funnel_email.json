@@ -1,0 +1,28 @@
+{
+  "_meta": {
+    "id": "sales_funnel_email",
+    "title": "メールシーケンス設計 — 7通で読者を購入者へ変換",
+    "category": "sales",
+    "subcategory": "campaign",
+    "platform": ["メルマガ", "LINE公式"],
+    "target_audience": "メルマガ登録者は増えているが商品購入につながらないクリエイター",
+    "goal": "登録から7通で商品購入に誘導するメールシーケンスを生成する",
+    "tone": "親しみやすく・価値提供重視",
+    "difficulty": "intermediate",
+    "tags": ["メール", "シーケンス", "収益化", "メルマガ"],
+    "seasonality": "all_year",
+    "last_updated": "2026-04-17",
+    "requires_ai": true,
+    "free_available": true,
+    "rarity": "uncommon",
+    "knowledge_ref": null
+  },
+  "form": {
+    "sender_name": "あなたの名前・ブランド名",
+    "theme": "メルマガ読者を高単価商品購入者に変える7通のメールシーケンス",
+    "main_content": "読者の悩みを解決する段階的なノウハウ提供",
+    "story_hook": "私も同じ悩みを抱えていたという体験談",
+    "cta": "商品購入ページへの誘導リンク",
+    "reader_profile": "コンテンツ販売に興味がある副業初心者"
+  }
+}

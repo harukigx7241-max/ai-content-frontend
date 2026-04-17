@@ -1,0 +1,26 @@
+{
+  "_meta": {
+    "id": "sns_x_daily_post",
+    "title": "X日次投稿テンプレ — 毎日続く副業ツイート",
+    "category": "sns",
+    "subcategory": "announcement",
+    "platform": ["X"],
+    "target_audience": "Xで副業・スキルを発信してフォロワーを増やしたい人",
+    "goal": "毎日投稿しやすいエンゲージメントの高いX投稿を生成する",
+    "tone": "親しみやすく・実用的",
+    "difficulty": "beginner",
+    "tags": ["X", "Twitter", "日次投稿", "副業発信"],
+    "seasonality": "all_year",
+    "last_updated": "2026-04-17",
+    "requires_ai": true,
+    "free_available": true,
+    "rarity": "common",
+    "knowledge_ref": null
+  },
+  "form": {
+    "topic": "副業を始めて1ヶ月で月3万円達成した方法",
+    "genre": "副業・ビジネス",
+    "style": "リスト",
+    "length": "280字"
+  }
+}

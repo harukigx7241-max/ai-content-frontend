@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "id": "note_spring_special",
+    "title": "春の新生活note特集 — 4月スタートの副業記事",
+    "category": "note",
+    "subcategory": "seasonal",
+    "platform": ["note"],
+    "target_audience": "新生活・新年度のタイミングで副業を始めたい20〜30代",
+    "goal": "春の節目に共感される季節特化note記事を生成する",
+    "tone": "です・ます調",
+    "difficulty": "beginner",
+    "tags": ["春", "新生活", "新年度", "季節"],
+    "seasonality": "spring",
+    "last_updated": "2026-04-17",
+    "requires_ai": true,
+    "free_available": true,
+    "rarity": "rare",
+    "knowledge_ref": null
+  },
+  "form": {
+    "theme": "新生活を副業スタートの機会に変える5つの方法",
+    "age_range": "20代",
+    "situation": "新社会人・異動・転職などで環境が変わった",
+    "concern": "新生活で忙しい中、副業を始める余裕があるか不安",
+    "tone": "です・ます調",
+    "free_chars": "2000字",
+    "paid_chars": "3000字"
+  }
+}

@@ -30,7 +30,8 @@
 | **2** | **ロール体系 + アクセスポリシー整備** | phase13-mobile-game-ui | abfa0eb |
 | **3** | **レスポンシブ全面見直し** (4 段階ティア・モーダル・ボトムナビ拡充) | phase13-mobile-game-ui | b813eee |
 | **4** | **ゲーム UI 強化** (SVG ロゴ・Cinzel フォント・レアリティバッジ・カード台帳風) | phase13-mobile-game-ui | c1130b6 |
-| **5** | **テンプレートライブラリ拡張** (21件・11カテゴリ・_parts 8ファイル・template_service.py) | phase13-mobile-game-ui | (本コミット) |
+| **5** | **テンプレートライブラリ拡張** (21件・11カテゴリ・_parts 8ファイル・template_service.py) | phase13-mobile-game-ui | 22198ca |
+| **6** | **無料テンプレート武器庫** (46件・6パック・武器庫UI・/api/templates) | phase13-mobile-game-ui | (本コミット) |
 - [ ] 称号テキストに装飾エフェクト
 
 ---

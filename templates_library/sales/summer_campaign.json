@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "id": "sales_summer_campaign",
+    "title": "夏季キャンペーン — 夏の副業チャレンジ30日プログラム",
+    "category": "sales",
+    "subcategory": "seasonal",
+    "platform": ["note", "tips", "LINE公式"],
+    "target_audience": "夏休みを使って副業を加速させたい学生・若手会社員",
+    "goal": "夏限定の特別感を演出した期間限定商品・記事のプロンプトを生成する",
+    "tone": "ワクワク感・限定感",
+    "difficulty": "intermediate",
+    "tags": ["夏", "キャンペーン", "期間限定", "30日"],
+    "seasonality": "summer",
+    "last_updated": "2026-04-17",
+    "requires_ai": true,
+    "free_available": true,
+    "rarity": "rare",
+    "knowledge_ref": null
+  },
+  "form": {
+    "theme": "夏の特別企画: 夏休みの副業チャレンジ30日プログラム",
+    "age_range": "20代",
+    "situation": "夏休みを使って副業を加速させたい学生・若手会社員",
+    "concern": "30日間で具体的にどんな行動をすればいいか分からない",
+    "tone": "です・ます調",
+    "free_chars": "2000字",
+    "paid_chars": "5000字"
+  }
+}

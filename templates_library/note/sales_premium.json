@@ -1,0 +1,29 @@
+{
+  "_meta": {
+    "id": "note_sales_premium",
+    "title": "高単価note戦略 — 月10万円超えの設計図",
+    "category": "note",
+    "subcategory": "beginner",
+    "platform": ["note"],
+    "target_audience": "note販売で月3万円以上が伸び悩んでいる中級者",
+    "goal": "高単価note販売の価格設定・ページ設計・CVR改善のプロンプトを生成する",
+    "tone": "です・ます調",
+    "difficulty": "intermediate",
+    "tags": ["高単価", "note販売", "収益化", "CVR"],
+    "seasonality": "all_year",
+    "last_updated": "2026-04-17",
+    "requires_ai": true,
+    "free_available": true,
+    "rarity": "rare",
+    "knowledge_ref": "workshops/note/overview.md"
+  },
+  "form": {
+    "theme": "月10万円超えを実現した有料note完全ロードマップ",
+    "age_range": "25〜35歳",
+    "situation": "note販売を始めたが月3万円以上が伸び悩んでいる",
+    "concern": "高単価設定が怖い・なぜか売れない理由が分からない",
+    "tone": "です・ます調",
+    "free_chars": "2000字",
+    "paid_chars": "8000字"
+  }
+}
