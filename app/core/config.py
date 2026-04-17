@@ -127,6 +127,9 @@ class Settings:
     # プロモーションプランナー (FREE=テンプレ / API=LLM生成)
     ENABLE_PROMOTION_PLANNER: bool = _bool("ENABLE_PROMOTION_PLANNER", "true")
 
+    # ギルド書記AI — 広場投稿文・キャプション生成 (FREE=テンプレ / API=LLM生成)
+    ENABLE_GUILD_SCRIBE_AI: bool = _bool("ENABLE_GUILD_SCRIBE_AI", "true")
+
     # ────────────────────────────────────────────────────────────────
     # Phase 1: API 予算・制限設定
     # ────────────────────────────────────────────────────────────────

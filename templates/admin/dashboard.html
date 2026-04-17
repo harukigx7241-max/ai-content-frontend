@@ -61,6 +61,7 @@
     <button class="admin-filter-btn"        data-panel="feedback" role="tab">要望</button>
     <button class="admin-filter-btn"        data-panel="trends"     role="tab">🔥 トレンド管理</button>
     <button class="admin-filter-btn"        data-panel="congestion" role="tab">🌡 混雑モニター</button>
+    <button class="admin-filter-btn"        data-panel="services"   role="tab">⚙ サービス状態</button>
     <button class="admin-filter-btn"        data-panel="settings"   role="tab">システム設定</button>
   </div>
 
@@ -372,6 +373,36 @@
     </p>
   </section>
 
+  <!-- ═══ パネル: サービス状態 ═══ -->
+  <section id="panel-services" style="display:none">
+    <!-- APIキー状態サマリ -->
+    <div class="svc-api-summary" id="svcApiSummary">
+      <div class="svc-api-summary-icon">🔑</div>
+      <div class="svc-api-summary-text">
+        <div class="svc-api-summary-title" id="svcApiTitle">読み込み中...</div>
+        <div class="svc-api-summary-detail" id="svcApiDetail"></div>
+      </div>
+      <div class="svc-api-key-dot none" id="svcApiDot"></div>
+    </div>
+
+    <!-- フィルタバー -->
+    <div class="svc-filter-bar">
+      <button class="svc-filter-btn active" data-svc-filter="all">すべて</button>
+      <button class="svc-filter-btn" data-svc-filter="api">AI版</button>
+      <button class="svc-filter-btn" data-svc-filter="free">無料版</button>
+      <button class="svc-filter-btn" data-svc-filter="disabled">無効</button>
+    </div>
+
+    <p id="svcLoading" style="color:var(--text-muted);font-size:0.85rem">読み込み中...</p>
+    <p id="svcError" style="display:none;color:var(--text-muted);font-size:0.82rem">読み込みに失敗しました</p>
+    <div class="svc-status-grid" id="svcGrid" style="display:none"></div>
+
+    <p style="margin-top:20px;font-size:0.76rem;color:var(--text-muted)">
+      API キーを設定すると対応サービスが自動的に AI 版にアップグレードされます。
+      設定方法は <code style="background:rgba(255,255,255,0.07);padding:1px 5px;border-radius:4px">docs/api_connection.md</code> を参照してください。
+    </p>
+  </section>
+
   <!-- ═══ パネル: システム設定 ═══ -->
   <section id="panel-settings" style="display:none">
     <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:24px">
@@ -435,7 +466,7 @@
 const STATUS_LABELS = {pending:'承認待ち', approved:'承認済み', rejected:'却下', suspended:'停止中'};
 
 // ── タブ切替 ──────────────────────────────────────────────────────
-const ALL_PANELS = ['stats', 'users', 'analytics', 'feedback', 'trends', 'congestion', 'settings'];
+const ALL_PANELS = ['stats', 'users', 'analytics', 'feedback', 'trends', 'congestion', 'services', 'settings'];
 let currentPanel = 'stats';
 document.querySelectorAll('[data-panel]').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -450,6 +481,7 @@ document.querySelectorAll('[data-panel]').forEach(btn => {
     if (currentPanel === 'feedback'   && !feedbackLoaded)   loadFeedback('');
     if (currentPanel === 'trends'     && !trendsLoaded)     loadTrends();
     if (currentPanel === 'congestion')                      loadCongestion();
+    if (currentPanel === 'services'   && !servicesLoaded)   loadServices();
     if (currentPanel === 'settings'   && !settingsLoaded)   loadSettings();
   });
 });
@@ -901,6 +933,96 @@ async function saveTrend(workshop) {
     msg.textContent = '❌ 保存に失敗しました。';
   }
 }
+
+// ── サービス状態パネル ────────────────────────────────────────────
+let servicesLoaded = false;
+let _svcData = [];
+let _svcFilter = 'all';
+
+const SVC_MODE_LABELS = {
+  free: '無料版', lite: 'Lite版', api: 'AI版',
+  fallback: 'フォールバック', disabled: '無効', pending: '準備中'
+};
+const SVC_MODE_ICONS = {
+  free: '🟢', lite: '🟡', api: '🟣', fallback: '🟠', disabled: '⚫', pending: '⏳'
+};
+
+async function loadServices() {
+  document.getElementById('svcLoading').style.display = '';
+  document.getElementById('svcError').style.display = 'none';
+  document.getElementById('svcGrid').style.display = 'none';
+  try {
+    const [svcsRes, cfgRes] = await Promise.all([
+      fetch('/api/system/services'),
+      fetch('/api/system/config'),
+    ]);
+    if (!svcsRes.ok) throw new Error();
+    const svcsData = await svcsRes.json();
+    _svcData = svcsData.services || [];
+
+    // APIキーサマリ
+    if (cfgRes.ok) {
+      const cfg = await cfgRes.json();
+      const hasKey = cfg.api?.has_key;
+      const provider = cfg.api?.provider || 'none';
+      document.getElementById('svcApiDot').className = 'svc-api-key-dot ' + (hasKey ? 'ok' : 'none');
+      document.getElementById('svcApiTitle').textContent = hasKey
+        ? `APIキー設定済み (${provider})`
+        : 'APIキー未設定';
+      document.getElementById('svcApiDetail').textContent = hasKey
+        ? '対応サービスが AI 版で動作しています'
+        : '全サービスが無料版 (ルールベース) で動作しています。APIキーを設定すると AI 版に自動アップグレードされます';
+    }
+
+    _renderServices();
+    servicesLoaded = true;
+  } catch {
+    document.getElementById('svcLoading').style.display = 'none';
+    document.getElementById('svcError').style.display = '';
+  }
+}
+
+function _renderServices() {
+  const grid = document.getElementById('svcGrid');
+  const filtered = _svcFilter === 'all'
+    ? _svcData
+    : _svcData.filter(s => s.current_mode === _svcFilter || (!s.enabled && _svcFilter === 'disabled'));
+
+  grid.innerHTML = filtered.map(s => {
+    const mode = s.current_mode || 'disabled';
+    const icon = SVC_MODE_ICONS[mode] || '⚫';
+    const label = SVC_MODE_LABELS[mode] || mode;
+    return `
+      <div class="svc-status-card mode-${esc(mode)}">
+        <div class="svc-card-header">
+          <span class="svc-card-name">${esc(s.label)}</span>
+          <span class="svc-tier-badge ${esc(mode)}">${icon} ${esc(label)}</span>
+        </div>
+        <div class="svc-card-desc">${esc(s.description)}</div>
+        <div class="svc-card-impl">
+          <span class="impl-free">🟢 FREE: ${esc(s.free_impl)}</span>
+          <span class="impl-api">🟣 API: ${esc(s.api_impl)}</span>
+        </div>
+        ${s.phase ? `<div class="svc-card-phase">${esc(s.phase)}</div>` : ''}
+      </div>`;
+  }).join('');
+
+  document.getElementById('svcLoading').style.display = 'none';
+  grid.style.display = filtered.length ? '' : 'none';
+  if (!filtered.length) {
+    document.getElementById('svcLoading').textContent = '該当するサービスがありません';
+    document.getElementById('svcLoading').style.display = '';
+  }
+}
+
+document.querySelectorAll('[data-svc-filter]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-svc-filter]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    _svcFilter = btn.dataset.svcFilter;
+    if (_svcData.length) _renderServices();
+  });
+});
 
 // ── システム設定パネル ────────────────────────────────────────────
 let settingsLoaded = false;

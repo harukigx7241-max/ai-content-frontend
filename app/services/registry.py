@@ -161,6 +161,15 @@ _SERVICE_DEFINITIONS: list[dict] = [
         "api_impl": "LLMカスタムプロモーション戦略 (未実装)",
         "phase": "Phase 21",
     },
+    {
+        "name": "guild_scribe_ai",
+        "label": "ギルド書記AI",
+        "flag_key": "GUILD_SCRIBE_AI",
+        "description": "ギルド広場への投稿文・キャプション生成を支援",
+        "free_impl": "カテゴリ別テンプレートベース投稿文生成 (Phase 12実装)",
+        "api_impl": "LLM文脈対応投稿文・高品質キャプション生成 (未実装)",
+        "phase": "Phase 12",
+    },
 ]
 
 

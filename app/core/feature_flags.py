@@ -40,6 +40,7 @@ class FeatureFlags:
     API_USAGE_DASHBOARD: bool = settings.ENABLE_API_USAGE_DASHBOARD
     CONGESTION_DISPLAY: bool  = settings.ENABLE_CONGESTION_DISPLAY
     PROMOTION_PLANNER: bool   = settings.ENABLE_PROMOTION_PLANNER
+    GUILD_SCRIBE_AI: bool     = settings.ENABLE_GUILD_SCRIBE_AI
 
     # ── ヘルパーメソッド ────────────────────────────────────────────
 
@@ -108,6 +109,7 @@ class FeatureFlags:
                 "api_usage_dashboard": self.API_USAGE_DASHBOARD,
                 "congestion_display": self.CONGESTION_DISPLAY,
                 "promotion_planner": self.PROMOTION_PLANNER,
+                "guild_scribe_ai": self.GUILD_SCRIBE_AI,
             },
         }
 

@@ -51,6 +51,16 @@ def system_config():
     return JSONResponse(flags.as_dict())
 
 
+@router.get("/api/system/services")
+def services_status():
+    """
+    全サービスの現在の動作モード一覧を返す。認証不要。
+    管理ダッシュボード・フロントエンドのサービス状態表示に使用。
+    """
+    from app.services.registry import service_registry
+    return JSONResponse({"services": service_registry.get_all_status_dict()})
+
+
 @router.get("/api/system/congestion")
 def congestion_status():
     """
