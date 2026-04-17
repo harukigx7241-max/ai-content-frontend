@@ -1,0 +1,210 @@
+{
+  "_comment": "note傾向インサイト — Phase 15拡張形式。手動メンテナンス + 将来スクレイパーで自動更新。",
+  "workshop": "note",
+  "schema_version": "1.1",
+  "extracted_at": "2026-04-17T22:48:34Z",
+  "expires_at": "2026-04-20T22:48:34Z",
+  "source": "admin_trigger",
+  "source_ids": [],
+  "confidence": 1.0,
+  "title_patterns": [
+    {
+      "pattern": "【保存版】〇〇の完全ガイド",
+      "momentum": "hot",
+      "example": "【保存版】AI副業の完全ガイド",
+      "source_count": 1
+    },
+    {
+      "pattern": "〇〇日で〇〇を達成した方法",
+      "momentum": "rising",
+      "example": "30日で月3万円を達成した方法",
+      "source_count": 1
+    },
+    {
+      "pattern": "〇〇円稼いだリアルな話",
+      "momentum": "hot",
+      "example": "副業で50万円稼いだリアルな話",
+      "source_count": 1
+    },
+    {
+      "pattern": "知らないと損する〇〇の話",
+      "momentum": "rising",
+      "example": "知らないと損するAIツールの話",
+      "source_count": 1
+    },
+    {
+      "pattern": "元〇〇が教える本当の〇〇",
+      "momentum": "stable",
+      "example": "元会社員が教える本当のフリーランス",
+      "source_count": 1
+    }
+  ],
+  "cta_patterns": [
+    {
+      "pattern": "続きは有料エリアで解説します",
+      "placement": "無料エリア末尾",
+      "effectiveness": "high"
+    },
+    {
+      "pattern": "購入者限定で〇〇もプレゼント",
+      "placement": "購入ボタン直前",
+      "effectiveness": "high"
+    },
+    {
+      "pattern": "いいね・フォローで励ましてください",
+      "placement": "記事冒頭",
+      "effectiveness": "medium"
+    },
+    {
+      "pattern": "コメント欄で感想を教えてください",
+      "placement": "SNS投稿末尾",
+      "effectiveness": "medium"
+    }
+  ],
+  "selling_angles": [
+    {
+      "angle": "money",
+      "label": "収益・お金",
+      "strength": 0.92,
+      "keywords": [
+        "稼ぐ",
+        "収入",
+        "副業",
+        "月収",
+        "売上"
+      ]
+    },
+    {
+      "angle": "time_save",
+      "label": "時短・効率化",
+      "strength": 0.78,
+      "keywords": [
+        "時間を節約",
+        "自動化",
+        "効率",
+        "AI活用"
+      ]
+    },
+    {
+      "angle": "learning",
+      "label": "スキルアップ",
+      "strength": 0.71,
+      "keywords": [
+        "学ぶ",
+        "習得",
+        "マスター",
+        "プロになる"
+      ]
+    },
+    {
+      "angle": "fear_of_miss",
+      "label": "機会損失への不安",
+      "strength": 0.68,
+      "keywords": [
+        "知らないと損",
+        "出遅れ",
+        "今すぐ",
+        "乗り遅れ"
+      ]
+    },
+    {
+      "angle": "status",
+      "label": "地位・承認欲求",
+      "strength": 0.55,
+      "keywords": [
+        "認められる",
+        "専門家",
+        "インフルエンサー",
+        "フォロワー"
+      ]
+    }
+  ],
+  "theme_signals": [
+    {
+      "theme": "AI副業",
+      "momentum": "hot",
+      "volume": "very_high",
+      "related_keywords": [
+        "ChatGPT",
+        "Claude",
+        "プロンプト",
+        "AI収益"
+      ],
+      "peak_forecast": "ongoing"
+    },
+    {
+      "theme": "動画編集副業",
+      "momentum": "stable",
+      "volume": "high",
+      "related_keywords": [
+        "YouTube",
+        "ショート動画",
+        "Reels"
+      ],
+      "peak_forecast": "2026-06"
+    },
+    {
+      "theme": "SNS運用代行",
+      "momentum": "rising",
+      "volume": "high",
+      "related_keywords": [
+        "X運用",
+        "Instagram",
+        "TikTok代行"
+      ],
+      "peak_forecast": "2026-07"
+    },
+    {
+      "theme": "Webライティング",
+      "momentum": "cooling",
+      "volume": "medium",
+      "related_keywords": [
+        "SEOライター",
+        "記事作成",
+        "文字単価"
+      ],
+      "peak_forecast": "2026-05"
+    },
+    {
+      "theme": "ハンドメイド販売",
+      "momentum": "stable",
+      "volume": "medium",
+      "related_keywords": [
+        "minne",
+        "Creema",
+        "ハンドメイド作家"
+      ],
+      "peak_forecast": "2026-12"
+    }
+  ],
+  "category_momentum": {
+    "AI・自動化": "hot",
+    "投資・資産形成": "warm",
+    "在宅ワーク": "stable",
+    "子育て・教育": "warm",
+    "健康・メンタル": "stable",
+    "美容・ファッション": "cooling",
+    "旅行・グルメ": "stable"
+  },
+  "hot_categories": [
+    "AI・自動化",
+    "投資・資産形成",
+    "在宅ワーク",
+    "子育て・教育",
+    "健康・メンタル"
+  ],
+  "price_sweet_spots": [
+    "300円",
+    "500円",
+    "980円",
+    "1,480円",
+    "2,000円"
+  ],
+  "conversion_boosters": [
+    "見出しに数字を使う",
+    "無料エリアの最後に続きが気になるポイントを置く",
+    "購入者特典を明記する",
+    "実際の数字・データを引用する",
+    "ビフォーアフターを明確に示す"
+  ]
+}

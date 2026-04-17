@@ -1,0 +1,195 @@
+{
+  "_comment": "トレンド収集ソース定義 — Phase 15。将来 web scraping 接続時に参照する。",
+  "_version": "1.0",
+  "_last_updated": "2026-04-17",
+
+  "note": {
+    "display_name": "note.com",
+    "description": "有料note記事のランキング・トレンド",
+    "frequency": "daily",
+    "target_count": 50,
+    "sources": [
+      {
+        "id": "note_paid_ranking",
+        "type": "ranking",
+        "url": "https://note.com/ranking/paid",
+        "extract": ["title", "price", "likes", "comments", "author_followers"],
+        "css_selectors": {
+          "item_list": ".m-creatorCardsWrapper__list .p-article",
+          "title": ".p-article__title",
+          "price": ".p-article__price",
+          "likes": ".o-postCard__likes"
+        }
+      },
+      {
+        "id": "note_trending_free",
+        "type": "trending",
+        "url": "https://note.com/ranking",
+        "extract": ["title", "tags", "likes"],
+        "css_selectors": {
+          "item_list": ".m-creatorCardsWrapper__list .p-article",
+          "title": ".p-article__title",
+          "tags": ".p-article__tag"
+        }
+      }
+    ],
+    "insight_extraction": {
+      "title_patterns": "タイトルから【】・数字・感情語・CTAパターンを抽出",
+      "selling_angles": "説明文から「時短・節約・稼ぐ・学ぶ・癒し」等の販売角度を検出",
+      "theme_signals": "タグ・カテゴリから熱量 (rising/stable/declining) を判定",
+      "price_sweet_spots": "有料記事の価格帯分布から最頻値を算出",
+      "cta_patterns": "無料エリア末尾・見出しのCTA文言パターンを収集"
+    }
+  },
+
+  "tips": {
+    "display_name": "tips.world",
+    "description": "tips の売れ筋コンテンツ傾向",
+    "frequency": "weekly",
+    "target_count": 30,
+    "sources": [
+      {
+        "id": "tips_trending",
+        "type": "trending",
+        "url": "https://tips.world/ranking",
+        "extract": ["title", "price", "purchase_count", "category"],
+        "css_selectors": {}
+      }
+    ],
+    "insight_extraction": {
+      "title_patterns": "タイトルパターン抽出 (note と共通ロジック)",
+      "selling_angles": "カテゴリ・説明文から販売角度を検出",
+      "category_momentum": "カテゴリ別購入数の前週比較"
+    }
+  },
+
+  "brain": {
+    "display_name": "Brain.fm / BRAIN",
+    "description": "Brain の売れ筋・高評価コンテンツ傾向",
+    "frequency": "weekly",
+    "target_count": 30,
+    "sources": [
+      {
+        "id": "brain_ranking",
+        "type": "ranking",
+        "url": "https://brain-net.co.jp/ranking",
+        "extract": ["title", "price", "rating", "review_count"],
+        "css_selectors": {}
+      }
+    ],
+    "insight_extraction": {
+      "title_patterns": "高評価コンテンツのタイトルパターン",
+      "selling_angles": "レビュー文から購買動機を分類",
+      "price_sweet_spots": "価格帯分布・評価との相関"
+    }
+  },
+
+  "cw": {
+    "display_name": "クラウドワークス",
+    "description": "高単価案件・採用率の高い提案文の傾向",
+    "frequency": "weekly",
+    "target_count": 40,
+    "sources": [
+      {
+        "id": "cw_new_jobs",
+        "type": "job_board",
+        "url": "https://crowdworks.jp/public/jobs/new?category_id=all",
+        "extract": ["title", "budget", "category", "skills_required", "proposals_count"],
+        "css_selectors": {}
+      },
+      {
+        "id": "cw_popular",
+        "type": "popular",
+        "url": "https://crowdworks.jp/public/jobs?order=popularity",
+        "extract": ["title", "budget", "proposals_count", "category"],
+        "css_selectors": {}
+      }
+    ],
+    "insight_extraction": {
+      "theme_signals": "案件カテゴリ別の増減傾向",
+      "selling_angles": "案件説明文から求められるスキルの傾向",
+      "price_sweet_spots": "予算帯の分布・高単価案件の特徴",
+      "cta_patterns": "採用率高い案件の提案文キーワード"
+    }
+  },
+
+  "fortune": {
+    "display_name": "ココナラ占い",
+    "description": "占いジャンルの売れ筋・高評価傾向",
+    "frequency": "weekly",
+    "target_count": 30,
+    "sources": [
+      {
+        "id": "coconala_fortune_ranking",
+        "type": "ranking",
+        "url": "https://coconala.com/categories/19?sort=sales_highest",
+        "extract": ["title", "price", "rating", "review_count", "category"],
+        "css_selectors": {}
+      }
+    ],
+    "insight_extraction": {
+      "title_patterns": "鑑定タイトルの人気パターン",
+      "theme_signals": "占い種別 (タロット・西洋占星術・数秘術 etc) の人気傾向",
+      "selling_angles": "高評価レビューから「何が評価されているか」を抽出",
+      "cta_patterns": "サービス説明の購買促進ワード"
+    }
+  },
+
+  "sns": {
+    "display_name": "SNS トレンド (X / Instagram)",
+    "description": "副業・コンテンツ販売ジャンルの SNS 投稿傾向",
+    "frequency": "daily",
+    "target_count": 100,
+    "sources": [
+      {
+        "id": "x_trending_tags",
+        "type": "hashtag_trend",
+        "url": "https://twitter.com/explore/tabs/trending",
+        "extract": ["hashtag", "tweet_volume", "category"],
+        "css_selectors": {},
+        "note": "X API v2 (Basic plan) が必要"
+      },
+      {
+        "id": "x_content_creators",
+        "type": "creator_content",
+        "query": "#副業 #note販売 #ノート販売 OR #コンテンツ販売",
+        "extract": ["text", "likes", "retweets", "engagement_rate"],
+        "note": "X API v2 Search が必要"
+      }
+    ],
+    "insight_extraction": {
+      "theme_signals": "ハッシュタグ・キーワード頻度の前日比",
+      "selling_angles": "高エンゲージメント投稿の訴求角度",
+      "cta_patterns": "バズった投稿末尾のCTA文言",
+      "title_patterns": "スレッド・カルーセル投稿の冒頭パターン"
+    }
+  },
+
+  "sales": {
+    "display_name": "販売ページ汎用",
+    "description": "LP・販売ページのコンバージョン傾向",
+    "frequency": "monthly",
+    "target_count": 20,
+    "sources": [
+      {
+        "id": "general_lp_patterns",
+        "type": "manual_curated",
+        "description": "管理者が手動でキュレーションしたLPパターン集",
+        "extract": ["headline", "cta_text", "social_proof", "price_anchor"]
+      }
+    ],
+    "insight_extraction": {
+      "title_patterns": "高転換ヘッドラインパターン",
+      "cta_patterns": "コンバージョンの高いCTAボタンテキスト",
+      "selling_angles": "共感・権威・緊急性・社会的証明の組み合わせ"
+    }
+  },
+
+  "_scraping_notes": {
+    "robots_txt": "収集前に必ず robots.txt を確認すること",
+    "rate_limit": "1リクエスト / 2秒 以上の間隔を空ける",
+    "user_agent": "適切なUser-Agentを設定すること",
+    "legal": "利用規約・著作権を遵守し、個人情報は収集しないこと",
+    "phase": "Phase 16+ で実際のスクレイパーを実装予定"
+  }
+}

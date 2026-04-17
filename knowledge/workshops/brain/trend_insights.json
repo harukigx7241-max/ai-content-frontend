@@ -1,0 +1,125 @@
+{
+  "_comment": "Brain傾向インサイト — Phase 15拡張形式",
+  "workshop": "brain",
+  "schema_version": "1.1",
+  "extracted_at": "2026-04-17T22:48:34Z",
+  "expires_at": "2026-04-27T22:48:34Z",
+  "source": "admin_trigger",
+  "source_ids": [],
+  "confidence": 1.0,
+  "title_patterns": [
+    {
+      "pattern": "〇〇で月〇〇万円稼ぐ完全ロードマップ",
+      "momentum": "hot",
+      "example": "SNS運用で月10万円稼ぐ完全ロードマップ",
+      "source_count": 1
+    },
+    {
+      "pattern": "【永久保存版】〇〇の教科書",
+      "momentum": "rising",
+      "example": "【永久保存版】AI副業の教科書",
+      "source_count": 1
+    },
+    {
+      "pattern": "〇〇を仕組み化して自動収益を作る方法",
+      "momentum": "stable",
+      "example": "情報発信を仕組み化して自動収益を作る方法",
+      "source_count": 1
+    }
+  ],
+  "cta_patterns": [
+    {
+      "pattern": "アフィリエイト報酬〇〇%",
+      "placement": "購入ボタン直前",
+      "effectiveness": "high"
+    },
+    {
+      "pattern": "先着〇〇名限定",
+      "placement": "購入ボタン直前",
+      "effectiveness": "high"
+    },
+    {
+      "pattern": "購入者コミュニティ招待付き",
+      "placement": "購入ボタン直前",
+      "effectiveness": "high"
+    }
+  ],
+  "selling_angles": [
+    {
+      "angle": "money",
+      "label": "収益・お金",
+      "strength": 0.95,
+      "keywords": [
+        "月収〇〇万",
+        "不労所得",
+        "仕組み収益"
+      ]
+    },
+    {
+      "angle": "status",
+      "label": "権威・実績",
+      "strength": 0.82,
+      "keywords": [
+        "実績〇〇円",
+        "累計〇〇部",
+        "レビュー〇〇件"
+      ]
+    },
+    {
+      "angle": "fear_of_miss",
+      "label": "機会損失",
+      "strength": 0.75,
+      "keywords": [
+        "先着限定",
+        "期間限定",
+        "今だけ"
+      ]
+    }
+  ],
+  "theme_signals": [
+    {
+      "theme": "情報発信ビジネス",
+      "momentum": "hot",
+      "volume": "very_high",
+      "related_keywords": [
+        "メルマガ",
+        "SNS集客",
+        "ファン化"
+      ],
+      "peak_forecast": "ongoing"
+    },
+    {
+      "theme": "コミュニティ運営",
+      "momentum": "rising",
+      "volume": "high",
+      "related_keywords": [
+        "Discord",
+        "サロン",
+        "オンラインコミュニティ"
+      ],
+      "peak_forecast": "2026-08"
+    }
+  ],
+  "category_momentum": {
+    "情報発信": "hot",
+    "SNS集客": "hot",
+    "コーチング・コンサル": "warm",
+    "Webスキル": "stable"
+  },
+  "hot_categories": [
+    "情報発信",
+    "SNS集客",
+    "コーチング・コンサル"
+  ],
+  "price_sweet_spots": [
+    "1,980円",
+    "4,980円",
+    "9,800円",
+    "29,800円"
+  ],
+  "conversion_boosters": [
+    "アフィリエイト制度を明記する",
+    "累計販売部数・売上を実績として示す",
+    "購入者コミュニティや特典を強調する"
+  ]
+}

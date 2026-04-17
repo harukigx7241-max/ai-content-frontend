@@ -222,6 +222,53 @@ def get_budget(admin: User = Depends(require_admin)):
     return JSONResponse(budget.to_dict())
 
 
+# ── Phase 15: 傾向収集 (Trend Ingestion) ──────────────────────────
+
+
+class IngestRequest(BaseModel):
+    workshop: Optional[str] = None  # None → 全ワークショップ
+    triggered_by: str = "admin"
+
+
+@router.post("/trends/ingest")
+def trigger_trend_ingest(
+    body: IngestRequest,
+    admin: User = Depends(require_admin),
+):
+    """
+    傾向収集を手動トリガーする。
+    workshop=None → 全ワークショップ。workshop 指定 → 1件のみ。
+    """
+    from app.services.trend_ingestion_service import trend_ingestion_service
+    triggered_by = f"{admin.display_name or admin.email} (admin)"
+    if body.workshop:
+        result = trend_ingestion_service.run_for_workshop(body.workshop, triggered_by)
+    else:
+        result = trend_ingestion_service.run_all(triggered_by)
+    if not result.available:
+        raise HTTPException(status_code=400, detail=result.hint or "収集に失敗しました")
+    return JSONResponse(result.content or {})
+
+
+@router.get("/trends/history")
+def get_trend_history(
+    limit: int = Query(20, ge=1, le=100),
+    admin: User = Depends(require_admin),
+):
+    """傾向収集の実行履歴を返す (最新N件)。"""
+    from app.services.trend_ingestion_service import trend_ingestion_service
+    result = trend_ingestion_service.get_history(limit=limit)
+    return JSONResponse(result.content or {})
+
+
+@router.get("/trends/status")
+def get_trend_status(admin: User = Depends(require_admin)):
+    """全ワークショップの傾向データ鮮度状態を返す。"""
+    from app.services.trend_ingestion_service import trend_ingestion_service
+    result = trend_ingestion_service.get_status()
+    return JSONResponse(result.content or {})
+
+
 # ── Phase 14: 使用量ダッシュボード ───────────────────────────────
 
 

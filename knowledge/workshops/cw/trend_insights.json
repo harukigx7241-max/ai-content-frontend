@@ -1,0 +1,150 @@
+{
+  "_comment": "クラウドワークス傾向インサイト — Phase 15拡張形式",
+  "workshop": "cw",
+  "schema_version": "1.1",
+  "extracted_at": "2026-04-17T22:48:34Z",
+  "expires_at": "2026-04-27T22:48:34Z",
+  "source": "admin_trigger",
+  "source_ids": [],
+  "confidence": 1.0,
+  "title_patterns": [
+    {
+      "pattern": "〇〇のプロが丁寧に対応します",
+      "momentum": "stable",
+      "example": "Webライターのプロが丁寧に対応します",
+      "source_count": 1
+    },
+    {
+      "pattern": "【即対応】〇〇承ります",
+      "momentum": "rising",
+      "example": "【即対応】LP作成承ります",
+      "source_count": 1
+    },
+    {
+      "pattern": "〇〇が得意なフリーランス〇〇年目",
+      "momentum": "stable",
+      "example": "SNS運用が得意なフリーランス3年目",
+      "source_count": 1
+    }
+  ],
+  "cta_patterns": [
+    {
+      "pattern": "まずはお気軽にご相談ください",
+      "placement": "記事冒頭",
+      "effectiveness": "high"
+    },
+    {
+      "pattern": "サンプルをご確認の上ご依頼ください",
+      "placement": "無料エリア末尾",
+      "effectiveness": "high"
+    },
+    {
+      "pattern": "継続依頼・長期契約大歓迎",
+      "placement": "購入ボタン直前",
+      "effectiveness": "medium"
+    }
+  ],
+  "selling_angles": [
+    {
+      "angle": "time_save",
+      "label": "クライアントの時間節約",
+      "strength": 0.88,
+      "keywords": [
+        "即対応",
+        "スピード",
+        "納期厳守"
+      ]
+    },
+    {
+      "angle": "learning",
+      "label": "専門性・スキル証明",
+      "strength": 0.82,
+      "keywords": [
+        "実績〇〇件",
+        "専門家",
+        "資格・認定"
+      ]
+    },
+    {
+      "angle": "money",
+      "label": "クライアントのROI",
+      "strength": 0.7,
+      "keywords": [
+        "費用対効果",
+        "結果にコミット",
+        "成果報酬"
+      ]
+    }
+  ],
+  "theme_signals": [
+    {
+      "theme": "AI関連開発・活用支援",
+      "momentum": "hot",
+      "volume": "very_high",
+      "related_keywords": [
+        "プロンプトエンジニア",
+        "AI導入支援",
+        "ChatGPT活用"
+      ],
+      "peak_forecast": "ongoing"
+    },
+    {
+      "theme": "動画制作・編集",
+      "momentum": "hot",
+      "volume": "high",
+      "related_keywords": [
+        "YouTube編集",
+        "ショート動画",
+        "Reels"
+      ],
+      "peak_forecast": "2026-08"
+    },
+    {
+      "theme": "LP・Webサイト制作",
+      "momentum": "stable",
+      "volume": "very_high",
+      "related_keywords": [
+        "WordPress",
+        "Figma",
+        "LP制作"
+      ],
+      "peak_forecast": "ongoing"
+    },
+    {
+      "theme": "データ入力・スクレイピング",
+      "momentum": "cooling",
+      "volume": "medium",
+      "related_keywords": [
+        "Excel",
+        "データ整理",
+        "スクレイピング"
+      ],
+      "peak_forecast": "2026-06"
+    }
+  ],
+  "category_momentum": {
+    "AI・機械学習": "hot",
+    "動画・映像制作": "hot",
+    "Webサイト制作": "warm",
+    "ライティング": "stable",
+    "デザイン": "warm",
+    "データ入力": "cooling"
+  },
+  "hot_categories": [
+    "AI・機械学習",
+    "動画・映像制作",
+    "Webサイト制作"
+  ],
+  "price_sweet_spots": [
+    "5,000円",
+    "10,000円",
+    "30,000円",
+    "50,000円"
+  ],
+  "conversion_boosters": [
+    "実績件数と評価を数字で示す",
+    "サンプルワーク・ポートフォリオへのリンクを貼る",
+    "レスポンス速度を明記する",
+    "修正対応回数を明示する"
+  ]
+}

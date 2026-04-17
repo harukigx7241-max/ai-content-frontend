@@ -1,0 +1,125 @@
+{
+  "_comment": "tips傾向インサイト — Phase 15拡張形式",
+  "workshop": "tips",
+  "schema_version": "1.1",
+  "extracted_at": "2026-04-17T22:48:34Z",
+  "expires_at": "2026-04-27T22:48:34Z",
+  "source": "admin_trigger",
+  "source_ids": [],
+  "confidence": 1.0,
+  "title_patterns": [
+    {
+      "pattern": "〇〇のすべて — 完全版",
+      "momentum": "hot",
+      "example": "AI副業のすべて — 完全版",
+      "source_count": 1
+    },
+    {
+      "pattern": "【実践編】〇〇で稼ぐ手順書",
+      "momentum": "rising",
+      "example": "【実践編】ライティングで稼ぐ手順書",
+      "source_count": 1
+    },
+    {
+      "pattern": "〇〇をゼロから始める人へ",
+      "momentum": "stable",
+      "example": "SNS運用をゼロから始める人へ",
+      "source_count": 1
+    }
+  ],
+  "cta_patterns": [
+    {
+      "pattern": "購入後すぐに使える〇〇テンプレ付き",
+      "placement": "購入ボタン直前",
+      "effectiveness": "high"
+    },
+    {
+      "pattern": "期間限定価格",
+      "placement": "購入ボタン直前",
+      "effectiveness": "high"
+    },
+    {
+      "pattern": "質問はDMにどうぞ",
+      "placement": "SNS投稿末尾",
+      "effectiveness": "medium"
+    }
+  ],
+  "selling_angles": [
+    {
+      "angle": "money",
+      "label": "収益・お金",
+      "strength": 0.88,
+      "keywords": [
+        "稼ぐ",
+        "副業収入",
+        "収益化"
+      ]
+    },
+    {
+      "angle": "time_save",
+      "label": "時短・効率化",
+      "strength": 0.8,
+      "keywords": [
+        "テンプレ",
+        "すぐ使える",
+        "コピペ"
+      ]
+    },
+    {
+      "angle": "learning",
+      "label": "スキルアップ",
+      "strength": 0.65,
+      "keywords": [
+        "基礎から",
+        "ゼロから",
+        "入門"
+      ]
+    }
+  ],
+  "theme_signals": [
+    {
+      "theme": "AI活用テンプレ集",
+      "momentum": "hot",
+      "volume": "high",
+      "related_keywords": [
+        "プロンプト集",
+        "ChatGPT活用",
+        "AI自動化"
+      ],
+      "peak_forecast": "ongoing"
+    },
+    {
+      "theme": "副業ノウハウ",
+      "momentum": "stable",
+      "volume": "high",
+      "related_keywords": [
+        "在宅副業",
+        "スマホ副業"
+      ],
+      "peak_forecast": "ongoing"
+    }
+  ],
+  "category_momentum": {
+    "AI活用": "hot",
+    "ビジネス": "warm",
+    "副業・稼ぎ方": "hot",
+    "マーケティング": "warm",
+    "デザイン": "stable"
+  },
+  "hot_categories": [
+    "AI活用",
+    "副業・稼ぎ方",
+    "ビジネス"
+  ],
+  "price_sweet_spots": [
+    "500円",
+    "980円",
+    "1,980円",
+    "3,980円"
+  ],
+  "conversion_boosters": [
+    "テンプレート付きを強調する",
+    "即使える・すぐ実践できるを前面に",
+    "ページ数・ボリュームを明記する"
+  ]
+}

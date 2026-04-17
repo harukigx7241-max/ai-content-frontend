@@ -1,0 +1,134 @@
+{
+  "_comment": "トレンドインサイトのスキーマ定義 — Phase 15。trend_insights.json はこの形式に従う。",
+  "_version": "1.1",
+
+  "schema": {
+    "workshop": {
+      "type": "string",
+      "description": "ワークショップ ID (note / tips / brain / cw / fortune / sns / sales)",
+      "required": true
+    },
+    "schema_version": {
+      "type": "string",
+      "description": "スキーマバージョン",
+      "example": "1.1"
+    },
+    "extracted_at": {
+      "type": "iso8601",
+      "description": "傾向抽出日時 (UTC)",
+      "required": true
+    },
+    "expires_at": {
+      "type": "iso8601",
+      "description": "有効期限。これを過ぎたら古いデータとして警告表示"
+    },
+    "source": {
+      "type": "string",
+      "enum": ["manual", "admin_trigger", "cron", "api_scraper"],
+      "description": "収集トリガー種別",
+      "required": true
+    },
+    "source_ids": {
+      "type": "array",
+      "items": "string",
+      "description": "trend_sources.json の source.id リスト (どのソースから収集したか)"
+    },
+    "confidence": {
+      "type": "number",
+      "range": [0.0, 1.0],
+      "description": "データ信頼度 (0=低, 1=高)。手動=1.0, スクレイプ=0.7〜0.9"
+    },
+
+    "title_patterns": {
+      "type": "array",
+      "description": "売れるタイトルパターン一覧",
+      "items": {
+        "pattern": { "type": "string", "description": "〇〇を使ったパターン文字列" },
+        "momentum": { "type": "string", "enum": ["hot", "rising", "stable", "declining"] },
+        "example": { "type": "string", "description": "実際のタイトル例 (個人情報含まない)" },
+        "source_count": { "type": "integer", "description": "このパターンを検出したソース数" }
+      }
+    },
+
+    "cta_patterns": {
+      "type": "array",
+      "description": "コールトゥアクションのパターン",
+      "items": {
+        "pattern": { "type": "string" },
+        "placement": {
+          "type": "string",
+          "enum": ["無料エリア末尾", "見出し直後", "記事冒頭", "購入ボタン直前", "SNS投稿末尾"],
+          "description": "CTA の設置場所"
+        },
+        "effectiveness": { "type": "string", "enum": ["high", "medium", "low"] }
+      }
+    },
+
+    "selling_angles": {
+      "type": "array",
+      "description": "購買動機・訴求角度",
+      "items": {
+        "angle": { "type": "string", "description": "訴求角度 ID (time_save / money / learning / healing / status / fear_of_miss)" },
+        "label": { "type": "string", "description": "日本語ラベル" },
+        "strength": { "type": "number", "range": [0.0, 1.0], "description": "強度スコア" },
+        "keywords": { "type": "array", "items": "string", "description": "代表キーワード" }
+      }
+    },
+
+    "theme_signals": {
+      "type": "array",
+      "description": "注目テーマ・熱量シグナル",
+      "items": {
+        "theme": { "type": "string", "description": "テーマ名" },
+        "momentum": { "type": "string", "enum": ["hot", "rising", "stable", "cooling", "declining"] },
+        "volume": { "type": "string", "enum": ["very_high", "high", "medium", "low"] },
+        "related_keywords": { "type": "array", "items": "string" },
+        "peak_forecast": { "type": "string", "description": "ピーク予測 (例: '2026-05', 'ongoing')" }
+      }
+    },
+
+    "category_momentum": {
+      "type": "object",
+      "description": "カテゴリ別の熱量マップ (category_name → momentum)",
+      "value_enum": ["hot", "warm", "stable", "cooling", "cold"]
+    },
+
+    "hot_categories": {
+      "type": "array",
+      "items": "string",
+      "description": "現在ホットなカテゴリ一覧 (後方互換: trend_signals.json と同形式)"
+    },
+
+    "price_sweet_spots": {
+      "type": "array",
+      "items": "string",
+      "description": "有効な価格帯 (後方互換: trend_signals.json と同形式)"
+    },
+
+    "conversion_boosters": {
+      "type": "array",
+      "items": "string",
+      "description": "コンバージョン向上ポイント (後方互換: trend_signals.json と同形式)"
+    }
+  },
+
+  "template_injection_rules": {
+    "_description": "テンプレート生成時にトレンドデータをどう差し込むかのルール",
+    "title_boost": "title_patterns[0..2] をプロンプトの【タイトル例】セクションに挿入",
+    "cta_inject": "cta_patterns (placement=無料エリア末尾) をセクション3の末尾指示に追加",
+    "theme_inject": "theme_signals (momentum=hot/rising) をカテゴリ候補として提示",
+    "angle_inject": "selling_angles (strength>=0.7) を訴求角度の選択肢としてプロンプトに含める",
+    "momentum_gate": "category_momentum='declining' のテーマはデフォルト選択から除外"
+  },
+
+  "freshness_policy": {
+    "max_age_days": {
+      "daily_sources": 3,
+      "weekly_sources": 10,
+      "monthly_sources": 45,
+      "manual": 90
+    },
+    "stale_warning_threshold_pct": 80,
+    "action_on_stale": "warn_admin"
+  }
+}

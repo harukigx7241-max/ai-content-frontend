@@ -1,0 +1,16 @@
+[Unit]
+Description=プロンプトギルド 傾向収集サービス (Phase 15)
+After=network.target
+
+[Service]
+Type=oneshot
+User=www-data
+WorkingDirectory=/var/www/ai-content-frontend
+ExecStart=/var/www/ai-content-frontend/scripts/ingest_trends.sh all
+Environment=TRIGGERED_BY=systemd
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=pguild-trend-ingest
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,211 @@
+{
+  "_comment": "販売ページ汎用インサイト — Phase 15拡張形式",
+  "workshop": "sales",
+  "schema_version": "1.1",
+  "extracted_at": "2026-04-17T22:48:34Z",
+  "expires_at": "2026-06-01T22:48:34Z",
+  "source": "admin_trigger",
+  "source_ids": [
+    "general_lp_patterns"
+  ],
+  "confidence": 1.0,
+  "title_patterns": [
+    {
+      "pattern": "〇〇が〇日で変わる",
+      "momentum": "hot",
+      "example": "副業収入が30日で変わる",
+      "source_count": 1
+    },
+    {
+      "pattern": "プロだけが知っている〇〇の秘密",
+      "momentum": "rising",
+      "example": "プロだけが知っているライティングの秘密",
+      "source_count": 1
+    },
+    {
+      "pattern": "〇〇に悩む方へ",
+      "momentum": "stable",
+      "example": "収入アップに悩む方へ",
+      "source_count": 1
+    },
+    {
+      "pattern": "〇〇万円稼いだ〇〇の全手順",
+      "momentum": "hot",
+      "example": "月50万円稼いだ副業の全手順",
+      "source_count": 1
+    },
+    {
+      "pattern": "たった〇〇で〇〇できる方法",
+      "momentum": "rising",
+      "example": "たった1時間で販売ページが作れる方法",
+      "source_count": 1
+    }
+  ],
+  "cta_patterns": [
+    {
+      "pattern": "今すぐ購入する",
+      "placement": "購入ボタン直前",
+      "effectiveness": "high"
+    },
+    {
+      "pattern": "残り〇名様限定",
+      "placement": "購入ボタン直前",
+      "effectiveness": "high"
+    },
+    {
+      "pattern": "無料で試してみる",
+      "placement": "記事冒頭",
+      "effectiveness": "high"
+    },
+    {
+      "pattern": "まずは無料部分を読んでみてください",
+      "placement": "無料エリア末尾",
+      "effectiveness": "high"
+    },
+    {
+      "pattern": "〇〇特典付きで今だけ〇〇円",
+      "placement": "購入ボタン直前",
+      "effectiveness": "medium"
+    }
+  ],
+  "selling_angles": [
+    {
+      "angle": "money",
+      "label": "収益・利益向上",
+      "strength": 0.95,
+      "keywords": [
+        "収入アップ",
+        "売上",
+        "利益",
+        "月収",
+        "年収"
+      ]
+    },
+    {
+      "angle": "fear_of_miss",
+      "label": "機会損失・焦り",
+      "strength": 0.9,
+      "keywords": [
+        "限定",
+        "今だけ",
+        "残り少ない",
+        "期間限定",
+        "先着"
+      ]
+    },
+    {
+      "angle": "time_save",
+      "label": "時短・手間削減",
+      "strength": 0.8,
+      "keywords": [
+        "簡単",
+        "すぐできる",
+        "時短",
+        "自動化",
+        "テンプレ"
+      ]
+    },
+    {
+      "angle": "status",
+      "label": "権威・実績訴求",
+      "strength": 0.85,
+      "keywords": [
+        "実績",
+        "累計",
+        "受講者数",
+        "評価",
+        "口コミ"
+      ]
+    },
+    {
+      "angle": "healing",
+      "label": "不安解消・安心感",
+      "strength": 0.75,
+      "keywords": [
+        "保証",
+        "返金",
+        "サポート",
+        "初心者OK",
+        "丁寧"
+      ]
+    }
+  ],
+  "theme_signals": [
+    {
+      "theme": "副業・在宅収入LP",
+      "momentum": "hot",
+      "volume": "very_high",
+      "related_keywords": [
+        "副業",
+        "在宅",
+        "稼ぐ",
+        "収入"
+      ],
+      "peak_forecast": "ongoing"
+    },
+    {
+      "theme": "AI活用ツール・講座販売",
+      "momentum": "hot",
+      "volume": "high",
+      "related_keywords": [
+        "ChatGPT",
+        "AI活用",
+        "プロンプト",
+        "自動化"
+      ],
+      "peak_forecast": "2026-09"
+    },
+    {
+      "theme": "デジタルコンテンツ販売",
+      "momentum": "rising",
+      "volume": "high",
+      "related_keywords": [
+        "note",
+        "PDF",
+        "動画講座",
+        "電子書籍"
+      ],
+      "peak_forecast": "2026-08"
+    },
+    {
+      "theme": "コーチング・コンサル",
+      "momentum": "stable",
+      "volume": "medium",
+      "related_keywords": [
+        "コーチング",
+        "コンサル",
+        "メンタリング",
+        "個別相談"
+      ],
+      "peak_forecast": "ongoing"
+    }
+  ],
+  "category_momentum": {
+    "副業・収益化": "hot",
+    "AI・ChatGPT": "hot",
+    "デジタルコンテンツ": "rising",
+    "コーチング": "stable",
+    "健康・美容": "warm",
+    "資格・スキルアップ": "warm",
+    "投資・資産形成": "cooling"
+  },
+  "hot_categories": [
+    "副業・収益化",
+    "AI・ChatGPT",
+    "デジタルコンテンツ"
+  ],
+  "price_sweet_spots": [
+    "980円",
+    "3,980円",
+    "9,800円",
+    "29,800円",
+    "49,800円"
+  ],
+  "conversion_boosters": [
+    "社会的証明（口コミ・実績数）",
+    "返金保証",
+    "限定感",
+    "権威性の明示",
+    "ビフォーアフター事例"
+  ]
+}

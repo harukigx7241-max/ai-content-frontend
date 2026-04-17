@@ -1,0 +1,212 @@
+{
+  "_comment": "SNSトレンドインサイト — Phase 15拡張形式",
+  "workshop": "sns",
+  "schema_version": "1.1",
+  "extracted_at": "2026-04-17T22:48:34Z",
+  "expires_at": "2026-04-20T22:48:34Z",
+  "source": "admin_trigger",
+  "source_ids": [],
+  "confidence": 1.0,
+  "title_patterns": [
+    {
+      "pattern": "〇〇で月〇万円達成した話",
+      "momentum": "hot",
+      "example": "X副業で月10万円達成した話",
+      "source_count": 1
+    },
+    {
+      "pattern": "【保存版】〇〇をやってみた結果",
+      "momentum": "rising",
+      "example": "【保存版】Instagram運用3ヶ月やってみた結果",
+      "source_count": 1
+    },
+    {
+      "pattern": "フォロワー〇〇人達成した方法",
+      "momentum": "stable",
+      "example": "フォロワー1万人達成した方法",
+      "source_count": 1
+    },
+    {
+      "pattern": "副業で〇〇が売れた理由",
+      "momentum": "rising",
+      "example": "副業でnoteが売れた理由",
+      "source_count": 1
+    },
+    {
+      "pattern": "〇〇をゼロから始めた話",
+      "momentum": "stable",
+      "example": "SNS副業をゼロから始めた話",
+      "source_count": 1
+    }
+  ],
+  "cta_patterns": [
+    {
+      "pattern": "フォロー・保存よろしくお願いします！",
+      "placement": "SNS投稿末尾",
+      "effectiveness": "high"
+    },
+    {
+      "pattern": "詳しくはプロフのリンクから！",
+      "placement": "SNS投稿末尾",
+      "effectiveness": "high"
+    },
+    {
+      "pattern": "コメントで「欲しい」と送ってください",
+      "placement": "SNS投稿末尾",
+      "effectiveness": "high"
+    },
+    {
+      "pattern": "リポストしてくれた方に〇〇プレゼント",
+      "placement": "SNS投稿末尾",
+      "effectiveness": "medium"
+    }
+  ],
+  "selling_angles": [
+    {
+      "angle": "money",
+      "label": "収益化・稼ぎたい",
+      "strength": 0.95,
+      "keywords": [
+        "月収",
+        "副業収入",
+        "収益化",
+        "マネタイズ",
+        "不労所得"
+      ]
+    },
+    {
+      "angle": "time_save",
+      "label": "時短・効率化",
+      "strength": 0.75,
+      "keywords": [
+        "自動化",
+        "スケジュール投稿",
+        "テンプレ",
+        "一括管理"
+      ]
+    },
+    {
+      "angle": "status",
+      "label": "影響力・フォロワー増加",
+      "strength": 0.85,
+      "keywords": [
+        "バズる",
+        "フォロワー増",
+        "インフルエンサー",
+        "認知拡大"
+      ]
+    },
+    {
+      "angle": "learning",
+      "label": "SNS運用スキル習得",
+      "strength": 0.7,
+      "keywords": [
+        "SNS攻略",
+        "アルゴリズム",
+        "運用法",
+        "伸び方"
+      ]
+    },
+    {
+      "angle": "fear_of_miss",
+      "label": "乗り遅れたくない",
+      "strength": 0.8,
+      "keywords": [
+        "今がチャンス",
+        "先行者利益",
+        "早い者勝ち",
+        "注目されている"
+      ]
+    }
+  ],
+  "theme_signals": [
+    {
+      "theme": "X(Twitter)副業・収益化",
+      "momentum": "hot",
+      "volume": "very_high",
+      "related_keywords": [
+        "X副業",
+        "収益化",
+        "有料note",
+        "スレッド"
+      ],
+      "peak_forecast": "ongoing"
+    },
+    {
+      "theme": "Instagram物販・アフィリ",
+      "momentum": "rising",
+      "volume": "high",
+      "related_keywords": [
+        "Instagram副業",
+        "物販",
+        "アフィリエイト",
+        "リール"
+      ],
+      "peak_forecast": "2026-06"
+    },
+    {
+      "theme": "ショート動画（TikTok・Reels）",
+      "momentum": "hot",
+      "volume": "very_high",
+      "related_keywords": [
+        "TikTok",
+        "Reels",
+        "ショート",
+        "バズ動画"
+      ],
+      "peak_forecast": "ongoing"
+    },
+    {
+      "theme": "Threads活用",
+      "momentum": "rising",
+      "volume": "medium",
+      "related_keywords": [
+        "Threads",
+        "テキスト投稿",
+        "長文",
+        "エンゲージメント"
+      ],
+      "peak_forecast": "2026-07"
+    },
+    {
+      "theme": "AI×SNS運用",
+      "momentum": "hot",
+      "volume": "high",
+      "related_keywords": [
+        "AIライティング",
+        "ChatGPT投稿",
+        "自動生成",
+        "AI副業"
+      ],
+      "peak_forecast": "2026-09"
+    }
+  ],
+  "category_momentum": {
+    "X収益化": "hot",
+    "Instagram運用": "hot",
+    "ショート動画": "hot",
+    "Threads": "rising",
+    "YouTube": "warm",
+    "TikTok": "warm",
+    "LINE公式": "stable",
+    "Pinterest": "cooling"
+  },
+  "hot_categories": [
+    "X収益化",
+    "Instagram運用",
+    "ショート動画",
+    "AI×SNS"
+  ],
+  "price_sweet_spots": [
+    "無料",
+    "980円",
+    "1,980円",
+    "4,980円"
+  ],
+  "conversion_boosters": [
+    "実績数字の明示",
+    "フォロワー数の表示",
+    "ビフォーアフター",
+    "限定感の演出"
+  ]
+}

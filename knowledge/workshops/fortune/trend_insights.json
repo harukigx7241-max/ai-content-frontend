@@ -1,0 +1,161 @@
+{
+  "_comment": "占い副業傾向インサイト — Phase 15拡張形式",
+  "workshop": "fortune",
+  "schema_version": "1.1",
+  "extracted_at": "2026-04-17T22:48:34Z",
+  "expires_at": "2026-04-27T22:48:34Z",
+  "source": "admin_trigger",
+  "source_ids": [],
+  "confidence": 1.0,
+  "title_patterns": [
+    {
+      "pattern": "〇〇で今の〇〇を読み解きます",
+      "momentum": "hot",
+      "example": "タロットで今の恋愛運を読み解きます",
+      "source_count": 1
+    },
+    {
+      "pattern": "あなたの〇〇を〇〇で深掘りします",
+      "momentum": "rising",
+      "example": "あなたの運命を西洋占星術で深掘りします",
+      "source_count": 1
+    },
+    {
+      "pattern": "〇〇についての悩みを解決します",
+      "momentum": "stable",
+      "example": "恋愛・結婚についての悩みを解決します",
+      "source_count": 1
+    }
+  ],
+  "cta_patterns": [
+    {
+      "pattern": "まずはお気軽にご相談ください✨",
+      "placement": "記事冒頭",
+      "effectiveness": "high"
+    },
+    {
+      "pattern": "鑑定後も継続相談受け付けています",
+      "placement": "購入ボタン直前",
+      "effectiveness": "high"
+    },
+    {
+      "pattern": "24時間以内にお届けします",
+      "placement": "購入ボタン直前",
+      "effectiveness": "high"
+    }
+  ],
+  "selling_angles": [
+    {
+      "angle": "healing",
+      "label": "癒し・安心感",
+      "strength": 0.9,
+      "keywords": [
+        "安心",
+        "寄り添い",
+        "共感",
+        "温かく"
+      ]
+    },
+    {
+      "angle": "money",
+      "label": "問題解決・行動指針",
+      "strength": 0.78,
+      "keywords": [
+        "具体的なアドバイス",
+        "行動プラン",
+        "改善"
+      ]
+    },
+    {
+      "angle": "status",
+      "label": "経験・実績",
+      "strength": 0.72,
+      "keywords": [
+        "鑑定〇〇件",
+        "リピート率",
+        "口コミ"
+      ]
+    },
+    {
+      "angle": "fear_of_miss",
+      "label": "好機・タイミング",
+      "strength": 0.68,
+      "keywords": [
+        "今がチャンス",
+        "転換期",
+        "このタイミング"
+      ]
+    }
+  ],
+  "theme_signals": [
+    {
+      "theme": "恋愛・婚活",
+      "momentum": "hot",
+      "volume": "very_high",
+      "related_keywords": [
+        "片思い",
+        "復縁",
+        "出会い",
+        "相性"
+      ],
+      "peak_forecast": "ongoing"
+    },
+    {
+      "theme": "仕事・転職",
+      "momentum": "rising",
+      "volume": "high",
+      "related_keywords": [
+        "転職運",
+        "独立",
+        "副業"
+      ],
+      "peak_forecast": "2026-09"
+    },
+    {
+      "theme": "人間関係",
+      "momentum": "stable",
+      "volume": "high",
+      "related_keywords": [
+        "家族",
+        "職場",
+        "友人"
+      ],
+      "peak_forecast": "ongoing"
+    },
+    {
+      "theme": "金運・財運",
+      "momentum": "rising",
+      "volume": "medium",
+      "related_keywords": [
+        "金運",
+        "宝くじ",
+        "投資運"
+      ],
+      "peak_forecast": "2026-12"
+    }
+  ],
+  "category_momentum": {
+    "恋愛・婚活": "hot",
+    "仕事・転職": "rising",
+    "人間関係": "stable",
+    "金運": "warm",
+    "健康・美": "stable"
+  },
+  "hot_categories": [
+    "恋愛・婚活",
+    "仕事・転職",
+    "人間関係"
+  ],
+  "price_sweet_spots": [
+    "2,000円",
+    "3,000円",
+    "5,000円",
+    "10,000円"
+  ],
+  "conversion_boosters": [
+    "鑑定実績・口コミ数を具体的な数字で示す",
+    "どんな悩みに対応できるか明記する",
+    "納品形式・文字数を明示する",
+    "温かみのある表現・絵文字を適度に使う"
+  ]
+}

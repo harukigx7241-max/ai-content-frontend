@@ -25,7 +25,7 @@ trend_signals.json 形式 (例):
 }
 """
 
-from app.services.knowledge_service import get_trend_signals
+from app.services.knowledge_service import get_trend_signals, get_trend_insights
 from app.services.base import BaseService, ServiceMode, ServiceResult
 
 # ワークショップごとのラベル (UI表示用)
@@ -40,12 +40,53 @@ WORKSHOP_LABELS: dict[str, str] = {
 }
 
 
+def _signals_from_insights(insights: dict) -> dict:
+    """
+    trend_insights.json (Phase 15拡張形式) を trend_signals.json 互換の辞書に変換する。
+    既存の get_trend_hint() がそのまま使えるようにブリッジする。
+    """
+    result: dict = {}
+
+    hot_cats = insights.get("hot_categories")
+    if hot_cats:
+        result["hot_categories"] = hot_cats
+
+    title_patterns = insights.get("title_patterns")
+    if title_patterns:
+        result["title_patterns"] = [
+            p.get("pattern", "") for p in title_patterns if p.get("pattern")
+        ]
+
+    result["price_sweet_spots"] = insights.get("price_sweet_spots", [])
+    result["conversion_boosters"] = insights.get("conversion_boosters", [])
+
+    # selling_angles から強いものをキーワードとして補足
+    angles = insights.get("selling_angles", [])
+    strong_kws: list[str] = []
+    for a in angles:
+        if a.get("strength", 0) >= 0.8:
+            strong_kws.extend(a.get("keywords", [])[:2])
+    if strong_kws:
+        result.setdefault("conversion_boosters", [])
+        result["conversion_boosters"] = list(dict.fromkeys(
+            result["conversion_boosters"] + strong_kws
+        ))
+
+    return result
+
+
 def get_trend_hint(workshop: str) -> str:
     """
     ワークショップのトレンド情報をプロンプト挿入用文字列で返す。
+    trend_insights.json (Phase 15拡張形式) を優先し、なければ trend_signals.json を使う。
     データがない場合は空文字を返す。
     """
-    signals = get_trend_signals(workshop)
+    insights = get_trend_insights(workshop)
+    if insights:
+        signals = _signals_from_insights(insights)
+    else:
+        signals = get_trend_signals(workshop)
+
     if not signals:
         return ""
 
@@ -58,7 +99,11 @@ def get_trend_hint(workshop: str) -> str:
 
     patterns = signals.get("title_patterns")
     if patterns:
-        pats = " / ".join(patterns[:3])
+        if isinstance(patterns[0], dict):
+            pat_strs = [p.get("pattern", "") for p in patterns[:3] if p.get("pattern")]
+        else:
+            pat_strs = patterns[:3]
+        pats = " / ".join(pat_strs)
         parts.append(f"【売れるタイトルパターン】{pats}")
 
     prices = signals.get("price_sweet_spots")

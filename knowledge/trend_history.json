@@ -1,0 +1,25 @@
+{
+  "_comment": "トレンド更新履歴ログ — Phase 15。更新の都度 app/services/trend_ingestion_service.py が書き込む。",
+  "_version": "1.0",
+  "last_updated": "2026-04-17T22:48:34Z",
+  "total_runs": 1,
+  "history": [
+    {
+      "triggered_at": "2026-04-17T22:48:34Z",
+      "triggered_by": "test",
+      "mode": "free",
+      "workshops_ok": [
+        "note",
+        "tips",
+        "brain",
+        "cw",
+        "fortune",
+        "sns",
+        "sales"
+      ],
+      "workshops_fail": [],
+      "success_count": 7,
+      "total": 7
+    }
+  ]
+}

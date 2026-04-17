@@ -55,6 +55,11 @@ def get_trend_signals(workshop: str) -> Optional[dict]:
     return _load(f"workshops/{workshop}/trend_signals.json")
 
 
+def get_trend_insights(workshop: str) -> Optional[dict]:
+    """ワークショップの trend_insights.json (Phase 15拡張形式) を返す。存在しない場合は None。"""
+    return _load(f"workshops/{workshop}/trend_insights.json")
+
+
 def get_workshop_overview(workshop: str) -> Optional[str]:
     """ワークショップの overview.md を文字列で返す。"""
     return _load(f"workshops/{workshop}/overview.md")
