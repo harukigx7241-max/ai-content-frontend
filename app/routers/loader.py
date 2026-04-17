@@ -41,7 +41,11 @@ def include_feature_routers(app: FastAPI) -> None:
     _reg(app, auth_router,   "/api/auth/*")
     _reg(app, admin_router,  "/api/admin/*")
     _reg(app, user_router,   "/api/user/*")
-    _reg(app, pages_router,  "/login /register /mypage /admin")
+    _reg(app, pages_router,  "/login /register /mypage /admin /plans")
+
+    # ── Phase 16: サブスクリプション / プラン API (常時有効) ──────────
+    from app.routers.subscription import router as subscription_router
+    _reg(app, subscription_router, "/api/plans/*")
 
     # ── Phase 5: コミュニティ (ENABLE_COMMUNITY) ──────────────────────
     if settings.ENABLE_COMMUNITY:

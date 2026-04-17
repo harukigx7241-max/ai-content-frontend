@@ -61,6 +61,15 @@ COLUMN_MIGRATIONS: list[_Migration] = [
                "ALTER TABLE community_posts ADD COLUMN remix_count INTEGER NOT NULL DEFAULT 0"),
     _Migration("community_posts.forked_from_id",
                "ALTER TABLE community_posts ADD COLUMN forked_from_id INTEGER"),
+    # Phase 16 — サブスクリプション
+    _Migration("users.subscription_plan",
+               "ALTER TABLE users ADD COLUMN subscription_plan VARCHAR(20) NOT NULL DEFAULT 'free'"),
+    _Migration("users.subscription_status",
+               "ALTER TABLE users ADD COLUMN subscription_status VARCHAR(20) NOT NULL DEFAULT 'active'"),
+    _Migration("users.subscription_expires_at",
+               "ALTER TABLE users ADD COLUMN subscription_expires_at DATETIME"),
+    _Migration("users.stripe_customer_id",
+               "ALTER TABLE users ADD COLUMN stripe_customer_id VARCHAR(100)"),
 ]
 
 

@@ -6383,3 +6383,241 @@ img, video, iframe, canvas {
 }
 .usage-mode-badge.mock { background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.3); color: #fbbf24; }
 .usage-mode-badge.live { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.3); color: #34d399; }
+
+/* ═══════════════════════════════════════════════════════
+   Phase 16 — サブスクリプション / プランページ
+   ═══════════════════════════════════════════════════════ */
+
+/* ── plans.html ページ全体 ──────────────────────────── */
+.plans-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 20px 80px;
+}
+
+/* ヒーロー */
+.plans-hero { text-align: center; margin-bottom: 36px; }
+.plans-hero-title {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 800;
+  background: linear-gradient(135deg, #a855f7, #f59e0b);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  margin: 0 0 10px;
+}
+.plans-hero-sub  { font-size: 1.05rem; color: var(--text-secondary); margin: 0 0 8px; }
+.plans-hero-note { font-size: 0.88rem; color: var(--text-muted); margin: 0; }
+
+/* Coming soon バナー */
+.plans-coming-soon-banner {
+  display: flex; align-items: flex-start; gap: 14px;
+  background: rgba(168,85,247,0.08);
+  border: 1px solid rgba(168,85,247,0.25);
+  border-radius: 14px; padding: 16px 20px;
+  margin-bottom: 32px;
+}
+.plans-coming-soon-icon  { font-size: 1.6rem; flex-shrink: 0; }
+.plans-coming-soon-title { font-weight: 700; font-size: 0.95rem; margin-bottom: 4px; }
+.plans-coming-soon-text  { font-size: 0.82rem; color: var(--text-secondary); line-height: 1.6; }
+
+/* プランカードグリッド */
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  margin-bottom: 48px;
+}
+
+/* プランカード */
+.plans-card {
+  position: relative;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  padding: 28px 24px;
+  display: flex; flex-direction: column; gap: 20px;
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+.plans-card:hover { transform: translateY(-4px); box-shadow: 0 16px 48px rgba(0,0,0,0.25); }
+.plans-card--current {
+  border-color: rgba(168,85,247,0.5);
+  background: rgba(168,85,247,0.06);
+}
+.plans-card--blue   { border-color: rgba(96,165,250,0.3); }
+.plans-card--amber  { border-color: rgba(251,191,36,0.35); }
+.plans-card--gold   {
+  border-color: rgba(251,191,36,0.55);
+  background: linear-gradient(135deg, rgba(251,191,36,0.05), rgba(168,85,247,0.04));
+}
+.plans-card-current-badge {
+  position: absolute; top: -1px; right: 20px;
+  background: rgba(168,85,247,0.85); color: #fff;
+  font-size: 0.72rem; font-weight: 700;
+  padding: 4px 12px; border-radius: 0 0 10px 10px;
+}
+.plans-card-soon-badge {
+  position: absolute; top: -1px; right: 20px;
+  background: rgba(245,158,11,0.8); color: #1a1a2e;
+  font-size: 0.72rem; font-weight: 700;
+  padding: 4px 12px; border-radius: 0 0 10px 10px;
+}
+
+/* ヘッダー */
+.plans-card-header { display: flex; flex-direction: column; gap: 6px; }
+.plans-card-icon   { font-size: 2rem; }
+.plans-card-name   { font-size: 1.15rem; font-weight: 800; }
+.plans-card-tagline { font-size: 0.82rem; color: var(--text-muted); }
+
+/* 価格 */
+.plans-card-price  { display: flex; flex-direction: column; gap: 4px; }
+.plans-price-amount { font-size: 1.8rem; font-weight: 800; }
+.plans-price-cycle  { font-size: 0.85rem; color: var(--text-muted); }
+.plans-price-yearly { font-size: 0.78rem; color: var(--text-secondary); }
+.plans-price-discount {
+  display: inline-block;
+  background: rgba(52,211,153,0.15); color: #34d399;
+  font-size: 0.7rem; font-weight: 700;
+  padding: 1px 6px; border-radius: 4px; margin-left: 6px;
+}
+
+/* 機能リスト */
+.plans-features-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.plans-feature       { display: flex; align-items: flex-start; gap: 8px; font-size: 0.84rem; line-height: 1.4; }
+.plans-feature-check { flex-shrink: 0; width: 18px; }
+.plans-feature--included .plans-feature-check { color: #34d399; }
+.plans-feature--locked { color: var(--text-muted); }
+.plans-feature-tier-badge {
+  display: inline-block; font-size: 0.68rem; font-weight: 700;
+  padding: 1px 5px; border-radius: 4px;
+  background: rgba(168,85,247,0.12); color: rgba(168,85,247,0.8);
+  border: 1px solid rgba(168,85,247,0.2); margin-left: 3px;
+}
+
+/* CTAボタン */
+.plans-card-cta { margin-top: auto; }
+.plans-btn {
+  display: block; width: 100%; padding: 12px; border-radius: 10px;
+  font-size: 0.88rem; font-weight: 700; text-align: center;
+  cursor: pointer; border: none; text-decoration: none;
+  transition: opacity 0.2s, transform 0.15s;
+}
+.plans-btn:hover  { opacity: 0.85; transform: translateY(-1px); }
+.plans-btn--free     { background: rgba(96,165,250,0.15); color: #60a5fa; border: 1px solid rgba(96,165,250,0.3); }
+.plans-btn--upgrade  { background: linear-gradient(135deg, #a855f7, #f59e0b); color: #fff; }
+.plans-btn--soon     { background: rgba(245,158,11,0.12); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); cursor: pointer; }
+.plans-btn--current  { background: rgba(255,255,255,0.06); color: var(--text-muted); border: 1px solid rgba(255,255,255,0.1); cursor: default; }
+
+/* ── 機能比較テーブル ──────────────────────────────── */
+.plans-compare-section { margin-bottom: 48px; }
+.plans-compare-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 18px; }
+.plans-compare-table-wrap { overflow-x: auto; }
+.plans-compare-table {
+  width: 100%; border-collapse: collapse;
+  font-size: 0.84rem;
+}
+.plans-compare-table th,
+.plans-compare-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  text-align: center;
+}
+.plans-compare-table th:first-child,
+.plans-compare-table td:first-child { text-align: left; }
+.plans-compare-table th { color: var(--text-muted); font-weight: 600; font-size: 0.78rem; padding-bottom: 12px; }
+.plans-th-icon { font-size: 1rem; }
+.plans-compare-category td {
+  color: var(--text-muted); font-size: 0.76rem; font-weight: 700;
+  background: rgba(255,255,255,0.02); padding: 8px 14px;
+  text-align: left; letter-spacing: 0.05em;
+}
+.plans-compare-table td.ok   { color: #34d399; font-weight: 700; }
+.plans-compare-table td.no   { color: rgba(255,255,255,0.2); }
+.plans-compare-table td.ok.upcoming { color: #fbbf24; font-size: 0.75rem; }
+
+/* ── FAQ ──────────────────────────────────────────── */
+.plans-faq { max-width: 640px; margin: 0 auto; }
+.plans-faq-title { font-size: 1.2rem; font-weight: 700; text-align: center; margin-bottom: 20px; }
+.plans-faq-list { display: flex; flex-direction: column; gap: 10px; }
+.plans-faq-item {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px; padding: 14px 18px;
+}
+.plans-faq-item summary {
+  cursor: pointer; font-weight: 600; font-size: 0.9rem;
+  list-style: none; user-select: none;
+}
+.plans-faq-item[open] summary { color: var(--accent-note); margin-bottom: 10px; }
+.plans-faq-item p { font-size: 0.84rem; color: var(--text-secondary); line-height: 1.6; margin: 0; }
+
+/* ── プランバッジ (mypage / header) ──────────────── */
+.plan-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 0.8rem; font-weight: 700;
+  padding: 4px 12px; border-radius: 20px;
+  border: 1px solid;
+}
+.plan-badge--blue   { background: rgba(96,165,250,0.1);  border-color: rgba(96,165,250,0.35);  color: #60a5fa; }
+.plan-badge--amber  { background: rgba(251,191,36,0.1);  border-color: rgba(251,191,36,0.4);   color: #fbbf24; }
+.plan-badge--gold   { background: rgba(251,191,36,0.15); border-color: rgba(251,191,36,0.5);   color: #fbbf24;
+                      box-shadow: 0 0 12px rgba(251,191,36,0.2); }
+
+/* mypage アップグレード CTA ボタン */
+.plans-upgrade-cta-btn {
+  display: inline-block;
+  background: linear-gradient(135deg, rgba(168,85,247,0.8), rgba(245,158,11,0.7));
+  color: #fff; font-size: 0.82rem; font-weight: 700;
+  padding: 8px 18px; border-radius: 10px;
+  text-decoration: none; transition: opacity 0.2s;
+}
+.plans-upgrade-cta-btn:hover { opacity: 0.85; }
+
+/* ── Premium Teaser Section (index.html 工房タブ末尾) ── */
+.premium-teaser-section {
+  margin-top: 32px;
+  padding: 20px 22px;
+  background: rgba(168,85,247,0.04);
+  border: 1px solid rgba(168,85,247,0.15);
+  border-radius: 16px;
+}
+.premium-teaser-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 16px; flex-wrap: wrap;
+}
+.premium-teaser-icon  { font-size: 1.1rem; }
+.premium-teaser-title { font-size: 0.88rem; font-weight: 700; color: var(--text-secondary); flex: 1; }
+.premium-teaser-link  {
+  font-size: 0.78rem; color: rgba(168,85,247,0.85);
+  text-decoration: none; white-space: nowrap;
+}
+.premium-teaser-link:hover { color: #a855f7; }
+.premium-teaser-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+}
+.premium-teaser-card {
+  position: relative;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 10px; padding: 12px 14px;
+  opacity: 0.7;
+}
+.premium-teaser-card--master { border-color: rgba(251,191,36,0.2); }
+.premium-teaser-card-lock    { font-size: 1.1rem; margin-bottom: 6px; }
+.premium-teaser-card-name    { font-size: 0.82rem; font-weight: 700; margin-bottom: 3px; }
+.premium-teaser-card-desc    { font-size: 0.74rem; color: var(--text-muted); line-height: 1.4; }
+.premium-teaser-badge {
+  position: absolute; top: 8px; right: 8px;
+  font-size: 0.63rem; font-weight: 700;
+  background: rgba(168,85,247,0.2); color: rgba(168,85,247,0.9);
+  padding: 2px 6px; border-radius: 4px;
+}
+.premium-teaser-badge--master {
+  background: rgba(251,191,36,0.15); color: #fbbf24;
+}
+
+@media (max-width: 640px) {
+  .plans-grid { grid-template-columns: 1fr; }
+  .plans-compare-table { font-size: 0.76rem; }
+  .premium-teaser-cards { grid-template-columns: repeat(2, 1fr); }
+}

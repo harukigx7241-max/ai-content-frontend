@@ -165,11 +165,28 @@ class Settings:
         "workshop_master_ai,article_draft_ai,image_generation",
     )
 
-    # ロール別 API 制限 (将来 Phase 16 で DB 管理に移行)
+    # ロール別 API 制限
     # 無料会員の API 呼び出し許可: true = 許可 / false = FREE tier のみ
     API_ALLOW_FREE_MEMBER: bool = _bool("API_ALLOW_FREE_MEMBER", "true")
     # 有料会員の API 呼び出し許可
     API_ALLOW_PAID_MEMBER: bool = _bool("API_ALLOW_PAID_MEMBER", "true")
+
+    # ── Phase 16: サブスクリプション / 課金 ────────────────────────
+    # Stripe シークレットキー (未設定 = 課金機能無効・スタブモード)
+    STRIPE_SECRET_KEY: str = os.getenv("STRIPE_SECRET_KEY", "")
+    # Stripe 公開キー (フロントエンドへ渡す)
+    STRIPE_PUBLISHABLE_KEY: str = os.getenv("STRIPE_PUBLISHABLE_KEY", "")
+    # Stripe Webhook シークレット
+    STRIPE_WEBHOOK_SECRET: str = os.getenv("STRIPE_WEBHOOK_SECRET", "")
+    # 有料プラン価格 ID (Stripe Product Price ID)
+    STRIPE_PRICE_PAID_MONTHLY: str = os.getenv("STRIPE_PRICE_PAID_MONTHLY", "")
+    STRIPE_PRICE_PAID_YEARLY: str = os.getenv("STRIPE_PRICE_PAID_YEARLY", "")
+    STRIPE_PRICE_MASTER_MONTHLY: str = os.getenv("STRIPE_PRICE_MASTER_MONTHLY", "")
+    STRIPE_PRICE_MASTER_YEARLY: str = os.getenv("STRIPE_PRICE_MASTER_YEARLY", "")
+    # 課金機能の有効/無効 (Stripe キー未設定時は自動で false)
+    ENABLE_BILLING: bool = _bool("ENABLE_BILLING", "false")
+    # トライアル日数 (0 = トライアルなし)
+    BILLING_TRIAL_DAYS: int = int(os.getenv("BILLING_TRIAL_DAYS", "0"))
 
 
 # グローバルシングルトン

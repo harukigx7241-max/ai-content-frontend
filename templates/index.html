@@ -675,6 +675,41 @@
       </div>
 
     </div><!-- /tools-grid -->
+
+    <!-- Phase 16: 有料機能ティーザー (販売工房) -->
+    <div class="premium-teaser-section">
+      <div class="premium-teaser-header">
+        <span class="premium-teaser-icon">🚀</span>
+        <span class="premium-teaser-title">プロプランで解放 — 近日公開</span>
+        <a href="/plans" class="premium-teaser-link">プランを見る →</a>
+      </div>
+      <div class="premium-teaser-cards">
+        <div class="premium-teaser-card">
+          <div class="premium-teaser-card-lock">🔒</div>
+          <div class="premium-teaser-card-name">キャンペーン鍛冶場</div>
+          <div class="premium-teaser-card-desc">SNS告知・集客文の一括生成</div>
+          <span class="premium-teaser-badge">プロ</span>
+        </div>
+        <div class="premium-teaser-card">
+          <div class="premium-teaser-card-lock">🔒</div>
+          <div class="premium-teaser-card-name">リサーチ下書き生成</div>
+          <div class="premium-teaser-card-desc">最新データを調べて自動で下書き</div>
+          <span class="premium-teaser-badge">プロ</span>
+        </div>
+        <div class="premium-teaser-card">
+          <div class="premium-teaser-card-lock">🔒</div>
+          <div class="premium-teaser-card-name">画像プロンプト生成</div>
+          <div class="premium-teaser-card-desc">Midjourney・DALL-E向けプロンプト</div>
+          <span class="premium-teaser-badge">プロ</span>
+        </div>
+        <div class="premium-teaser-card premium-teaser-card--master">
+          <div class="premium-teaser-card-lock">✦</div>
+          <div class="premium-teaser-card-name">Workshop Master AI</div>
+          <div class="premium-teaser-card-desc">最高精度AIによる仕上げ生成</div>
+          <span class="premium-teaser-badge premium-teaser-badge--master">マスター</span>
+        </div>
+      </div>
+    </div>
   </section>
 
 
@@ -1533,6 +1568,7 @@
           `<span class="auth-user-name">${esc(user.display_name)}</span>` +
           `<a href="/square" class="auth-nav-btn outline" style="font-size:0.8rem">⚔ ギルド広場</a>` +
           `<a href="/mypage" class="auth-nav-btn outline">マイページ</a>` +
+          `<a href="/plans"  class="auth-nav-btn outline" style="font-size:0.78rem">プラン</a>` +
           (isAdmin ? `<a href="/admin" class="auth-nav-btn outline" style="color:var(--accent-gold);border-color:rgba(251,191,36,0.4)">管理本部</a>` : '') +
           `<button class="auth-nav-btn outline" id="indexLogoutBtn">ログアウト</button>`;
         document.getElementById('indexLogoutBtn').addEventListener('click', async () => {
@@ -1547,6 +1583,7 @@
           drawerNav.innerHTML =
             `<a href="/square"  class="auth-nav-btn outline">⚔ ギルド広場</a>` +
             `<a href="/mypage"  class="auth-nav-btn outline">👤 マイページ</a>` +
+            `<a href="/plans"   class="auth-nav-btn outline">🚀 プラン比較</a>` +
             (isAdmin ? `<a href="/admin" class="auth-nav-btn outline" style="color:var(--accent-gold)">🏛 管理本部</a>` : '') +
             `<button class="auth-nav-btn outline" id="drawerLogoutBtn">ログアウト</button>`;
           document.getElementById('drawerLogoutBtn').addEventListener('click', async () => {

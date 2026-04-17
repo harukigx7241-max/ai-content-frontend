@@ -134,6 +134,36 @@
       </div>
     </div>
 
+    <!-- Phase 16: プランバッジ + アップグレード CTA -->
+    <div class="mypage-card" id="planBadgeCard">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <div>
+          <div class="mypage-section-title" style="margin-bottom:4px">現在のプラン</div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <span class="plan-badge" id="myPlanBadge">—</span>
+            <span id="myPlanTagline" style="font-size:0.82rem;color:var(--text-secondary)"></span>
+          </div>
+        </div>
+        <div id="planUpgradeCta" style="display:none">
+          <a href="/plans" class="plans-upgrade-cta-btn">
+            🚀 上位プランを見る
+          </a>
+        </div>
+      </div>
+      <!-- アップグレード先プランのプレビュー (フリープランのみ表示) -->
+      <div id="planNextPreview" style="display:none;margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.07)">
+        <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:10px">
+          ⬆ <span id="planNextLabel"></span> で解放される機能:
+        </div>
+        <div id="planNextFeatures" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+        <div style="margin-top:12px">
+          <a href="/plans" class="auth-nav-btn" style="font-size:0.8rem;padding:7px 18px;text-decoration:none;display:inline-block">
+            プランを比較する →
+          </a>
+        </div>
+      </div>
+    </div>
+
     <!-- Phase 10: KPI 4連カード (コミュニティ統計) -->
     <div class="mypage-card" id="mp10KpiCard" style="display:none">
       <div class="mypage-section-title" style="margin-bottom:12px">📊 活動サマリー</div>
@@ -1472,6 +1502,60 @@ function renderQuests() {
     </div>
   `).join('');
 }
+
+// ── Phase 16: プランバッジ ─────────────────────────────────────────
+const PLAN_META = {
+  free:   { label: 'フリープラン', icon: '⚗', color: 'blue', tagline: '基本機能すべて無料' },
+  paid:   { label: 'プロプラン',   icon: '⚔', color: 'amber', tagline: '副業を本格化するプロの道具' },
+  master: { label: 'マスタープラン', icon: '✦', color: 'gold', tagline: '最上位の全機能' },
+};
+
+async function loadPlanInfo() {
+  try {
+    const res = await fetch('/api/plans/me');
+    if (!res.ok) return;
+    const data = await res.json();
+    const planId = data.plan_id || 'free';
+    const meta = PLAN_META[planId] || PLAN_META.free;
+
+    const badge = document.getElementById('myPlanBadge');
+    const tagline = document.getElementById('myPlanTagline');
+    if (badge) {
+      badge.textContent = `${meta.icon} ${meta.label}`;
+      badge.className = `plan-badge plan-badge--${meta.color}`;
+    }
+    if (tagline) tagline.textContent = meta.tagline;
+
+    // アップグレード CTA (free / paid のみ)
+    const ctaEl = document.getElementById('planUpgradeCta');
+    if (ctaEl && data.upgrade_available) ctaEl.style.display = '';
+
+    // 次のプランのプレビュー (free のみ)
+    if (planId === 'free' && data.upgrade_plan) {
+      const preview = document.getElementById('planNextPreview');
+      const nextLabel = document.getElementById('planNextLabel');
+      const nextFeatures = document.getElementById('planNextFeatures');
+      if (preview && nextLabel && nextFeatures) {
+        const up = data.upgrade_plan;
+        const upMeta = PLAN_META[up.plan_id] || {};
+        nextLabel.textContent = `${upMeta.icon || ''} ${up.label}`;
+        const locked = (up.features_free || []).slice(1, 5); // 最初の無料機能は「フリープランの全機能」なのでスキップ
+        nextFeatures.innerHTML = locked.map(f =>
+          `<span style="font-size:0.76rem;background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.25);border-radius:6px;padding:3px 8px;color:var(--text-secondary)">${f}</span>`
+        ).join('');
+        preview.style.display = '';
+      }
+    }
+  } catch { /* 非致命的 */ }
+}
+
+// プロフィールタブが表示されたときに実行
+document.querySelectorAll('.admin-filter-btn').forEach(btn => {
+  if (btn.dataset.tab === 'profile') {
+    btn.addEventListener('click', () => setTimeout(loadPlanInfo, 100));
+  }
+});
+loadPlanInfo();
 </script>
 </body>
 </html>

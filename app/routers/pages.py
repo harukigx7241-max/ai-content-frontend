@@ -2,9 +2,7 @@
 app/routers/pages.py — 会員向け HTML ページルーター
 認証が必要なページはサーバーサイドでチェックし、未ログイン時は /login にリダイレクト。
 既存の / (index) は system.py が担当し、このルーターは会員ページのみ扱う。
-
-TODO: Phase 4+ mypage にプロンプト履歴・お気に入りを追加
-TODO: Phase 5+ mypage に XP / レベル を追加
+Phase 16: /plans ページ追加
 """
 from typing import Optional
 
@@ -52,6 +50,34 @@ def mypage(
         request=request,
         name="mypage.html",
         context={"user": current_user},
+    )
+
+
+@router.get("/plans")
+def plans_page(
+    request: Request,
+    current_user: Optional[User] = Depends(get_current_user_soft),
+):
+    """プラン比較・アップグレードページ。未ログインでも閲覧可能。"""
+    from app.services.subscription_service import subscription_service, get_plan_for_role
+    from app.core.roles import RoleValue
+    from app.core.config import settings
+
+    user_plan_id = "free"
+    if current_user:
+        user_plan_id = get_plan_for_role(current_user.role)
+
+    plans_result = subscription_service.get_plans()
+    return templates.TemplateResponse(
+        request=request,
+        name="plans.html",
+        context={
+            "user": current_user,
+            "plans": plans_result.content.get("plans", []),
+            "billing_enabled": settings.ENABLE_BILLING,
+            "trial_days": settings.BILLING_TRIAL_DAYS,
+            "user_plan_id": user_plan_id,
+        },
     )
 
 

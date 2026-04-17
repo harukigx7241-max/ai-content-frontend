@@ -7,7 +7,7 @@ app/db/models/user.py — User SQLAlchemy モデル
   - role は "user" / "admin" で管理者判定。TODO: Phase 3+ モデレーター等に拡張
   - status は "pending" / "approved" / "rejected" / "suspended" の4値
   - approved_by は承認した管理者の user.id (監査ログ用。外部キー制約は意図的に省略)
-  - TODO: Phase 5+ invite_code_id カラム追加
+  - Phase 16: subscription_plan / subscription_status / stripe_customer_id 追加
 """
 from datetime import datetime, timezone
 from sqlalchemy import Column, Integer, String, Text, DateTime, Boolean, UniqueConstraint
@@ -34,7 +34,7 @@ class User(Base):
 
     # ステータス: pending → approved (or rejected) → suspended
     status = Column(String(20), nullable=False, default="pending")
-    # ロール: user / admin (TODO: Phase 3+ moderator等)
+    # ロール: user / admin / member_paid / member_master / headquarters
     role = Column(String(20), nullable=False, default="user")
 
     created_at = Column(DateTime(timezone=True), nullable=False, default=_now)
@@ -53,9 +53,21 @@ class User(Base):
     # bootstrap_admin() で作成した管理者のみ True。change_password 成功時に False へ戻す。
     must_change_password = Column(Boolean, nullable=False, default=False)
 
+    # ── Phase 16: サブスクリプション ──────────────────────────────────
+    # subscription_plan: "free" | "paid" | "master"
+    #   ロールとは独立して管理する。課金確認後に role を昇格する運用を想定。
+    subscription_plan = Column(String(20), nullable=False, default="free")
+    # subscription_status: "active" | "inactive" | "cancelled" | "trial" | "past_due"
+    subscription_status = Column(String(20), nullable=False, default="active")
+    # 有料プランの有効期限 (free は NULL)
+    subscription_expires_at = Column(DateTime(timezone=True), nullable=True)
+    # Stripe 顧客 ID (Phase 16+ 課金接続時に設定)
+    stripe_customer_id = Column(String(100), nullable=True)
+
     __table_args__ = (
         UniqueConstraint("sns_platform", "sns_handle", name="uq_sns_platform_handle"),
     )
 
     def __repr__(self) -> str:
-        return f"<User id={self.id} {self.sns_platform}:{self.sns_handle} status={self.status}>"
+        return f"<User id={self.id} {self.sns_platform}:{self.sns_handle} role={self.role} plan={self.subscription_plan}>"
+

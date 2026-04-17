@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>プラン比較 — プロンプトギルド</title>
+  <link rel="icon" type="image/svg+xml" href="/static/img/favicon.svg">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <script>
+  window.AppConfig = { maintenance: false };
+  window.PlansConfig = {
+    billingEnabled: {{ billing_enabled | tojson }},
+    trialDays: {{ trial_days | tojson }},
+    userPlanId: {{ user_plan_id | tojson }},
+    plans: {{ plans | tojson }},
+  };
+  </script>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<!-- ═══ ヘッダー ═══ -->
+<header class="site-header">
+  <div class="header-inner">
+    <a href="/" class="logo" style="text-decoration:none" aria-label="トップへ">
+      <img src="/static/img/guild-emblem.svg" alt="" class="logo-emblem" width="44" height="44">
+      <span class="logo-text">プロンプトギルド</span>
+    </a>
+    <nav class="tab-nav" role="navigation" style="gap:4px">
+      <a href="/" class="tab-btn" style="text-decoration:none">
+        <span class="tab-icon">🏠</span><span class="tab-label">工房へ戻る</span>
+      </a>
+    </nav>
+    <div class="auth-nav" id="authNav"></div>
+    <button class="hamburger-btn" id="hamburgerBtn" aria-label="メニュー" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<!-- ═══ メインコンテンツ ═══ -->
+<main class="plans-page">
+
+  <!-- ヒーロー -->
+  <div class="plans-hero">
+    <h1 class="plans-hero-title">プラン比較</h1>
+    <p class="plans-hero-sub">無料から始めて、必要になったときにアップグレード。</p>
+    {% if user_plan_id == "free" or not user_plan_id %}
+    <p class="plans-hero-note">現在: <strong>フリープラン</strong> ——
+      すべてのプロンプト生成・テンプレートは<strong>今すぐ無料</strong>でご利用いただけます。</p>
+    {% else %}
+    <p class="plans-hero-note">現在のプラン:
+      <strong id="currentPlanLabel">—</strong>
+    </p>
+    {% endif %}
+  </div>
+
+  <!-- 課金 coming soon バナー (ENABLE_BILLING=false 時) -->
+  {% if not billing_enabled %}
+  <div class="plans-coming-soon-banner">
+    <span class="plans-coming-soon-icon">🚀</span>
+    <div>
+      <div class="plans-coming-soon-title">有料プランは近日公開予定</div>
+      <div class="plans-coming-soon-text">
+        プロプラン・マスタープランは現在準備中です。無料プランの全機能は今すぐご利用いただけます。
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- プランカードグリッド -->
+  <div class="plans-grid" id="plansGrid">
+    {% for plan in plans %}
+    <div class="plans-card {% if plan.plan_id == user_plan_id %}plans-card--current{% endif %} plans-card--{{ plan.color }}"
+         data-plan="{{ plan.plan_id }}">
+
+      {% if plan.plan_id == user_plan_id %}
+      <div class="plans-card-current-badge">✓ 現在のプラン</div>
+      {% elif plan.plan_id == "paid" and not billing_enabled %}
+      <div class="plans-card-soon-badge">近日公開</div>
+      {% elif plan.plan_id == "master" and not billing_enabled %}
+      <div class="plans-card-soon-badge">近日公開</div>
+      {% endif %}
+
+      <div class="plans-card-header">
+        <div class="plans-card-icon">{{ plan.icon }}</div>
+        <div class="plans-card-name">{{ plan.label }}</div>
+        <div class="plans-card-tagline">{{ plan.tagline }}</div>
+      </div>
+
+      <div class="plans-card-price">
+        {% if plan.price_monthly_jpy == 0 %}
+        <span class="plans-price-amount">無料</span>
+        {% else %}
+        <span class="plans-price-amount">¥{{ "{:,}".format(plan.price_monthly_jpy) }}</span>
+        <span class="plans-price-cycle"> / 月</span>
+        {% if plan.yearly_discount_pct > 0 %}
+        <div class="plans-price-yearly">
+          年払い: ¥{{ "{:,}".format(plan.price_yearly_jpy) }}
+          <span class="plans-price-discount">{{ plan.yearly_discount_pct }}%オフ</span>
+        </div>
+        {% endif %}
+        {% endif %}
+      </div>
+
+      <!-- 機能リスト -->
+      <ul class="plans-features-list">
+        {% for feat in plan.features_free %}
+        <li class="plans-feature plans-feature--included">
+          <span class="plans-feature-check">✓</span>
+          <span>{{ feat }}</span>
+        </li>
+        {% endfor %}
+        {% for feat in plan.features_locked %}
+        <li class="plans-feature plans-feature--locked">
+          <span class="plans-feature-check">🔒</span>
+          <span>{{ feat }} <span class="plans-feature-tier-badge">上位プラン</span></span>
+        </li>
+        {% endfor %}
+      </ul>
+
+      <!-- CTA ボタン -->
+      <div class="plans-card-cta">
+        {% if plan.plan_id == user_plan_id %}
+          <button class="plans-btn plans-btn--current" disabled>現在のプラン</button>
+        {% elif plan.plan_id == "free" %}
+          <a href="/" class="plans-btn plans-btn--free">工房を使う →</a>
+        {% elif not billing_enabled %}
+          <button class="plans-btn plans-btn--soon" onclick="showComingSoonToast()">
+            近日公開 — 通知を受け取る
+          </button>
+        {% else %}
+          <button class="plans-btn plans-btn--upgrade"
+                  onclick="startCheckout('{{ plan.plan_id }}', 'monthly')">
+            アップグレード →
+          </button>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- 機能比較テーブル -->
+  <div class="plans-compare-section">
+    <h2 class="plans-compare-title">機能比較</h2>
+    <div class="plans-compare-table-wrap">
+      <table class="plans-compare-table">
+        <thead>
+          <tr>
+            <th>機能</th>
+            <th><span class="plans-th-icon">⚗</span> フリー</th>
+            <th><span class="plans-th-icon">⚔</span> プロ</th>
+            <th><span class="plans-th-icon">✦</span> マスター</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="plans-compare-category"><td colspan="4">プロンプト生成</td></tr>
+          <tr>
+            <td>プロンプト鍛冶場 (全工房)</td>
+            <td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td>
+          </tr>
+          <tr>
+            <td>テンプレートライブラリ</td>
+            <td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td>
+          </tr>
+          <tr>
+            <td>テンプレート保存・リミックス</td>
+            <td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td>
+          </tr>
+          <tr>
+            <td>プロンプト診断 (基本)</td>
+            <td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td>
+          </tr>
+          <tr>
+            <td>キャンペーン鍛冶場</td>
+            <td class="no">—</td><td class="ok upcoming">近日</td><td class="ok upcoming">近日</td>
+          </tr>
+          <tr>
+            <td>リサーチ下書き自動生成</td>
+            <td class="no">—</td><td class="ok upcoming">近日</td><td class="ok upcoming">近日</td>
+          </tr>
+          <tr>
+            <td>画像プロンプト生成</td>
+            <td class="no">—</td><td class="ok upcoming">近日</td><td class="ok upcoming">近日</td>
+          </tr>
+          <tr>
+            <td>Workshop Master AI</td>
+            <td class="no">—</td><td class="no">—</td><td class="ok upcoming">近日</td>
+          </tr>
+          <tr>
+            <td>一括生成</td>
+            <td class="no">—</td><td class="no">—</td><td class="ok upcoming">近日</td>
+          </tr>
+          <tr class="plans-compare-category"><td colspan="4">コミュニティ</td></tr>
+          <tr>
+            <td>ギルド広場 閲覧</td>
+            <td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td>
+          </tr>
+          <tr>
+            <td>ギルド広場 投稿・リアクション</td>
+            <td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td>
+          </tr>
+          <tr class="plans-compare-category"><td colspan="4">処理優先度</td></tr>
+          <tr>
+            <td>標準レーン</td>
+            <td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td>
+          </tr>
+          <tr>
+            <td>優先処理レーン</td>
+            <td class="no">—</td><td class="ok upcoming">近日</td><td class="ok upcoming">近日</td>
+          </tr>
+          <tr>
+            <td>最優先枠</td>
+            <td class="no">—</td><td class="no">—</td><td class="ok upcoming">近日</td>
+          </tr>
+          <tr class="plans-compare-category"><td colspan="4">サポート</td></tr>
+          <tr>
+            <td>XP・ランク・称号</td>
+            <td class="ok">✓</td><td class="ok">✓</td><td class="ok">✓</td>
+          </tr>
+          <tr>
+            <td>マスターバッジ</td>
+            <td class="no">—</td><td class="no">—</td><td class="ok upcoming">近日</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div class="plans-faq">
+    <h2 class="plans-faq-title">よくある質問</h2>
+    <div class="plans-faq-list">
+      <details class="plans-faq-item">
+        <summary>無料プランでできることは何ですか？</summary>
+        <p>プロンプト鍛冶場 (全7工房)、テンプレートライブラリ、プロンプト診断、日本語品質チェック、ギルド広場など、
+        コア機能をすべて無料でご利用いただけます。登録さえすれば制限なく使えます。</p>
+      </details>
+      <details class="plans-faq-item">
+        <summary>有料プランはいつから使えますか？</summary>
+        <p>プロプラン・マスタープランは現在準備中です。リリース時にお知らせします。
+        現在は全員がフリープランの全機能を利用できます。</p>
+      </details>
+      <details class="plans-faq-item">
+        <summary>このアプリはAIで直接コンテンツを生成しますか？</summary>
+        <p>いいえ。本サービスは「AIへの指示文（プロンプト）」を生成します。
+        生成されたプロンプトをChatGPT・Gemini・Claudeなどに貼り付けてお使いください。</p>
+      </details>
+      <details class="plans-faq-item">
+        <summary>解約はいつでもできますか？</summary>
+        <p>有料プランは月単位・年単位で契約でき、いつでもキャンセルできます（有効期限まで利用可能）。
+        詳細は課金システム導入後に案内します。</p>
+      </details>
+    </div>
+  </div>
+
+</main>
+
+<!-- Toast -->
+<div id="toast-container"></div>
+
+<script>
+  // Simple toast
+  function toast(msg, type = 'info') {
+    const c = document.getElementById('toast-container');
+    if (!c) return;
+    const t = document.createElement('div');
+    t.className = `toast toast-${type}`;
+    t.textContent = msg;
+    c.appendChild(t);
+    setTimeout(() => t.remove(), 4000);
+  }
+
+  function showComingSoonToast() {
+    toast('有料プランは近日公開予定です。お楽しみに！', 'info');
+  }
+
+  async function startCheckout(planId, cycle) {
+    if (!window.PlansConfig.billingEnabled) {
+      showComingSoonToast();
+      return;
+    }
+    try {
+      const res = await fetch('/api/plans/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          plan_id: planId,
+          billing_cycle: cycle,
+          success_url: window.location.origin + '/mypage?upgraded=1',
+          cancel_url: window.location.origin + '/plans',
+        }),
+      });
+      const data = await res.json();
+      if (data.checkout_url) {
+        window.location.href = data.checkout_url;
+      } else {
+        toast(data.message || '課金処理を開始できませんでした。', 'warning');
+      }
+    } catch {
+      toast('エラーが発生しました。', 'error');
+    }
+  }
+
+  // ハンバーガーメニュー (最小実装)
+  const hbBtn = document.getElementById('hamburgerBtn');
+  if (hbBtn) hbBtn.addEventListener('click', () => {
+    toast('メニューはトップページから利用できます。', 'info');
+  });
+</script>
+</body>
+</html>
