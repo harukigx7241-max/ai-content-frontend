@@ -36,9 +36,26 @@ from app.gamification.schemas import (
     BadgeResponse,
     GamificationStatusResponse,
     LevelBenefitsResponse,
+    XpActivityItem,
+    XpActivityResponse,
 )
 
 logger = logging.getLogger(__name__)
+
+# ── XP イベントの日本語ラベル ─────────────────────────────────────────
+_EVENT_LABELS: dict[str, str] = {
+    "login":            "デイリーログイン",
+    "post_public":      "公開投稿",
+    "post_private":     "非公開投稿",
+    "copy_received":    "コピーされた",
+    "generate":         "プロンプト生成",
+    "post_liked":       "いいね獲得",
+    "post_saved":       "保存獲得",
+    "post_used":        "使用獲得",
+    "comment_received": "コメント獲得",
+    "invite_registered":"招待登録",
+    "invite_approved":  "招待承認",
+}
 
 
 # ── XP 付与 ───────────────────────────────────────────────────────
@@ -116,6 +133,30 @@ def _do_award(
     # ── バッジ判定 (コミット後) ───────────────────────────────────
     new_badges = badge_service.check_and_award_badges(db, user, old_level, event_type)
     return xp_amount, new_badges
+
+
+# ── アクティビティ履歴 ────────────────────────────────────────────
+
+def get_recent_activity(db: Session, user_id: int, limit: int = 20) -> XpActivityResponse:
+    """最近の XP イベント履歴を返す。"""
+    events = db.execute(
+        select(XpEvent)
+        .where(XpEvent.user_id == user_id)
+        .order_by(XpEvent.created_at.desc())
+        .limit(limit)
+    ).scalars().all()
+    items = [
+        XpActivityItem(
+            id=e.id,
+            event_type=e.event_type,
+            event_label=_EVENT_LABELS.get(e.event_type, e.event_type),
+            xp_delta=e.xp_delta,
+            created_at=e.created_at,
+        )
+        for e in events
+    ]
+    total_xp = sum(i.xp_delta for i in items)
+    return XpActivityResponse(items=items, total_xp=total_xp)
 
 
 # ── ステータス取得 ────────────────────────────────────────────────

@@ -11,6 +11,7 @@ app/user/service.py — 一般ユーザーの自己操作サービス
   TODO: Phase N+ 通知設定の更新
   TODO: Phase N+ アカウント削除リクエスト
 """
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.db.models.user import User
@@ -38,14 +39,42 @@ def update_profile(db: Session, user: User, data: ProfileUpdateRequest) -> User:
     return user
 
 
-def get_stats(user: User) -> dict:
+def get_stats(user: User, db: Session) -> dict:
     """
     ユーザーの利用状況サマリーを返す。
-    現時点では DB で取得可能な値のみ。
-    生成回数・お気に入り数はフロントの localStorage から補完する。
+    コミュニティ統計 (投稿数・いいね獲得数・保存獲得数) も集計する。
     """
+    from app.db.models.post import CommunityPost
+
+    post_count = db.execute(
+        select(func.count(CommunityPost.id)).where(CommunityPost.user_id == user.id)
+    ).scalar() or 0
+
+    public_post_count = db.execute(
+        select(func.count(CommunityPost.id)).where(
+            CommunityPost.user_id == user.id,
+            CommunityPost.visibility == "public",
+        )
+    ).scalar() or 0
+
+    like_count_received = db.execute(
+        select(func.coalesce(func.sum(CommunityPost.like_count), 0)).where(
+            CommunityPost.user_id == user.id
+        )
+    ).scalar() or 0
+
+    save_count_received = db.execute(
+        select(func.coalesce(func.sum(CommunityPost.save_count), 0)).where(
+            CommunityPost.user_id == user.id
+        )
+    ).scalar() or 0
+
     return {
         "user_id": user.id,
         "created_at": user.created_at,
         "last_login_at": user.last_login_at,
+        "post_count": post_count,
+        "public_post_count": public_post_count,
+        "like_count_received": int(like_count_received),
+        "save_count_received": int(save_count_received),
     }

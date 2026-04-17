@@ -33,9 +33,12 @@ def update_profile(
 
 
 @router.get("/stats", response_model=UserStatsResponse)
-def get_stats(current_user: User = Depends(get_current_user)):
+def get_stats(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
     """
-    自分の利用状況サマリー (DB 取得分のみ)。
-    生成回数・お気に入り数はフロントの localStorage から取得する。
+    自分の利用状況サマリー。コミュニティ統計 (投稿数・いいね獲得数など) を含む。
+    生成回数・お気に入り数はフロントの localStorage から補完する。
     """
-    return user_service.get_stats(current_user)
+    return user_service.get_stats(current_user, db)

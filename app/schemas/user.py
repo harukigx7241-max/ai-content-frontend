@@ -27,15 +27,12 @@ class UserStatsResponse(BaseModel):
     """
     ユーザー自身が見る利用状況サマリー。
     DB から取得可能な値のみを返す。生成回数はフロントの localStorage から補完する。
-
-    TODO: Phase N+ generation_log 実装後に generation_count を実値に置き換える
-    TODO: Phase N+ favorite_count も generation_log から集計する
     """
     user_id: int
     created_at: datetime
     last_login_at: Optional[datetime]
-    # 将来フィールド (Phase N+)
-    # generation_count: int  # TODO
-    # favorite_count: int    # TODO
-    # invite_count: int      # TODO
-    # achievement_count: int # TODO
+    # Phase 10: コミュニティ統計 (community_posts から集計)
+    post_count: int = 0
+    public_post_count: int = 0
+    like_count_received: int = 0
+    save_count_received: int = 0

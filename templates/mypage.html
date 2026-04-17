@@ -86,12 +86,9 @@
   <div class="admin-filter-bar mypage-tabs" role="tablist">
     <button class="admin-filter-btn active" data-tab="profile"  role="tab">冒険者情報</button>
     <button class="admin-filter-btn"         data-tab="usage"   role="tab">活動記録</button>
+    <button class="admin-filter-btn"         data-tab="vault"   role="tab">🗄 保管庫</button>
+    <button class="admin-filter-btn"         data-tab="quests"  role="tab">⚔ クエスト</button>
     <button class="admin-filter-btn"         data-tab="settings" role="tab">設定</button>
-    <!-- TODO: Phase N+ 以下のタブを追加 -->
-    <!-- <button data-tab="posts">投稿管理</button> -->
-    <!-- <button data-tab="invites">招待</button> -->
-    <!-- <button data-tab="achievements">実績</button> -->
-    <!-- <button data-tab="notifications">通知</button> -->
   </div>
 
   <!-- ══════════════════════════════════════════════
@@ -132,6 +129,59 @@
         <div class="mypage-info-item" id="viewBioItem" style="{{ '' if user.bio else 'display:none' }};grid-column:1/-1">
           <label>自己紹介</label>
           <span id="viewBio" style="font-size:0.88rem;line-height:1.6;white-space:pre-wrap;word-break:break-all">{{ user.bio or '' }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 10: KPI 4連カード (コミュニティ統計) -->
+    <div class="mypage-card" id="mp10KpiCard" style="display:none">
+      <div class="mypage-section-title" style="margin-bottom:12px">📊 活動サマリー</div>
+      <div class="mp10-kpi-grid">
+        <div class="mp10-kpi-card accent-purple">
+          <span class="mp10-kpi-icon">📝</span>
+          <div class="mp10-kpi-val" id="kpiPostCount">—</div>
+          <div class="mp10-kpi-label">総投稿数</div>
+        </div>
+        <div class="mp10-kpi-card accent-cyan">
+          <span class="mp10-kpi-icon">🌐</span>
+          <div class="mp10-kpi-val" id="kpiPublicCount">—</div>
+          <div class="mp10-kpi-label">公開投稿</div>
+        </div>
+        <div class="mp10-kpi-card accent-gold">
+          <span class="mp10-kpi-icon">❤️</span>
+          <div class="mp10-kpi-val" id="kpiLikesReceived">—</div>
+          <div class="mp10-kpi-label">いいね獲得</div>
+        </div>
+        <div class="mp10-kpi-card accent-green">
+          <span class="mp10-kpi-icon">🔖</span>
+          <div class="mp10-kpi-val" id="kpiSavesReceived">—</div>
+          <div class="mp10-kpi-label">保存獲得</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phase 10: 育成プログレスヒーロー -->
+    <div class="mypage-card" id="mp10ProgressHero" style="display:none">
+      <div class="mypage-section-title" style="margin-bottom:12px">⚡ 育成状況</div>
+      <div class="mp10-progress-hero">
+        <div class="mp10-rank-emblem" id="mp10RankEmblem">1</div>
+        <div class="mp10-rank-info">
+          <div class="mp10-rank-title">
+            <span id="mp10TitleText"></span>
+            <span class="tier-label" id="mp10TierLabel" data-rank="bronze">Bronze</span>
+          </div>
+          <div class="mp10-xp-bar-wrap">
+            <div class="mp10-xp-bar-track">
+              <div class="mp10-xp-bar-fill" id="mp10BarFill" style="width:0%"></div>
+            </div>
+            <div class="mp10-xp-bar-meta">
+              <span id="mp10XpText"></span>
+              <span id="mp10NextLabel"></span>
+            </div>
+          </div>
+          <div class="mp10-next-milestone" id="mp10Milestone" style="display:none">
+            <span>🎯</span><span id="mp10MilestoneText"></span>
+          </div>
         </div>
       </div>
     </div>
@@ -272,6 +322,17 @@
       <div id="gamiLoading" style="font-size:0.82rem;color:var(--text-muted)">読み込み中...</div>
       <div id="gamiError" style="display:none;font-size:0.82rem;color:var(--text-muted)">
         読み込みに失敗しました
+      </div>
+    </div>
+
+    <!-- Phase 10: XP アクティビティ履歴 -->
+    <div class="mypage-card" id="mp10ActivityCard">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div class="mypage-section-title" style="margin-bottom:0">⚡ XP 獲得履歴</div>
+        <span id="mp10ActivityTotal" style="font-size:0.75rem;color:var(--text-muted)"></span>
+      </div>
+      <div id="mp10ActivityFeed" class="mp10-activity-feed">
+        <div style="font-size:0.82rem;color:var(--text-muted)">読み込み中...</div>
       </div>
     </div>
 
@@ -538,15 +599,106 @@
 
   </section>
 
+  <!-- ══════════════════════════════════════════════
+       タブ 4: 保管庫
+  ══════════════════════════════════════════════ -->
+  <section id="tab-vault" style="display:none">
+
+    <div class="mypage-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div class="mypage-section-title" style="margin-bottom:0">🗄 プロンプト保管庫</div>
+        <div style="display:flex;gap:8px">
+          <button class="auth-nav-btn outline" style="font-size:0.75rem" onclick="vaultExportAll()">📤 エクスポート</button>
+          <a href="/" class="auth-nav-btn primary" style="font-size:0.75rem;text-decoration:none">+ 工房へ</a>
+        </div>
+      </div>
+      <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:14px">
+        工房の鍛冶場・広場から保存したプロンプトを管理できます。最大30件。
+      </p>
+
+      <!-- フィルターバー -->
+      <div class="mp10-vault-toolbar" id="vaultToolbar">
+        <button class="mp10-vault-filter-btn active" data-filter="all" onclick="vaultSetFilter(this)">すべて</button>
+        <button class="mp10-vault-filter-btn" data-filter="fav"  onclick="vaultSetFilter(this)">⭐ お気に入り</button>
+        <button class="mp10-vault-filter-btn" data-filter="forge" onclick="vaultSetFilter(this)">⚒ 鍛冶場</button>
+        <button class="mp10-vault-filter-btn" data-filter="square" onclick="vaultSetFilter(this)">⚔ 広場</button>
+        <span class="mp10-vault-count" id="vaultCount"></span>
+      </div>
+
+      <!-- アイテムリスト -->
+      <div id="vaultGrid" class="mp10-vault-grid"></div>
+
+      <!-- 空の状態 -->
+      <div id="vaultEmpty" class="mp10-vault-empty" style="display:none">
+        <span class="mp10-vault-empty-icon">🗄</span>
+        まだ保管庫にプロンプトがありません。<br>
+        <a href="/" style="color:var(--accent-purple)">工房の鍛冶場</a>や
+        <a href="/square" style="color:var(--accent-purple)">広場の投稿</a>から保存してみましょう。
+      </div>
+    </div>
+
+    <!-- 保管庫インポート -->
+    <div class="mypage-card" style="background:rgba(255,255,255,0.02)">
+      <div class="mypage-section-title" style="margin-bottom:8px">📥 インポート</div>
+      <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:10px">
+        エクスポートした JSON ファイルを読み込んで保管庫を復元します。
+      </p>
+      <label style="display:inline-flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="file" accept=".json" id="vaultImportFile" style="display:none" onchange="vaultImport(this)">
+        <span class="auth-nav-btn outline" style="font-size:0.78rem">📂 ファイルを選択</span>
+      </label>
+      <span id="vaultImportMsg" style="font-size:0.75rem;color:var(--text-muted);margin-left:8px"></span>
+    </div>
+
+  </section>
+
+  <!-- ══════════════════════════════════════════════
+       タブ 5: クエスト
+  ══════════════════════════════════════════════ -->
+  <section id="tab-quests" style="display:none">
+
+    <!-- デイリーミッション -->
+    <div class="mypage-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+        <div class="mypage-section-title" style="margin-bottom:0">🌅 デイリーミッション</div>
+        <span style="font-size:0.72rem;color:var(--text-muted)" id="dailyResetLabel"></span>
+      </div>
+      <div class="mp10-daily-grid" id="dailyGrid"></div>
+    </div>
+
+    <!-- 長期クエスト (スキャフォールド) -->
+    <div class="mypage-card">
+      <div class="mypage-section-title" style="margin-bottom:12px">📜 クエスト</div>
+      <div class="mp10-quest-section-title">進行中</div>
+      <div id="activeQuestList"></div>
+      <div class="mp10-quest-section-title">未受注</div>
+      <div id="availableQuestList"></div>
+    </div>
+
+    <!-- 実績 (スキャフォールド) -->
+    <div class="mypage-stub-card" aria-label="準備中">
+      <div class="mypage-stub-header">
+        <span class="mypage-stub-icon">🏆</span>
+        <span class="mypage-stub-title">実績 / トロフィー</span>
+        <span class="mypage-stub-badge">近日公開</span>
+      </div>
+      <div class="mypage-stub-body">
+        <p class="mypage-stub-note">Phase 18 以降で実績・トロフィーシステムを実装予定です。</p>
+      </div>
+    </div>
+
+  </section>
+
 </main>
 
 <script>
 // ── タブ切替 ──────────────────────────────────────────────────────
+const ALL_TABS = ['profile', 'usage', 'vault', 'quests', 'settings'];
 document.querySelectorAll('[data-tab]').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('[data-tab]').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    ['profile', 'usage', 'settings'].forEach(id => {
+    ALL_TABS.forEach(id => {
       document.getElementById('tab-' + id).style.display = id === btn.dataset.tab ? '' : 'none';
     });
     if (btn.dataset.tab === 'usage') {
@@ -554,6 +706,13 @@ document.querySelectorAll('[data-tab]').forEach(btn => {
       if (!_gamiLoaded) loadGamification();
       loadInviteSummary();
       loadMyPosts();
+      loadActivity();
+    }
+    if (btn.dataset.tab === 'vault') renderVault();
+    if (btn.dataset.tab === 'quests') renderQuests();
+    if (btn.dataset.tab === 'profile') {
+      loadCommunityStats();
+      if (!_gamiLoaded) loadGamification();
     }
   });
 });
@@ -737,6 +896,40 @@ async function loadGamification() {
         </div>
       `).join('');
     }
+
+    // Phase 10: 育成プログレスヒーロー (プロフィールタブ)
+    const heroCard = document.getElementById('mp10ProgressHero');
+    if (heroCard) {
+      const emblem = document.getElementById('mp10RankEmblem');
+      emblem.textContent    = `Lv${d.level}`;
+      emblem.dataset.rank   = rankTier;
+      document.getElementById('mp10TitleText').textContent = d.title;
+      const tierLabel = document.getElementById('mp10TierLabel');
+      const TIER_NAMES = { bronze:'Bronze', silver:'Silver', gold:'Gold', platinum:'Platinum', legendary:'Legendary' };
+      tierLabel.textContent   = TIER_NAMES[rankTier] || rankTier;
+      tierLabel.dataset.rank  = rankTier;
+      const barFill10 = document.getElementById('mp10BarFill');
+      if (d.xp_at_next_level !== null) {
+        document.getElementById('mp10XpText').textContent  = `${d.xp} XP`;
+        document.getElementById('mp10NextLabel').textContent = `次のレベルまで ${d.xp_to_next} XP`;
+        if (window.Effects) Effects.animateBar(barFill10, d.progress_pct);
+        else barFill10.style.width = `${d.progress_pct}%`;
+        // マイルストーン: 次のタイトル変更レベルを表示
+        const MILESTONES = [[5,'研究員'],[10,'職人'],[20,'マスター'],[30,'レジェンド']];
+        const nextMs = MILESTONES.find(([lv]) => lv > d.level);
+        if (nextMs) {
+          const mstone = document.getElementById('mp10Milestone');
+          document.getElementById('mp10MilestoneText').textContent =
+            `Lv${nextMs[0]} で「${nextMs[1]}」称号を獲得 (あと ${nextMs[0]-d.level} レベル)`;
+          mstone.style.display = '';
+        }
+      } else {
+        document.getElementById('mp10XpText').textContent  = `${d.xp} XP`;
+        document.getElementById('mp10NextLabel').textContent = 'MAX LEVEL 🎉';
+        barFill10.style.width = '100%';
+      }
+      heroCard.style.display = '';
+    }
   } catch {
     loading.style.display = 'none';
     errEl.style.display   = '';
@@ -862,11 +1055,6 @@ document.getElementById('pwForm').addEventListener('submit', async e => {
     btn.textContent = '変更する';
   }
 });
-
-// ── 共通 ─────────────────────────────────────────────────────────
-function esc(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
 
 document.getElementById('logoutBtn')?.addEventListener('click', async () => {
   await fetch('/api/auth/logout', { method: 'POST' });
@@ -1021,6 +1209,268 @@ document.getElementById('issueCodeBtn').addEventListener('click', async () => {
 
 // ── ページロード時にランクをヒーローに表示 ─────────────────────────
 loadGamification();
+loadCommunityStats();
+
+// ── Phase 10: コミュニティ統計 (KPI カード) ──────────────────────
+let _statsLoaded = false;
+async function loadCommunityStats() {
+  if (_statsLoaded) return;
+  try {
+    const res = await fetch('/api/user/stats');
+    if (!res.ok) return;
+    const d = await res.json();
+    _statsLoaded = true;
+    document.getElementById('kpiPostCount').textContent    = d.post_count ?? 0;
+    document.getElementById('kpiPublicCount').textContent  = d.public_post_count ?? 0;
+    document.getElementById('kpiLikesReceived').textContent = d.like_count_received ?? 0;
+    document.getElementById('kpiSavesReceived').textContent = d.save_count_received ?? 0;
+    const kpiCard = document.getElementById('mp10KpiCard');
+    if (kpiCard) kpiCard.style.display = '';
+  } catch { /* silent */ }
+}
+
+// ── Phase 10: XP アクティビティ履歴 ──────────────────────────────
+let _activityLoaded = false;
+async function loadActivity() {
+  if (_activityLoaded) return;
+  const feed = document.getElementById('mp10ActivityFeed');
+  const totalEl = document.getElementById('mp10ActivityTotal');
+  if (!feed) return;
+  try {
+    const res = await fetch('/api/gamification/activity');
+    if (!res.ok) throw new Error('api error');
+    const d = await res.json();
+    _activityLoaded = true;
+    if (!d.items || !d.items.length) {
+      feed.innerHTML = '<div style="font-size:0.82rem;color:var(--text-muted);text-align:center;padding:16px 0">まだ XP 獲得履歴がありません</div>';
+      return;
+    }
+    const EVENT_ICONS = {
+      login:'🌅', post_public:'📝', post_private:'🔒', copy_received:'📋',
+      generate:'⚒', post_liked:'❤️', post_saved:'🔖', post_used:'🚀',
+      invite_registered:'🎟', invite_approved:'✅', comment_received:'💬',
+    };
+    feed.innerHTML = d.items.map(item => `
+      <div class="mp10-activity-item">
+        <div class="mp10-activity-icon">${EVENT_ICONS[item.event_type] || '⚡'}</div>
+        <div class="mp10-activity-body">
+          <div class="mp10-activity-label">${esc(item.event_label)}</div>
+          <div class="mp10-activity-date">${new Date(item.created_at).toLocaleString('ja-JP',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
+        </div>
+        <div class="mp10-xp-pill">+${item.xp_delta} XP</div>
+      </div>
+    `).join('');
+    if (totalEl) totalEl.textContent = `直近${d.items.length}件 / 合計 +${d.total_xp} XP`;
+  } catch {
+    if (feed) feed.innerHTML = '<div style="font-size:0.82rem;color:var(--text-muted)">読み込みに失敗しました</div>';
+  }
+}
+
+// ── Phase 10: 保管庫 ─────────────────────────────────────────────
+const VAULT_KEY = 'pg_forge_vault_v1';
+let _vaultFilter = 'all';
+
+function vaultSetFilter(btn) {
+  document.querySelectorAll('.mp10-vault-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  _vaultFilter = btn.dataset.filter;
+  renderVault();
+}
+
+function vaultLoad() {
+  try { return JSON.parse(localStorage.getItem(VAULT_KEY) || '[]'); }
+  catch { return []; }
+}
+
+function vaultSave(items) {
+  localStorage.setItem(VAULT_KEY, JSON.stringify(items));
+}
+
+function renderVault() {
+  const grid  = document.getElementById('vaultGrid');
+  const empty = document.getElementById('vaultEmpty');
+  const count = document.getElementById('vaultCount');
+  if (!grid) return;
+
+  let items = vaultLoad();
+  if (_vaultFilter === 'fav')    items = items.filter(i => i.fav);
+  if (_vaultFilter === 'forge')  items = items.filter(i => !i.source || i.source === 'forge');
+  if (_vaultFilter === 'square') items = items.filter(i => i.source === 'square');
+
+  if (count) count.textContent = `${items.length} 件`;
+
+  if (!items.length) {
+    grid.innerHTML   = '';
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+  grid.innerHTML = items.map((item, idx) => {
+    const allItems = vaultLoad();
+    const realIdx  = allItems.findIndex(i => i.id === item.id);
+    const tags = (item.tags || []).slice(0, 4).map(t => `<span class="mp10-vault-tag">${esc(t)}</span>`).join('');
+    const source = item.source === 'square' ? '⚔ 広場' : '⚒ 鍛冶場';
+    return `
+      <div class="mp10-vault-item${item.fav ? ' fav' : ''}" id="vaultItem_${esc(item.id)}">
+        <div class="mp10-vault-item-header">
+          <div class="mp10-vault-title">${esc(item.title || item.prompt?.slice(0,60) || '無題')}</div>
+          <button class="mp10-vault-fav-btn${item.fav ? ' on' : ''}" onclick="vaultToggleFav('${esc(item.id)}')"
+                  title="${item.fav ? 'お気に入り解除' : 'お気に入り登録'}">
+            ${item.fav ? '⭐' : '☆'}
+          </button>
+        </div>
+        <div class="mp10-vault-preview">${esc(item.prompt || '')}</div>
+        <div class="mp10-vault-footer">
+          <span class="mp10-vault-tag" style="background:rgba(168,85,247,0.1);color:var(--accent-purple)">${source}</span>
+          ${tags}
+          <span class="mp10-vault-date">${item.savedAt ? new Date(item.savedAt).toLocaleDateString('ja-JP') : ''}</span>
+        </div>
+        <div class="mp10-vault-actions">
+          <button class="mp10-vault-copy-btn" onclick="vaultCopy('${esc(item.id)}',this)">📋 コピー</button>
+          <button class="mp10-vault-del-btn"  onclick="vaultDelete('${esc(item.id)}')">🗑 削除</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function vaultToggleFav(id) {
+  const items = vaultLoad();
+  const idx = items.findIndex(i => i.id === id);
+  if (idx === -1) return;
+  items[idx].fav = !items[idx].fav;
+  vaultSave(items);
+  renderVault();
+}
+
+function vaultCopy(id, btn) {
+  const items = vaultLoad();
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  navigator.clipboard.writeText(item.prompt || '').then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '✅ コピーしました';
+    setTimeout(() => { btn.textContent = orig; }, 1500);
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = item.prompt || '';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+  });
+}
+
+function vaultDelete(id) {
+  if (!confirm('保管庫からこのプロンプトを削除しますか？')) return;
+  const items = vaultLoad().filter(i => i.id !== id);
+  vaultSave(items);
+  renderVault();
+}
+
+function vaultExportAll() {
+  const items = vaultLoad();
+  const blob = new Blob([JSON.stringify(items, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = `pg_vault_${new Date().toISOString().slice(0,10)}.json`;
+  a.click(); URL.revokeObjectURL(url);
+}
+
+function vaultImport(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const msg = document.getElementById('vaultImportMsg');
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (!Array.isArray(imported)) throw new Error('invalid format');
+      const existing = vaultLoad();
+      const existIds = new Set(existing.map(i => i.id));
+      const newItems = imported.filter(i => i.id && !existIds.has(i.id));
+      const merged   = [...newItems, ...existing].slice(0, 30);
+      vaultSave(merged);
+      msg.textContent = `✅ ${newItems.length} 件をインポートしました`;
+      renderVault();
+    } catch {
+      document.getElementById('vaultImportMsg').textContent = '❌ 読み込みに失敗しました';
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ── Phase 10: クエスト / デイリーミッション ─────────────────────
+const DAILY_TASKS_DEF = [
+  { type: 'login',    icon: '🌅', name: 'デイリーログイン', desc: 'ギルドにログインする',     xp: 10, target: 1 },
+  { type: 'generate', icon: '⚒', name: 'プロンプト鍛錬',   desc: '工房でプロンプトを生成する', xp: 5, target: 3 },
+  { type: 'post',     icon: '📝', name: '工房ログ投稿',     desc: '広場に投稿を公開する',       xp: 50, target: 1 },
+  { type: 'like',     icon: '❤️', name: 'いいね支援',       desc: '誰かの投稿にいいねする',     xp: 5, target: 1 },
+];
+
+const QUEST_DEFS = [
+  { key: 'first_post',   icon: '🗡', name: '初投稿の勇者',    desc: '広場に初めて投稿を公開する',    target: 1,  reward: '📝 初投稿バッジ' },
+  { key: 'gen_10',       icon: '⚒', name: '鍛冶師見習い',    desc: '工房で10回プロンプトを生成する', target: 10, reward: '+50 XP' },
+  { key: 'like_10',      icon: '❤️', name: 'いいね収集家',   desc: '投稿に合計10いいねをもらう',     target: 10, reward: '+100 XP' },
+  { key: 'save_5',       icon: '🔖', name: '保管庫の主',      desc: '自分の投稿が5回保存される',      target: 5,  reward: '+80 XP' },
+  { key: 'invite_1',     icon: '🎟', name: 'ギルド勧誘士',   desc: '1人をギルドに招待する',          target: 1,  reward: '+50 XP' },
+];
+
+function renderQuests() {
+  const dailyGrid = document.getElementById('dailyGrid');
+  const resetLabel = document.getElementById('dailyResetLabel');
+  if (!dailyGrid) return;
+
+  // デイリーリセット時刻を表示
+  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
+  tomorrow.setHours(0,0,0,0);
+  if (resetLabel) resetLabel.textContent = `リセット: ${tomorrow.toLocaleDateString('ja-JP')} 00:00`;
+
+  // デイリーミッション (スキャフォールド — ログイン済みは「login」を完了扱い)
+  dailyGrid.innerHTML = DAILY_TASKS_DEF.map(task => {
+    const isLogin  = task.type === 'login';
+    const progress = isLogin ? 1 : 0;
+    const pct      = Math.min(100, Math.round((progress / task.target) * 100));
+    const done     = isLogin;
+    return `
+      <div class="mp10-daily-card${done ? ' done' : ''}">
+        <div class="mp10-daily-card-header">
+          <span class="mp10-daily-icon">${task.icon}</span>
+          <span class="mp10-daily-name">${task.name}</span>
+          <span class="mp10-daily-xp">+${task.xp} XP</span>
+        </div>
+        <div class="mp10-daily-desc">${task.desc}</div>
+        <div class="mp10-daily-progress-bar">
+          <div class="mp10-daily-progress-fill" style="width:${pct}%"></div>
+        </div>
+        <div class="mp10-daily-status">
+          ${done ? '✅ 完了' : `${progress}/${task.target}`}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // クエスト一覧
+  const activeList    = document.getElementById('activeQuestList');
+  const availableList = document.getElementById('availableQuestList');
+  if (!activeList || !availableList) return;
+
+  // スキャフォールド: 全て0進捗で「未受注」扱い
+  activeList.innerHTML = '<div class="mp10-quest-coming-soon" style="font-size:0.78rem">進行中のクエストはまだありません</div>';
+  availableList.innerHTML = QUEST_DEFS.map(q => `
+    <div class="mp10-quest-item">
+      <span class="mp10-quest-icon">${q.icon}</span>
+      <div class="mp10-quest-body">
+        <div class="mp10-quest-name">${q.name}</div>
+        <div class="mp10-quest-desc">${q.desc}</div>
+        <div class="mp10-quest-prog-wrap">
+          <div class="mp10-quest-prog-bar">
+            <div class="mp10-quest-prog-fill" style="width:0%"></div>
+          </div>
+          <div class="mp10-quest-prog-label">0 / ${q.target}</div>
+        </div>
+      </div>
+      <div class="mp10-quest-reward">${q.reward}</div>
+    </div>
+  `).join('');
+}
 </script>
 </body>
 </html>

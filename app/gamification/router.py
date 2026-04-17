@@ -23,6 +23,7 @@ from app.gamification.schemas import (
     BadgeDefinitionResponse,
     GamificationStatusResponse,
     LevelDefinitionResponse,
+    XpActivityResponse,
 )
 
 router = APIRouter(prefix="/api/gamification", tags=["gamification"])
@@ -35,6 +36,15 @@ def get_status(
 ):
     """自分の現在の XP / レベル / 称号 / 獲得バッジを返す。認証必須。"""
     return gami_service.get_status(db, current_user.id)
+
+
+@router.get("/activity", response_model=XpActivityResponse)
+def get_activity(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """最近の XP 活動履歴 (最大20件)。認証必須。"""
+    return gami_service.get_recent_activity(db, current_user.id)
 
 
 @router.get("/levels", response_model=list[LevelDefinitionResponse])

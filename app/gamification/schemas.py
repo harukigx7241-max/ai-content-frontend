@@ -8,7 +8,6 @@ app/gamification/schemas.py — ゲーミフィケーション Pydantic スキ�
 """
 from datetime import datetime
 from typing import Optional
-
 from pydantic import BaseModel
 
 
@@ -67,5 +66,19 @@ class GamificationStatusResponse(BaseModel):
     level_benefits: LevelBenefitsResponse
 
     # TODO: Phase N+
-    # recent_xp_events: list[XpEventResponse]
     # active_missions: list[MissionResponse]
+
+
+class XpActivityItem(BaseModel):
+    """XP イベント履歴 1件分。"""
+    id: int
+    event_type: str
+    event_label: str
+    xp_delta: int
+    created_at: datetime
+
+
+class XpActivityResponse(BaseModel):
+    """最近の XP 活動履歴リスト。"""
+    items: list[XpActivityItem]
+    total_xp: int

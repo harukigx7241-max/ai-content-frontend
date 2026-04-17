@@ -5305,3 +5305,291 @@ img, video, iframe, canvas {
   .sq-market-actions { gap: 6px; }
   .sq-market-btn { padding: 7px 12px; font-size: 0.76rem; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   Phase 10 — マイページ育成画面・保管庫・クエスト
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── KPI 4連カード ──────────────────────────────────────────────── */
+.mp10-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+@media (max-width: 640px) { .mp10-kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+.mp10-kpi-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 14px 16px;
+  text-align: center;
+  transition: border-color 0.2s;
+}
+.mp10-kpi-card:hover { border-color: rgba(255,255,255,0.16); }
+.mp10-kpi-icon  { font-size: 1.4rem; display: block; margin-bottom: 4px; }
+.mp10-kpi-val   { font-size: 1.6rem; font-weight: 700; color: var(--text-primary); line-height: 1; }
+.mp10-kpi-label { font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; }
+.mp10-kpi-card.accent-purple .mp10-kpi-val { color: var(--accent-purple); }
+.mp10-kpi-card.accent-gold   .mp10-kpi-val { color: var(--accent-gold); }
+.mp10-kpi-card.accent-cyan   .mp10-kpi-val { color: var(--accent-cyan); }
+.mp10-kpi-card.accent-green  .mp10-kpi-val { color: #34d399; }
+
+/* ── 育成プログレスヒーロー ─────────────────────────────────────── */
+.mp10-progress-hero {
+  background: linear-gradient(135deg,rgba(168,85,247,0.12),rgba(34,211,238,0.08));
+  border: 1px solid rgba(168,85,247,0.25);
+  border-radius: 14px;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.mp10-rank-emblem {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  background: rgba(168,85,247,0.2);
+  border: 2px solid rgba(168,85,247,0.5);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.4rem; font-weight: 800; color: var(--accent-purple);
+  flex-shrink: 0;
+}
+.mp10-rank-emblem[data-rank="legendary"] { border-color: rgba(251,191,36,0.7); color: var(--accent-gold); background: rgba(251,191,36,0.12); }
+.mp10-rank-emblem[data-rank="platinum"]  { border-color: rgba(34,211,238,0.7); color: var(--accent-cyan);  background: rgba(34,211,238,0.12); }
+.mp10-rank-emblem[data-rank="gold"]      { border-color: rgba(251,191,36,0.5); color: #fbbf24; background: rgba(251,191,36,0.1); }
+.mp10-rank-emblem[data-rank="silver"]    { border-color: rgba(148,163,184,0.6); color: #94a3b8; background: rgba(148,163,184,0.1); }
+.mp10-rank-info { flex: 1; min-width: 160px; }
+.mp10-rank-title {
+  font-size: 1.05rem; font-weight: 700; color: var(--text-primary);
+  display: flex; align-items: center; gap: 8px; margin-bottom: 4px;
+}
+.mp10-rank-title .tier-label {
+  font-size: 0.7rem; padding: 2px 8px; border-radius: 20px;
+  background: rgba(168,85,247,0.2); color: var(--accent-purple);
+}
+.mp10-rank-title .tier-label[data-rank="legendary"] { background: rgba(251,191,36,0.2); color: var(--accent-gold); }
+.mp10-rank-title .tier-label[data-rank="platinum"]  { background: rgba(34,211,238,0.15); color: var(--accent-cyan); }
+.mp10-xp-bar-wrap { margin-top: 8px; }
+.mp10-xp-bar-track {
+  height: 8px; border-radius: 4px;
+  background: rgba(255,255,255,0.08);
+  overflow: hidden;
+}
+.mp10-xp-bar-fill {
+  height: 100%; border-radius: 4px;
+  background: linear-gradient(90deg, var(--accent-purple), var(--accent-cyan));
+  transition: width 1.4s cubic-bezier(0.4,0,0.2,1);
+}
+.mp10-xp-bar-meta {
+  display: flex; justify-content: space-between;
+  font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;
+}
+.mp10-next-milestone {
+  font-size: 0.75rem; color: var(--text-muted);
+  margin-top: 6px;
+  padding: 6px 12px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 8px;
+  display: flex; align-items: center; gap: 6px;
+}
+
+/* ── アクティビティフィード ──────────────────────────────────────── */
+.mp10-activity-feed { display: flex; flex-direction: column; gap: 0; }
+.mp10-activity-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: 0.83rem;
+}
+.mp10-activity-item:last-child { border-bottom: none; }
+.mp10-activity-icon {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: rgba(168,85,247,0.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem; flex-shrink: 0;
+}
+.mp10-activity-body { flex: 1; min-width: 0; }
+.mp10-activity-label { color: var(--text-primary); font-weight: 500; }
+.mp10-activity-date  { font-size: 0.7rem; color: var(--text-muted); margin-top: 1px; }
+.mp10-xp-pill {
+  font-size: 0.72rem; font-weight: 700;
+  padding: 2px 8px; border-radius: 20px;
+  background: rgba(168,85,247,0.15); color: var(--accent-purple);
+  flex-shrink: 0;
+}
+
+/* ── 保管庫タブ ──────────────────────────────────────────────────── */
+.mp10-vault-toolbar {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.mp10-vault-filter-btn {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  padding: 4px 12px; font-size: 0.75rem;
+  color: var(--text-secondary); cursor: pointer;
+  transition: all 0.15s;
+}
+.mp10-vault-filter-btn.active,
+.mp10-vault-filter-btn:hover {
+  background: rgba(168,85,247,0.18);
+  border-color: rgba(168,85,247,0.4);
+  color: var(--accent-purple);
+}
+.mp10-vault-count {
+  margin-left: auto; font-size: 0.72rem; color: var(--text-muted);
+}
+.mp10-vault-grid {
+  display: flex; flex-direction: column; gap: 8px;
+}
+.mp10-vault-item {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 12px 14px;
+  transition: border-color 0.2s;
+  cursor: pointer;
+}
+.mp10-vault-item:hover { border-color: rgba(168,85,247,0.35); }
+.mp10-vault-item.fav { border-left: 3px solid var(--accent-gold); }
+.mp10-vault-item-header {
+  display: flex; align-items: flex-start; gap: 8px;
+  margin-bottom: 6px;
+}
+.mp10-vault-title {
+  flex: 1; font-size: 0.88rem; font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.mp10-vault-fav-btn {
+  background: none; border: none; cursor: pointer;
+  font-size: 1rem; padding: 0; flex-shrink: 0;
+  opacity: 0.5; transition: opacity 0.15s;
+}
+.mp10-vault-fav-btn:hover, .mp10-vault-fav-btn.on { opacity: 1; }
+.mp10-vault-preview {
+  font-size: 0.75rem; color: var(--text-muted);
+  line-height: 1.5;
+  overflow: hidden; display: -webkit-box;
+  -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  margin-bottom: 8px;
+}
+.mp10-vault-footer {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.mp10-vault-tag {
+  font-size: 0.68rem; padding: 2px 8px; border-radius: 12px;
+  background: rgba(255,255,255,0.07);
+  color: var(--text-muted);
+}
+.mp10-vault-date { font-size: 0.68rem; color: var(--text-muted); margin-left: auto; }
+.mp10-vault-actions {
+  display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px;
+}
+.mp10-vault-copy-btn, .mp10-vault-del-btn {
+  font-size: 0.72rem; padding: 4px 10px; border-radius: 8px;
+  cursor: pointer; transition: background 0.15s;
+}
+.mp10-vault-copy-btn {
+  background: rgba(168,85,247,0.15); border: 1px solid rgba(168,85,247,0.3);
+  color: var(--accent-purple);
+}
+.mp10-vault-copy-btn:hover { background: rgba(168,85,247,0.28); }
+.mp10-vault-del-btn {
+  background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.2);
+  color: rgba(248,113,113,0.8);
+}
+.mp10-vault-del-btn:hover { background: rgba(248,113,113,0.2); }
+.mp10-vault-empty {
+  text-align: center; padding: 40px 20px;
+  color: var(--text-muted); font-size: 0.85rem;
+}
+.mp10-vault-empty-icon { font-size: 2.5rem; display: block; margin-bottom: 10px; }
+
+/* ── クエスト・デイリータスク ─────────────────────────────────────── */
+.mp10-daily-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.mp10-daily-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 14px 14px;
+  transition: border-color 0.2s;
+}
+.mp10-daily-card.done {
+  border-color: rgba(52,211,153,0.3);
+  background: rgba(52,211,153,0.06);
+}
+.mp10-daily-card-header {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+}
+.mp10-daily-icon { font-size: 1.2rem; }
+.mp10-daily-name { font-size: 0.83rem; font-weight: 600; color: var(--text-primary); }
+.mp10-daily-xp   { font-size: 0.7rem; color: var(--accent-purple); margin-left: auto; font-weight: 700; }
+.mp10-daily-desc { font-size: 0.72rem; color: var(--text-muted); margin-bottom: 8px; }
+.mp10-daily-progress-bar {
+  height: 5px; border-radius: 3px;
+  background: rgba(255,255,255,0.08);
+  overflow: hidden;
+}
+.mp10-daily-progress-fill {
+  height: 100%; border-radius: 3px;
+  background: linear-gradient(90deg, var(--accent-purple), var(--accent-cyan));
+  transition: width 0.6s ease;
+}
+.mp10-daily-card.done .mp10-daily-progress-fill { background: #34d399; }
+.mp10-daily-status {
+  font-size: 0.7rem; margin-top: 4px;
+  color: var(--text-muted);
+  display: flex; align-items: center; gap: 4px;
+}
+.mp10-daily-card.done .mp10-daily-status { color: #34d399; }
+.mp10-quest-section-title {
+  font-size: 0.82rem; font-weight: 700; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.06em;
+  margin: 16px 0 10px;
+}
+.mp10-quest-item {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 8px;
+  transition: border-color 0.2s;
+}
+.mp10-quest-item:hover { border-color: rgba(255,255,255,0.14); }
+.mp10-quest-icon { font-size: 1.4rem; flex-shrink: 0; }
+.mp10-quest-body { flex: 1; min-width: 0; }
+.mp10-quest-name  { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); }
+.mp10-quest-desc  { font-size: 0.72rem; color: var(--text-muted); margin-top: 2px; }
+.mp10-quest-prog-wrap { margin-top: 6px; }
+.mp10-quest-prog-bar {
+  height: 4px; border-radius: 2px;
+  background: rgba(255,255,255,0.07);
+  overflow: hidden;
+}
+.mp10-quest-prog-fill {
+  height: 100%; border-radius: 2px;
+  background: var(--accent-purple);
+}
+.mp10-quest-prog-label {
+  font-size: 0.68rem; color: var(--text-muted); margin-top: 3px;
+}
+.mp10-quest-reward {
+  font-size: 0.72rem; font-weight: 700; color: var(--accent-gold);
+  flex-shrink: 0; text-align: right;
+}
+.mp10-quest-coming-soon {
+  text-align: center; padding: 30px 20px;
+  color: var(--text-muted); font-size: 0.85rem;
+  border: 1px dashed rgba(255,255,255,0.1);
+  border-radius: 12px;
+}
