@@ -44,11 +44,13 @@ class CommunityPost(Base):
     # "public" | "private"
 
     # ── カウンター ───────────────────────────────────────────────────
-    view_count = Column(Integer, nullable=False, default=0)
-    like_count = Column(Integer, nullable=False, default=0)
-    save_count = Column(Integer, nullable=False, default=0)
-    # TODO: Phase N+ use_count = Column(Integer, nullable=False, default=0)
-    # TODO: Phase N+ comment_count = Column(Integer, nullable=False, default=0)
+    view_count  = Column(Integer, nullable=False, default=0)
+    like_count  = Column(Integer, nullable=False, default=0)
+    save_count  = Column(Integer, nullable=False, default=0)
+    remix_count = Column(Integer, nullable=False, default=0)
+
+    # ── Fork / Remix ─────────────────────────────────────────────────
+    forked_from_id = Column(Integer, nullable=True)  # 元投稿 ID (フォーク元)
 
     # ── モデレーション (TODO: Phase N+) ─────────────────────────────
     # moderation_status: None="未審査", "ok", "flagged"(通報あり), "hidden"(非表示)

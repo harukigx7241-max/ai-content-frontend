@@ -65,7 +65,7 @@ def list_posts(
     target_platform: Optional[str] = Query(None),
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=50),
-    sort: str = Query("new", description="ソート: new (新着順) | popular (いいね降順)"),
+    sort: str = Query("new", description="ソート: new|popular|saves|trending"),
     current_user: Optional[User] = Depends(get_current_user_soft),
     db: Session = Depends(get_db),
 ):
@@ -140,6 +140,29 @@ def copy_post(
         from app.gamification.constants import XPEvent as _XPE
         _gami.try_award(db, author_id, _XPE.COPY_RECEIVED, ref_id=post_id)
     return {"ok": True}
+
+
+@router.post("/posts/{post_id}/fork", status_code=201)
+def fork_post(
+    post_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    投稿をフォークする (自分用コピーとして非公開で保存)。
+    元投稿の remix_count を +1 する。認証必須。
+    """
+    forked = community_service.fork_post(db, post_id, current_user.id)
+    if settings.ENABLE_GAMIFICATION:
+        original = db.get(CommunityPost, post_id)
+        if original and original.user_id != current_user.id:
+            from app.gamification import service as _gami
+            from app.gamification.constants import XPEvent as _XPE
+            _gami.try_award(db, original.user_id, _XPE.COPY_RECEIVED, ref_id=post_id)
+    return JSONResponse(
+        PostResponse.model_validate(forked).model_dump(mode="json"),
+        status_code=201,
+    )
 
 
 @router.post("/posts/{post_id}/like", status_code=200)

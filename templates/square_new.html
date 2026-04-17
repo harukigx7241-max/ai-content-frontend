@@ -277,6 +277,35 @@ document.getElementById('postForm').addEventListener('submit', async e => {
   }
 });
 
+// ── Remix プリフィル (?remix=<post_id>) ──────────────────────────
+(async function() {
+  const params = new URLSearchParams(location.search);
+  const remixId = params.get('remix');
+  if (!remixId) return;
+  try {
+    const res = await fetch(`/api/community/posts/${remixId}`);
+    if (!res.ok) return;
+    const p = await res.json();
+    const get = id => document.getElementById(id);
+    if (p.title)        get('title').value       = `【Remix】${p.title}`.slice(0, 200);
+    if (p.description)  get('description').value = p.description;
+    if (p.prompt_body)  get('promptBody').value  = p.prompt_body;
+    if (p.category)     get('category').value    = p.category;
+    if (p.purpose)      get('purpose').value     = p.purpose || '';
+    if (p.target_platform) get('targetPlatform').value = p.target_platform || '';
+    if (p.tags)         get('tags').value        = p.tags;
+    // 文字数カウンター更新
+    ['title','description','promptBody','tags'].forEach(id => {
+      get(id)?.dispatchEvent(new Event('input'));
+    });
+    // Banner
+    const banner = document.createElement('div');
+    banner.style.cssText = 'background:rgba(245,158,11,0.12);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:10px 14px;font-size:0.82rem;color:#fcd34d;margin-bottom:14px';
+    banner.innerHTML = `✏️ <strong>#${remixId}</strong> の投稿を Remix します。内容を編集して投稿してください。`;
+    document.querySelector('form, .mypage-card')?.prepend(banner);
+  } catch { /* silent */ }
+})();
+
 // ── ログアウト ────────────────────────────────────────────────────
 document.getElementById('logoutBtn').addEventListener('click', async () => {
   await fetch('/api/auth/logout', { method: 'POST' });

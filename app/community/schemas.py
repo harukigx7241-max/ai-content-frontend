@@ -43,6 +43,7 @@ class PostCreateRequest(BaseModel):
     target_platform: Optional[str] = Field(None, max_length=50)
     tags: Optional[str] = Field(None, max_length=200)
     visibility: str = Field(default="public")
+    forked_from_id: Optional[int] = Field(None, description="フォーク元の投稿 ID")
 
     @field_validator("category")
     @classmethod
@@ -121,6 +122,9 @@ class PostSummaryResponse(BaseModel):
     view_count: int = 0
     like_count: int = 0
     save_count: int = 0
+    remix_count: int = 0
+    forked_from_id: Optional[int] = None
+    popularity_tier: str = "common"  # common/uncommon/rare/epic/legendary
     user_liked: bool = False
     user_saved: bool = False
     created_at: datetime
@@ -133,7 +137,6 @@ class PostResponse(PostSummaryResponse):
     """詳細用レスポンス: prompt_body と updated_at を追加。"""
     prompt_body: str
     updated_at: Optional[datetime] = None
-    # TODO: Phase N+ comments: list[CommentResponse] = []
 
 
 class PostListResponse(BaseModel):

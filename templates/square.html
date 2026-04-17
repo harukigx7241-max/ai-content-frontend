@@ -71,11 +71,20 @@
     {% endif %}
   </div>
 
-  <!-- ── 注目の工房ログ (人気トップ3) ────────────────────────── -->
+  <!-- ── テンプレ市場バナー ────────────────────────────────────── -->
+  <div class="sq-market-banner">
+    <div class="sq-market-banner-icon">🏪</div>
+    <div class="sq-market-banner-body">
+      <div class="sq-market-banner-title">ギルド テンプレ市場</div>
+      <div class="sq-market-banner-sub">優れたプロンプトを fork して自分用にカスタマイズ。いいね・保存・注目順で探せます。</div>
+    </div>
+  </div>
+
+  <!-- ── 注目の工房ログ (市場ピックアップ) ────────────────────── -->
   <div id="featuredSection" class="sq-featured-section" style="display:none">
     <div class="sq-featured-head">
-      <span class="sq-featured-title">🏅 注目の工房ログ</span>
-      <span class="sq-featured-sub">今週いいねが多いプロンプト</span>
+      <span class="sq-featured-title">🏅 市場ピックアップ</span>
+      <span class="sq-featured-sub">フォーク・保存が多いプロンプト</span>
     </div>
     <div id="featuredList" class="sq-featured-grid"></div>
   </div>
@@ -128,8 +137,10 @@
   <div class="sq-result-bar" id="resultBar" style="display:none">
     <span id="resultCount" class="sq-result-count"></span>
     <div class="sq-sort-row">
-      <button class="sq-sort-btn active" id="sortNew" onclick="setSort('new')">🕐 新着順</button>
-      <button class="sq-sort-btn" id="sortPopular" onclick="setSort('popular')">❤️ 人気順</button>
+      <button class="sq-sort-btn active" id="sortNew"     onclick="setSort('new')">🕐 新着順</button>
+      <button class="sq-sort-btn"        id="sortPopular" onclick="setSort('popular')">❤️ いいね順</button>
+      <button class="sq-sort-btn"        id="sortSaves"   onclick="setSort('saves')">🔖 保存順</button>
+      <button class="sq-sort-btn"        id="sortTrending" onclick="setSort('trending')">🔥 注目順</button>
     </div>
   </div>
 
@@ -178,12 +189,23 @@ let currentPage = 1;
 let currentSort = 'new';
 const perPage = 20;
 
+const SORT_IDS = ['sortNew', 'sortPopular', 'sortSaves', 'sortTrending'];
+const SORT_VALS = ['new', 'popular', 'saves', 'trending'];
+
 function setSort(sort) {
   currentSort = sort;
-  document.getElementById('sortNew').classList.toggle('active', sort === 'new');
-  document.getElementById('sortPopular').classList.toggle('active', sort === 'popular');
+  SORT_IDS.forEach((id, i) => {
+    document.getElementById(id)?.classList.toggle('active', SORT_VALS[i] === sort);
+  });
   currentPage = 1;
   fetchPosts(1);
+}
+
+const TIER_LABEL = {
+  legendary: { emoji: '👑', label: 'Legendary' },
+  epic:      { emoji: '💎', label: 'Epic' },
+  rare:      { emoji: '⚡', label: 'Rare' },
+  uncommon:  { emoji: '✨', label: 'Uncommon' },
 }
 
 // ── ラベル定数 ────────────────────────────────────────────────────
@@ -276,19 +298,27 @@ function postCard(p) {
   const desc = p.description
     ? `<p class="sq-card-desc">${esc(p.description.slice(0, 100))}${p.description.length > 100 ? '…' : ''}</p>`
     : '';
-  const views = `<span class="sq-card-views">👁 ${p.view_count || 0}</span>`;
-  const likes = p.like_count ? `<span class="sq-card-likes">❤️ ${p.like_count}</span>` : '';
-  const date  = new Date(p.created_at).toLocaleDateString('ja-JP');
+  const views   = `<span class="sq-card-views">👁 ${p.view_count || 0}</span>`;
+  const likes   = p.like_count ? `<span class="sq-card-likes">❤️ ${p.like_count}</span>` : '';
+  const saves   = p.save_count ? `<span class="sq-card-views">🔖 ${p.save_count}</span>` : '';
+  const remixes = p.remix_count ? `<span class="sq-card-remixes">🔀 ${p.remix_count}</span>` : '';
+  const date    = new Date(p.created_at).toLocaleDateString('ja-JP');
+  const tier    = p.popularity_tier;
+  const tierBadge = tier && TIER_LABEL[tier]
+    ? `<span class="sq-tier-badge" data-tier="${esc(tier)}">${TIER_LABEL[tier].emoji} ${TIER_LABEL[tier].label}</span>`
+    : '';
+  const forkBadge = p.forked_from_id
+    ? `<span class="sq-fork-badge">🔀 Fork</span>`
+    : '';
 
   return `
 <a href="/square/${p.id}" class="sq-card" style="text-decoration:none;display:block">
   <div class="sq-card-head">
     <span class="sq-cat-badge" data-cat="${esc(p.category)}">${esc(catLabel)}</span>
     ${platLabel ? `<span class="sq-plat-label">${esc(platLabel)}</span>` : ''}
-    ${ownBadge}
+    ${tierBadge}${forkBadge}${ownBadge}
     <span class="sq-card-date">${date}</span>
-    ${views}
-    ${likes}
+    ${views}${likes}${saves}${remixes}
   </div>
   <h3 class="sq-card-title">${esc(p.title)}</h3>
   ${desc}
@@ -347,9 +377,7 @@ document.getElementById('clearFilterBtn').addEventListener('click', () => {
   document.getElementById('filterPurpose').value    = '';
   document.getElementById('filterPlatform').value   = '';
   currentPage = 1;
-  currentSort = 'new';
-  document.getElementById('sortNew').classList.add('active');
-  document.getElementById('sortPopular').classList.remove('active');
+  setSort('new');
   fetchPosts(1);
 });
 
@@ -388,10 +416,10 @@ document.body.classList.add('has-bottom-nav');
   {% endif %}
 })();
 
-// ── 注目の工房ログ (人気トップ3) ────────────────────────────────
+// ── 市場ピックアップ (trending top 3) ────────────────────────────
 async function loadFeatured() {
   try {
-    const res  = await fetch('/api/community/posts?sort=popular&per_page=3');
+    const res  = await fetch('/api/community/posts?sort=trending&per_page=3');
     if (!res.ok) return;
     const data = await res.json();
     if (!data.posts || data.posts.length === 0) return;
@@ -401,13 +429,19 @@ async function loadFeatured() {
     grid.innerHTML = data.posts.map(p => {
       const catLabel = CAT_LABEL[p.category] || p.category;
       const date     = new Date(p.created_at).toLocaleDateString('ja-JP');
+      const tier     = p.popularity_tier;
+      const tierBadge = tier && TIER_LABEL[tier]
+        ? `<span class="sq-tier-badge" data-tier="${esc(tier)}" style="font-size:0.6rem">${TIER_LABEL[tier].emoji}</span> `
+        : '';
       return `
 <a href="/square/${p.id}" class="sq-featured-card" style="text-decoration:none">
   <div class="sq-featured-card-head">
     <span class="sq-cat-badge" data-cat="${esc(p.category)}">${esc(catLabel)}</span>
     <span class="sq-featured-likes">❤️ ${p.like_count || 0}</span>
+    ${p.save_count ? `<span class="sq-featured-saves">🔖 ${p.save_count}</span>` : ''}
+    ${p.remix_count ? `<span class="sq-featured-remixes">🔀 ${p.remix_count}</span>` : ''}
   </div>
-  <div class="sq-featured-card-title">${esc(p.title)}</div>
+  <div class="sq-featured-card-title">${tierBadge}${esc(p.title)}</div>
   <div class="sq-featured-card-foot">by ${esc(p.author_name)} · ${date}</div>
 </a>`;
     }).join('');

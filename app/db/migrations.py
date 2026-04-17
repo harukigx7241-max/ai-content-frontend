@@ -56,6 +56,11 @@ COLUMN_MIGRATIONS: list[_Migration] = [
                "ALTER TABLE community_posts ADD COLUMN like_count INTEGER NOT NULL DEFAULT 0"),
     _Migration("community_posts.save_count",
                "ALTER TABLE community_posts ADD COLUMN save_count INTEGER NOT NULL DEFAULT 0"),
+    # Phase 9 — Fork/Remix
+    _Migration("community_posts.remix_count",
+               "ALTER TABLE community_posts ADD COLUMN remix_count INTEGER NOT NULL DEFAULT 0"),
+    _Migration("community_posts.forked_from_id",
+               "ALTER TABLE community_posts ADD COLUMN forked_from_id INTEGER"),
 ]
 
 

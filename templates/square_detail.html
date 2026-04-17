@@ -83,6 +83,14 @@
       {% if post.is_own %}
         <span class="sq-own-badge">自分の投稿</span>
       {% endif %}
+      {% set tier_map = {'legendary':('👑','Legendary'),'epic':('💎','Epic'),'rare':('⚡','Rare'),'uncommon':('✨','Uncommon')} %}
+      {% if post.popularity_tier and post.popularity_tier in tier_map %}
+        {% set tier_info = tier_map[post.popularity_tier] %}
+        <span class="sq-tier-badge" data-tier="{{ post.popularity_tier }}">{{ tier_info[0] }} {{ tier_info[1] }}</span>
+      {% endif %}
+      {% if post.forked_from_id %}
+        <span class="sq-fork-badge">🔀 Fork</span>
+      {% endif %}
     </div>
 
     <h1 class="sq-detail-title">{{ post.title }}</h1>
@@ -104,7 +112,15 @@
       {% if post.save_count %}
         <span class="sq-detail-views">🔖 {{ post.save_count }}</span>
       {% endif %}
+      {% if post.remix_count %}
+        <span class="sq-detail-remixes">🔀 Fork × {{ post.remix_count }}</span>
+      {% endif %}
     </div>
+    {% if post.forked_from_id %}
+      <div class="sq-fork-from">
+        🔀 <a href="/square/{{ post.forked_from_id }}">#{{ post.forked_from_id }} の投稿から Fork</a>
+      </div>
+    {% endif %}
 
     {% if post.tags %}
       <div class="sq-tag-row" style="margin-top:10px">
@@ -144,6 +160,31 @@
     <!-- コピー成功トースト -->
     <div id="copyToast" class="sq-copy-toast" style="display:none">
       ✓ クリップボードにコピーしました
+    </div>
+
+    <!-- 市場アクション: Fork / Remix / 保管庫保存 -->
+    <div class="sq-market-actions">
+      <!-- 保管庫保存 (ローカル, 認証不要) -->
+      <button class="sq-market-btn vault" id="vaultSaveBtn">
+        💾 保管庫へ保存
+      </button>
+      {% if user %}
+        <!-- Fork (自分の非公開コピーとして複製) -->
+        {% if not post.is_own %}
+          <button class="sq-market-btn fork" id="forkBtn" data-post-id="{{ post.id }}">
+            🔀 Fork する
+          </button>
+        {% endif %}
+        <!-- Remix (新規投稿フォームに本文を引き継ぐ) -->
+        <a class="sq-market-btn remix" href="/square/new?remix={{ post.id }}">
+          ✏️ Remix して投稿
+        </a>
+      {% else %}
+        <a class="sq-market-btn fork" href="/login?next=/square/{{ post.id }}" style="opacity:0.7">
+          🔀 Fork (ログイン必要)
+        </a>
+      {% endif %}
+      <div class="sq-market-toast" id="marketToast"></div>
     </div>
 
     <!-- AI リンク -->
@@ -345,6 +386,62 @@ document.getElementById('logoutBtn')?.addEventListener('click', async () => {
 document.getElementById('drawerLogoutBtn')?.addEventListener('click', async () => {
   await fetch('/api/auth/logout', { method: 'POST' });
   location.href = '/';
+});
+{% endif %}
+
+// ── 保管庫へ保存 (localStorage, 認証不要) ────────────────────────
+function saveToVault(title, content) {
+  const KEY = 'pg_forge_vault_v1';
+  const MAX = 30;
+  try {
+    const items = JSON.parse(localStorage.getItem(KEY)) || [];
+    items.unshift({
+      id: Date.now(),
+      title: title.slice(0, 60),
+      content,
+      savedAt: new Date().toLocaleDateString('ja-JP'),
+    });
+    if (items.length > MAX) items.length = MAX;
+    localStorage.setItem(KEY, JSON.stringify(items));
+    return true;
+  } catch { return false; }
+}
+function showMarketToast(msg, color) {
+  const el = document.getElementById('marketToast');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.color = color || 'var(--accent-sns)';
+  el.style.display = '';
+  setTimeout(() => { el.style.display = 'none'; }, 2400);
+}
+document.getElementById('vaultSaveBtn')?.addEventListener('click', () => {
+  const title   = {{ post.title | tojson }};
+  const content = document.getElementById('promptDisplay').textContent;
+  if (saveToVault(title, content)) {
+    showMarketToast('💾 保管庫に保存しました');
+  } else {
+    showMarketToast('⚠️ 保存に失敗しました', '#f87171');
+  }
+});
+
+{% if user and not post.is_own %}
+// ── Fork ────────────────────────────────────────────────────────
+document.getElementById('forkBtn')?.addEventListener('click', async () => {
+  const btn = document.getElementById('forkBtn');
+  if (!btn || btn.disabled) return;
+  btn.disabled = true;
+  btn.textContent = '🔀 Fork 中…';
+  try {
+    const res = await fetch(`/api/community/posts/${POST_ID}/fork`, { method: 'POST' });
+    if (!res.ok) throw new Error('fail');
+    const data = await res.json();
+    btn.textContent = '✅ Fork 完了';
+    showMarketToast(`🔀 Fork しました (ID: ${data.id}) — マイページで編集できます`);
+  } catch {
+    btn.textContent = '🔀 Fork する';
+    btn.disabled = false;
+    showMarketToast('⚠️ Fork に失敗しました', '#f87171');
+  }
 });
 {% endif %}
 

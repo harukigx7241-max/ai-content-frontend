@@ -5158,3 +5158,150 @@ img, video, iframe, canvas {
   .diag-tabs { flex-wrap: wrap; }
   .diag-score-row { flex-direction: column; align-items: flex-start; gap: 10px; }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Phase 9 — ギルド掲示板 + テンプレ市場 CSS
+   PopularityTier · ForkBadge · MarketSection · SortRow拡張
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Popularity tier badges on post cards ────────────────────────────── */
+.sq-tier-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.67rem;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 8px;
+  letter-spacing: 0.04em;
+}
+.sq-tier-badge[data-tier="legendary"] {
+  background: linear-gradient(135deg, rgba(251,191,36,0.25), rgba(217,119,6,0.2));
+  border: 1px solid rgba(251,191,36,0.5);
+  color: #fbbf24;
+  text-shadow: 0 0 8px rgba(251,191,36,0.6);
+}
+.sq-tier-badge[data-tier="epic"] {
+  background: rgba(168,85,247,0.2);
+  border: 1px solid rgba(168,85,247,0.45);
+  color: #d8b4fe;
+}
+.sq-tier-badge[data-tier="rare"] {
+  background: rgba(59,130,246,0.18);
+  border: 1px solid rgba(59,130,246,0.4);
+  color: #93c5fd;
+}
+.sq-tier-badge[data-tier="uncommon"] {
+  background: rgba(34,197,94,0.12);
+  border: 1px solid rgba(34,197,94,0.35);
+  color: #86efac;
+}
+/* common: no badge shown */
+
+/* ── Fork indicator badge ────────────────────────────────────────────── */
+.sq-fork-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.68rem;
+  padding: 2px 8px;
+  border-radius: 8px;
+  background: rgba(245,158,11,0.12);
+  border: 1px solid rgba(245,158,11,0.3);
+  color: #fcd34d;
+}
+.sq-fork-from {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.4);
+  margin-top: 6px;
+}
+.sq-fork-from a { color: rgba(168,85,247,0.8); text-decoration: none; }
+.sq-fork-from a:hover { color: #a855f7; }
+
+/* ── Remix count display ─────────────────────────────────────────────── */
+.sq-card-remixes { font-size: 0.72rem; color: rgba(245,158,11,0.8); }
+.sq-detail-remixes { font-size: 0.82rem; color: rgba(245,158,11,0.7); }
+
+/* ── Sort row 拡張 (4ボタン対応) ────────────────────────────────────── */
+.sq-sort-row { flex-wrap: wrap; gap: 5px; }
+.sq-sort-btn {
+  white-space: nowrap;
+  font-size: 0.78rem;
+}
+
+/* ── Market hero banner ──────────────────────────────────────────────── */
+.sq-market-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  background: linear-gradient(135deg, rgba(168,85,247,0.08), rgba(251,191,36,0.06));
+  border: 1px solid rgba(168,85,247,0.2);
+  border-radius: 14px;
+  margin-bottom: 18px;
+}
+.sq-market-banner-icon { font-size: 1.6rem; flex-shrink: 0; }
+.sq-market-banner-body { flex: 1; min-width: 0; }
+.sq-market-banner-title { font-size: 0.88rem; font-weight: 700; color: #e2d9f3; margin-bottom: 2px; }
+.sq-market-banner-sub { font-size: 0.75rem; color: rgba(255,255,255,0.45); }
+
+/* ── Fork / Remix / Vault action buttons on detail page ─────────────── */
+.sq-market-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255,255,255,0.07);
+}
+.sq-market-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  border: none;
+  text-decoration: none;
+}
+.sq-market-btn:hover { transform: translateY(-1px); }
+.sq-market-btn.fork {
+  background: rgba(168,85,247,0.18);
+  border: 1px solid rgba(168,85,247,0.35);
+  color: #d8b4fe;
+}
+.sq-market-btn.fork:hover { background: rgba(168,85,247,0.3); }
+.sq-market-btn.remix {
+  background: rgba(245,158,11,0.15);
+  border: 1px solid rgba(245,158,11,0.3);
+  color: #fcd34d;
+}
+.sq-market-btn.remix:hover { background: rgba(245,158,11,0.28); }
+.sq-market-btn.vault {
+  background: rgba(34,197,94,0.12);
+  border: 1px solid rgba(34,197,94,0.3);
+  color: #86efac;
+}
+.sq-market-btn.vault:hover { background: rgba(34,197,94,0.24); }
+.sq-market-toast {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.55);
+  margin-top: 8px;
+  display: none;
+}
+
+/* ── Featured section rebrand (market) ──────────────────────────────── */
+.sq-featured-head { align-items: flex-start; gap: 8px; flex-wrap: wrap; }
+.sq-featured-saves { font-size: 0.75rem; color: rgba(59,130,246,0.85); margin-left: 4px; }
+.sq-featured-remixes { font-size: 0.75rem; color: rgba(245,158,11,0.75); margin-left: 4px; }
+
+/* ── Responsive ──────────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  .sq-sort-row { justify-content: flex-start; }
+  .sq-sort-btn { font-size: 0.72rem; padding: 5px 10px; }
+  .sq-market-actions { gap: 6px; }
+  .sq-market-btn { padding: 7px 12px; font-size: 0.76rem; }
+}

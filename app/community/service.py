@@ -9,18 +9,28 @@ app/community/service.py — 公開広場 サービス層
   - 閲覧数インクリメント (view_count)
   - コピーアクション受け皿 (将来 use_count++)
   - いいね / 保存 トグル (toggle_reaction)
+  - フォーク (fork_post) — Phase 9
+
+sort 対応 (Phase 9):
+  new      — 新着順 (created_at DESC)
+  popular  — いいね数降順 (like_count DESC)
+  saves    — 保存数降順 (save_count DESC)
+  trending — 注目順 (like×2 + save×1.5 + view×0.1 複合スコア)
+
+popularity_tier (Phase 9):
+  common / uncommon / rare / epic / legendary
+  総合スコア = like×2 + save×1.5 + view×0.1 を元に 5 段階
 
 将来拡張:
   TODO: Phase N+ use_count のインクリメント + CopyLog テーブル
   TODO: Phase N+ moderation_status によるフィルタリング
-  TODO: Phase N+ ランキング (view_count / like_count 降順ソート)
   TODO: Phase N+ 管理者おすすめラベルによるフィルタリング
 """
 from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import HTTPException
-from sqlalchemy import func, or_, select
+from sqlalchemy import func, or_, select, text
 from sqlalchemy.orm import Session
 
 from app.community.schemas import PostCreateRequest, PostUpdateRequest
@@ -32,6 +42,20 @@ def _now() -> datetime:
     return datetime.now(timezone.utc)
 
 
+def _popularity_tier(like: int, save: int, view: int) -> str:
+    """総合スコアから 5 段階のレア度ティアを返す。"""
+    score = like * 2 + save * 1.5 + view * 0.1
+    if score >= 50:
+        return "legendary"
+    if score >= 20:
+        return "epic"
+    if score >= 8:
+        return "rare"
+    if score >= 3:
+        return "uncommon"
+    return "common"
+
+
 def _to_summary_dict(
     post: CommunityPost,
     author_name: str,
@@ -39,6 +63,10 @@ def _to_summary_dict(
     user_liked: bool = False,
     user_saved: bool = False,
 ) -> dict:
+    like  = post.like_count  or 0
+    save  = post.save_count  or 0
+    view  = post.view_count  or 0
+    remix = getattr(post, "remix_count", 0) or 0
     return {
         "id":              post.id,
         "user_id":         post.user_id,
@@ -50,9 +78,12 @@ def _to_summary_dict(
         "target_platform": post.target_platform,
         "tags":            post.tags,
         "visibility":      post.visibility,
-        "view_count":      post.view_count,
-        "like_count":      post.like_count or 0,
-        "save_count":      post.save_count or 0,
+        "view_count":      view,
+        "like_count":      like,
+        "save_count":      save,
+        "remix_count":     remix,
+        "forked_from_id":  getattr(post, "forked_from_id", None),
+        "popularity_tier": _popularity_tier(like, save, view),
         "user_liked":      user_liked,
         "user_saved":      user_saved,
         "created_at":      post.created_at,
@@ -86,12 +117,53 @@ def create_post(db: Session, user_id: int, data: PostCreateRequest) -> dict:
         target_platform=data.target_platform,
         tags=data.tags,
         visibility=data.visibility,
+        forked_from_id=getattr(data, "forked_from_id", None),
     )
     db.add(post)
     db.commit()
     db.refresh(post)
     author = db.get(User, user_id)
     return _to_detail_dict(post, author.display_name if author else "不明", is_own=True)
+
+
+# ── フォーク ──────────────────────────────────────────────────────
+
+def fork_post(db: Session, post_id: int, user_id: int) -> dict:
+    """
+    投稿をフォークする (自分用コピーとして新規作成)。
+    元投稿の remix_count を +1 する。
+    返り値: 新規作成した投稿の detail_dict。
+    """
+    original = db.get(CommunityPost, post_id)
+    if not original:
+        raise HTTPException(status_code=404, detail="投稿が見つかりません")
+    if original.visibility == "private" and original.user_id != user_id:
+        raise HTTPException(status_code=404, detail="投稿が見つかりません")
+
+    forked = CommunityPost(
+        user_id=user_id,
+        title=f"【Fork】{original.title}"[:200],
+        description=original.description,
+        prompt_body=original.prompt_body,
+        category=original.category,
+        purpose=original.purpose,
+        target_platform=original.target_platform,
+        tags=original.tags,
+        visibility="private",   # フォーク直後は非公開 (本人が公開設定する)
+        forked_from_id=post_id,
+    )
+    db.add(forked)
+
+    # 元投稿の remix_count +1
+    try:
+        original.remix_count = (getattr(original, "remix_count", 0) or 0) + 1
+    except Exception:
+        pass
+
+    db.commit()
+    db.refresh(forked)
+    author = db.get(User, user_id)
+    return _to_detail_dict(forked, author.display_name if author else "不明", is_own=True)
 
 
 # ── 公開投稿一覧 ──────────────────────────────────────────────────
@@ -109,16 +181,28 @@ def list_posts(
 ) -> dict:
     """
     公開投稿一覧を返す。
-    sort: "new" (新着順) | "popular" (いいね数降順)
-    キーワード検索は title / description / tags に対して LIKE 検索。
+
+    sort:
+      "new"      — 新着順 (created_at DESC)
+      "popular"  — いいね数降順 (like_count DESC)
+      "saves"    — 保存数降順 (save_count DESC)
+      "trending" — 注目順 (like×2 + save×1.5 + view×0.1 複合)
+
     将来: full-text search エンジンへの置き換えポイント (TODO: Phase N+)
     将来: moderation_status == "hidden" のフィルタリング (TODO: Phase N+)
     """
-    order_col = (
-        CommunityPost.like_count.desc()
-        if sort == "popular"
-        else CommunityPost.created_at.desc()
-    )
+    if sort == "popular":
+        order_col = CommunityPost.like_count.desc()
+    elif sort == "saves":
+        order_col = CommunityPost.save_count.desc()
+    elif sort == "trending":
+        order_col = text(
+            "(community_posts.like_count * 2 + community_posts.save_count * 1 "
+            "+ community_posts.view_count / 10) DESC"
+        )
+    else:
+        order_col = CommunityPost.created_at.desc()
+
     stmt = (
         select(CommunityPost, User.display_name.label("author_name"))
         .join(User, CommunityPost.user_id == User.id)
@@ -214,7 +298,6 @@ def get_post(db: Session, post_id: int, current_user_id: Optional[int] = None) -
         raise HTTPException(status_code=404, detail="投稿が見つかりません")
     author = db.get(User, post.user_id)
 
-    # Fetch user reactions
     user_liked = user_saved = False
     if current_user_id:
         reactions = db.execute(
@@ -284,10 +367,7 @@ def delete_post(db: Session, post_id: int, user_id: int) -> None:
 # ── 閲覧数インクリメント ──────────────────────────────────────────
 
 def increment_view(db: Session, post_id: int) -> None:
-    """
-    閲覧数を +1 する。存在しない / 非公開の場合は静かに無視。
-    将来: ユニーク閲覧数のカウントや Redis キャッシュへの移行ポイント (TODO: Phase N+)
-    """
+    """閲覧数を +1 する。存在しない / 非公開の場合は静かに無視。"""
     post = db.get(CommunityPost, post_id)
     if post and post.visibility == "public":
         post.view_count = (post.view_count or 0) + 1
@@ -298,10 +378,8 @@ def increment_view(db: Session, post_id: int) -> None:
 
 def record_copy(db: Session, post_id: int) -> Optional[int]:
     """
-    コピーアクションの受け皿。投稿作者の user_id を返す (XP 付与などに利用)。
-    存在しない / 非公開の投稿は None を返す。
-    TODO: Phase N+ use_count インクリメント
-    TODO: Phase N+ CopyLog テーブルへのイベント記録 (ユーザー・日時)
+    コピーアクションの受け皿。投稿作者の user_id を返す。
+    TODO: Phase N+ use_count インクリメント + CopyLog テーブル
     """
     post = db.get(CommunityPost, post_id)
     if post and post.visibility == "public":
@@ -315,18 +393,11 @@ def toggle_reaction(
     db: Session,
     post_id: int,
     user_id: int,
-    reaction_type: str,  # "like" | "save"
+    reaction_type: str,
 ) -> dict:
     """
     いいね / 保存 をトグルする。
-
-    - 既存リアクションがあれば削除 (unlike/unsave)、count を -1
-    - なければ追加 (like/save)、count を +1
-    - 自分の投稿へのリアクションも許容する (UX 上の制限は UI 側で行う)
-
-    Returns:
-        {"active": bool, "count": int, "author_id": int}
-        author_id はルーター側での XP 付与に使用する。
+    Returns: {"active": bool, "count": int, "author_id": int}
     """
     post = db.get(CommunityPost, post_id)
     if not post:
@@ -342,7 +413,6 @@ def toggle_reaction(
     ).scalar_one_or_none()
 
     if existing:
-        # Toggle OFF (unlike / unsave)
         db.delete(existing)
         if reaction_type == "like":
             post.like_count = max(0, (post.like_count or 0) - 1)
@@ -353,7 +423,6 @@ def toggle_reaction(
         db.commit()
         return {"active": False, "count": count, "author_id": post.user_id}
     else:
-        # Toggle ON (like / save)
         reaction = PostReaction(
             post_id=post_id,
             user_id=user_id,
