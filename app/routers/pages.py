@@ -63,10 +63,14 @@ def admin_page(
     """管理者ダッシュボード。未ログインは /login へ。管理者以外は / へ。"""
     if not current_user:
         return RedirectResponse("/login?next=/admin", status_code=302)
-    if current_user.role != "admin":
+    from app.core.roles import ADMIN_ROLES, HQ_ROLES
+    if current_user.role not in ADMIN_ROLES:
         return RedirectResponse("/", status_code=302)
     return templates.TemplateResponse(
         request=request,
         name="admin/dashboard.html",
-        context={"user": current_user},
+        context={
+            "user": current_user,
+            "is_hq": current_user.role in HQ_ROLES,
+        },
     )

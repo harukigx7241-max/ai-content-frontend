@@ -63,6 +63,7 @@
     <button class="admin-filter-btn"        data-panel="congestion" role="tab">🌡 混雑モニター</button>
     <button class="admin-filter-btn"        data-panel="services"   role="tab">⚙ サービス状態</button>
     <button class="admin-filter-btn"        data-panel="apictrl"    role="tab">🎛 API制御</button>
+    <button class="admin-filter-btn"        data-panel="usage"      role="tab">📊 使用量</button>
     <button class="admin-filter-btn"        data-panel="settings"   role="tab">システム設定</button>
   </div>
 
@@ -468,6 +469,127 @@
     </p>
   </section>
 
+  <!-- ═══ パネル: 使用量ダッシュボード ═══ -->
+  <section id="panel-usage" style="display:none">
+
+    <!-- ヘッダー行 -->
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:0.85rem;color:var(--text-muted)">
+          API トークン使用量・概算コスト
+          <span class="usage-mode-badge mock" id="usageModeBadge" style="margin-left:8px">📋 モックデータ</span>
+        </div>
+        <div style="font-size:0.7rem;color:var(--text-muted);margin-top:2px" id="usageSnapshotAt"></div>
+      </div>
+      <div class="usage-period-tabs">
+        <button class="usage-period-tab active" data-period="today"   onclick="switchUsagePeriod('today')">今日</button>
+        <button class="usage-period-tab"        data-period="monthly" onclick="switchUsagePeriod('monthly')">今月</button>
+      </div>
+      <button onclick="loadUsage(true)" style="background:none;border:1px solid rgba(255,255,255,0.2);border-radius:6px;padding:3px 12px;font-size:0.72rem;color:var(--text-muted);cursor:pointer">更新</button>
+    </div>
+
+    <p id="usageLoading" style="color:var(--text-muted);font-size:0.85rem">読み込み中...</p>
+    <p id="usageError"   style="display:none;color:var(--text-muted);font-size:0.82rem">読み込みに失敗しました</p>
+
+    <div id="usageContent" style="display:none">
+
+      <!-- KPI カード -->
+      <div class="usage-kpi-grid">
+        <div class="usage-kpi-card accent-purple">
+          <div class="usage-kpi-label">入力トークン</div>
+          <div class="usage-kpi-value" id="kpiInputTokens">—</div>
+          <div class="usage-kpi-sub" id="kpiInputSub"></div>
+        </div>
+        <div class="usage-kpi-card accent-cyan">
+          <div class="usage-kpi-label">出力トークン</div>
+          <div class="usage-kpi-value" id="kpiOutputTokens">—</div>
+          <div class="usage-kpi-sub" id="kpiOutputSub"></div>
+        </div>
+        <div class="usage-kpi-card accent-gold">
+          <div class="usage-kpi-label">概算コスト (USD)</div>
+          <div class="usage-kpi-value" id="kpiCost">—</div>
+          <div class="usage-kpi-sub" id="kpiCostSub"></div>
+        </div>
+        <div class="usage-kpi-card accent-green">
+          <div class="usage-kpi-label">API呼び出し / Web検索</div>
+          <div class="usage-kpi-value" id="kpiCalls">—</div>
+          <div class="usage-kpi-sub" id="kpiCallsSub"></div>
+        </div>
+      </div>
+
+      <!-- 機能別使用量ランキング -->
+      <div class="mypage-section-title" style="margin-bottom:10px">🔥 高コスト機能ランキング</div>
+      <div style="overflow-x:auto;margin-bottom:24px">
+        <table class="usage-table" id="usageTopTable">
+          <thead>
+            <tr>
+              <th class="rank-col">#</th>
+              <th>機能</th>
+              <th style="text-align:right">トークン</th>
+              <th style="text-align:right">呼び出し</th>
+              <th style="text-align:right" class="cost-col">概算コスト</th>
+            </tr>
+          </thead>
+          <tbody id="usageTopBody"></tbody>
+        </table>
+      </div>
+
+      <!-- 機能別バーグラフ -->
+      <div class="mypage-section-title" style="margin-bottom:10px">📊 機能別使用量</div>
+      <div class="usage-bar-list" id="usageFeatureBars" style="margin-bottom:24px"></div>
+
+      <!-- モデル別内訳 -->
+      <div class="mypage-section-title" style="margin-bottom:10px">🤖 モデル別使用量</div>
+      <div class="usage-model-grid" id="usageModelGrid" style="margin-bottom:24px"></div>
+
+      <!-- HQ 拡張エリア (is_hq=true のみ表示) -->
+      <div class="usage-hq-section" id="usageHqSection" style="display:none">
+        <div class="usage-hq-title">
+          🏛 管理本部専用分析
+          <span class="usage-hq-badge">HQ ONLY</span>
+        </div>
+
+        <!-- 予算消化率 -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+          <div class="budget-card" id="hqDailyCard">
+            <div class="budget-card-title">日次消化率</div>
+            <div class="budget-card-value" id="hqDailyPct">0%</div>
+            <div class="budget-bar-track"><div class="budget-bar-fill" id="hqDailyBar" style="width:0%"></div></div>
+          </div>
+          <div class="budget-card" id="hqMonthCard">
+            <div class="budget-card-title">月次消化率</div>
+            <div class="budget-card-value" id="hqMonthPct">0%</div>
+            <div class="budget-bar-track"><div class="budget-bar-fill" id="hqMonthBar" style="width:0%"></div></div>
+          </div>
+        </div>
+
+        <!-- 月末予測コスト -->
+        <div style="font-size:0.8rem;color:var(--text-secondary);margin-bottom:14px">
+          📈 月末予測コスト: <span id="hqProjected" style="color:#c084fc;font-weight:700">—</span>
+        </div>
+
+        <!-- 直近7日推移スパークライン -->
+        <div class="mypage-section-title" style="margin-bottom:8px;font-size:0.78rem">直近7日のコスト推移</div>
+        <div class="usage-sparkline" id="hqSparkline"></div>
+
+        <!-- 閾値アラート -->
+        <div class="mypage-section-title" style="margin-bottom:8px;font-size:0.78rem">⚠ 閾値アラート</div>
+        <div class="usage-alert-list" id="hqAlertList" style="margin-bottom:14px"></div>
+
+        <!-- 危険機能 -->
+        <div class="mypage-section-title" style="margin-bottom:8px;font-size:0.78rem">🚨 危険機能 (高コスト + 高頻度)</div>
+        <div id="hqDangerFeatures" style="margin-bottom:14px;font-size:0.8rem;color:var(--text-secondary)">なし</div>
+
+        <!-- 自動停止履歴 -->
+        <div class="mypage-section-title" style="margin-bottom:8px;font-size:0.78rem">🛑 自動停止履歴</div>
+        <div class="usage-stop-list" id="hqStopHistory">
+          <div style="color:var(--text-muted);font-size:0.78rem">停止履歴なし</div>
+        </div>
+      </div>
+
+    </div><!-- /usageContent -->
+  </section>
+
   <!-- ═══ パネル: システム設定 ═══ -->
   <section id="panel-settings" style="display:none">
     <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:24px">
@@ -531,7 +653,7 @@
 const STATUS_LABELS = {pending:'承認待ち', approved:'承認済み', rejected:'却下', suspended:'停止中'};
 
 // ── タブ切替 ──────────────────────────────────────────────────────
-const ALL_PANELS = ['stats', 'users', 'analytics', 'feedback', 'trends', 'congestion', 'services', 'apictrl', 'settings'];
+const ALL_PANELS = ['stats', 'users', 'analytics', 'feedback', 'trends', 'congestion', 'services', 'apictrl', 'usage', 'settings'];
 let currentPanel = 'stats';
 document.querySelectorAll('[data-panel]').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -548,6 +670,7 @@ document.querySelectorAll('[data-panel]').forEach(btn => {
     if (currentPanel === 'congestion')                      loadCongestion();
     if (currentPanel === 'services'   && !servicesLoaded)   loadServices();
     if (currentPanel === 'apictrl'    && !ctrlLoaded)       loadApiControl();
+    if (currentPanel === 'usage'      && !usageLoaded)      loadUsage();
     if (currentPanel === 'settings'   && !settingsLoaded)   loadSettings();
   });
 });
@@ -1089,6 +1212,204 @@ document.querySelectorAll('[data-svc-filter]').forEach(btn => {
     if (_svcData.length) _renderServices();
   });
 });
+
+// ── 使用量ダッシュボードパネル ────────────────────────────────────
+let usageLoaded = false;
+let _usageData = {};
+let _usagePeriod = 'today';
+
+function fmtTok(n) {
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(2) + 'M';
+  if (n >= 1_000)     return (n / 1_000).toFixed(1) + 'K';
+  return String(n);
+}
+function fmtCost(usd) { return '$' + (usd || 0).toFixed(4); }
+
+async function loadUsage(force = false) {
+  if (usageLoaded && !force) return;
+  document.getElementById('usageLoading').style.display = '';
+  document.getElementById('usageError').style.display = 'none';
+  document.getElementById('usageContent').style.display = 'none';
+  try {
+    const res = await fetch('/api/admin/usage');
+    if (!res.ok) throw new Error();
+    _usageData = await res.json();
+    _renderUsage();
+    usageLoaded = true;
+  } catch {
+    document.getElementById('usageLoading').style.display = 'none';
+    document.getElementById('usageError').style.display = '';
+  }
+}
+
+function switchUsagePeriod(period) {
+  _usagePeriod = period;
+  document.querySelectorAll('.usage-period-tab').forEach(b => {
+    b.classList.toggle('active', b.dataset.period === period);
+  });
+  if (_usageData.today) _renderUsageKpi();
+}
+
+function _renderUsage() {
+  const d = _usageData;
+
+  // モードバッジ
+  const badge = document.getElementById('usageModeBadge');
+  badge.textContent = d.mode === 'live' ? '✅ ライブデータ' : '📋 モックデータ';
+  badge.className = 'usage-mode-badge ' + (d.mode === 'live' ? 'live' : 'mock');
+
+  // スナップショット時刻
+  if (d.snapshot_at) {
+    document.getElementById('usageSnapshotAt').textContent =
+      '更新: ' + new Date(d.snapshot_at).toLocaleString('ja-JP');
+  }
+
+  _renderUsageKpi();
+  _renderTopTable(d.top_cost_features || []);
+  _renderFeatureBars(d.feature_breakdown || []);
+  _renderModelGrid(d.model_breakdown || []);
+
+  // HQ セクション
+  if (d.hq) {
+    _renderHqSection(d.hq);
+    document.getElementById('usageHqSection').style.display = '';
+  } else {
+    document.getElementById('usageHqSection').style.display = 'none';
+  }
+
+  document.getElementById('usageLoading').style.display = 'none';
+  document.getElementById('usageContent').style.display = '';
+}
+
+function _renderUsageKpi() {
+  const period = _usageData[_usagePeriod] || {};
+  const tok = period.tokens || {};
+  const other_period = _usagePeriod === 'today' ? _usageData.monthly : _usageData.today;
+  const other_tok = (other_period || {}).tokens || {};
+  const other_label = _usagePeriod === 'today' ? '今月' : '今日';
+
+  document.getElementById('kpiInputTokens').textContent  = fmtTok(tok.input  || 0);
+  document.getElementById('kpiOutputTokens').textContent = fmtTok(tok.output || 0);
+  document.getElementById('kpiCost').textContent         = fmtCost(period.cost_usd);
+  document.getElementById('kpiCalls').textContent        = `${period.api_calls || 0} / ${period.web_searches || 0}`;
+
+  document.getElementById('kpiInputSub').textContent    = `${other_label}: ${fmtTok(other_tok.input  || 0)}`;
+  document.getElementById('kpiOutputSub').textContent   = `${other_label}: ${fmtTok(other_tok.output || 0)}`;
+  document.getElementById('kpiCostSub').textContent     = `${other_label}: ${fmtCost((other_period || {}).cost_usd)}`;
+  document.getElementById('kpiCallsSub').textContent    = `呼び出し / Web検索 (回)`;
+}
+
+function _renderTopTable(features) {
+  const body = document.getElementById('usageTopBody');
+  body.innerHTML = features.map((f, i) => `
+    <tr>
+      <td class="rank-col">${i + 1}</td>
+      <td class="label-col">
+        ${esc(f.label)}
+        ${f.is_high_cost ? '<span class="hc-badge">高コスト</span>' : ''}
+      </td>
+      <td style="text-align:right">${fmtTok(f.total_tokens || 0)}</td>
+      <td style="text-align:right">${f.calls || 0}</td>
+      <td style="text-align:right" class="cost-col">${fmtCost(f.cost_usd)}</td>
+    </tr>`).join('');
+}
+
+function _renderFeatureBars(features) {
+  const container = document.getElementById('usageFeatureBars');
+  if (!features.length) { container.innerHTML = '<p style="color:var(--text-muted);font-size:0.8rem">データなし</p>'; return; }
+  const maxTokens = Math.max(...features.map(f => f.total_tokens || 0), 1);
+  const colors = ['purple','cyan','gold','red','purple','cyan'];
+  container.innerHTML = features.map((f, i) => {
+    const pct = ((f.total_tokens || 0) / maxTokens * 100).toFixed(1);
+    return `
+      <div class="usage-bar-row">
+        <div class="usage-bar-name" title="${esc(f.label)}">${esc(f.label)}</div>
+        <div class="usage-bar-track">
+          <div class="usage-bar-fill ${colors[i % colors.length]}" style="width:${pct}%"></div>
+        </div>
+        <div class="usage-bar-value">${fmtTok(f.total_tokens || 0)}</div>
+      </div>`;
+  }).join('');
+}
+
+function _renderModelGrid(models) {
+  const grid = document.getElementById('usageModelGrid');
+  if (!models.length) { grid.innerHTML = '<p style="color:var(--text-muted);font-size:0.8rem">データなし</p>'; return; }
+  const providerIcons = { anthropic: '🔵', openai: '🟢', gemini: '🟡', none: '⚫' };
+  grid.innerHTML = models.map(m => `
+    <div class="usage-model-card">
+      <div class="usage-model-name">${esc(m.model)}</div>
+      <div class="usage-model-provider">${providerIcons[m.provider] || '🔘'} ${esc(m.provider)} · ${m.calls || 0} 回</div>
+      <div class="usage-model-tokens">${fmtTok(m.total_tokens || 0)} tok</div>
+      <div class="usage-model-cost">${fmtCost(m.cost_usd)}</div>
+    </div>`).join('');
+}
+
+function _renderHqSection(hq) {
+  // 予算消化率バー
+  const setBar = (barId, cardId, pct) => {
+    const bar = document.getElementById(barId);
+    const cls = pct >= 100 ? 'critical' : pct >= 80 ? 'warn' : '';
+    bar.style.width = Math.min(pct, 100) + '%';
+    bar.className = 'budget-bar-fill' + (cls ? ' ' + cls : '');
+    document.getElementById(cardId).className = 'budget-card' + (cls ? ' ' + cls : '');
+  };
+  const daily_pct   = hq.budget_daily_pct   || 0;
+  const monthly_pct = hq.budget_monthly_pct || 0;
+  document.getElementById('hqDailyPct').textContent  = daily_pct.toFixed(1) + '%';
+  document.getElementById('hqMonthPct').textContent  = monthly_pct.toFixed(1) + '%';
+  setBar('hqDailyBar',  'hqDailyCard',  daily_pct);
+  setBar('hqMonthBar',  'hqMonthCard',  monthly_pct);
+
+  // 月末予測コスト
+  document.getElementById('hqProjected').textContent = fmtCost(hq.projected_monthly_cost_usd);
+
+  // スパークライン (直近7日)
+  const sparkline = document.getElementById('hqSparkline');
+  const trend = hq.cost_trend_7d || [];
+  const maxVal = Math.max(...trend, 0.000001);
+  sparkline.innerHTML = trend.map((v, i) => {
+    const h = Math.max(3, (v / maxVal * 44)).toFixed(0);
+    const days = ['7日前','6日前','5日前','4日前','3日前','昨日','今日'];
+    return `<div class="usage-spark-bar" style="height:${h}px" data-val="${fmtCost(v)}" title="${days[i]}: ${fmtCost(v)}"></div>`;
+  }).join('');
+
+  // 閾値アラート
+  const alerts = hq.threshold_alerts || [];
+  const alertList = document.getElementById('hqAlertList');
+  if (!alerts.length) {
+    alertList.innerHTML = '<div class="usage-alert-item safe">✅ 閾値内で正常動作中</div>';
+  } else {
+    alertList.innerHTML = alerts.map(a =>
+      `<div class="usage-alert-item warn">⚠ ${esc(a)}</div>`
+    ).join('');
+  }
+
+  // 危険機能
+  const danger = hq.danger_features || [];
+  document.getElementById('hqDangerFeatures').innerHTML = danger.length
+    ? danger.map(d => `<span class="hc-badge" style="display:inline-block;margin:2px">${esc(d)}</span>`).join('')
+    : '<span style="color:var(--text-muted)">なし</span>';
+
+  // 自動停止履歴
+  const history = hq.auto_stop_history || [];
+  const stopList = document.getElementById('hqStopHistory');
+  if (!history.length) {
+    stopList.innerHTML = '<div style="color:var(--text-muted);font-size:0.78rem">停止履歴なし</div>';
+  } else {
+    stopList.innerHTML = history.slice().reverse().map(e => `
+      <div class="usage-stop-row">
+        <div class="usage-stop-time">${esc(new Date(e.timestamp).toLocaleString('ja-JP'))}</div>
+        <div class="usage-stop-reason">
+          ${esc(e.reason_label)}
+          ${e.services_affected && e.services_affected.length
+            ? `<span style="color:var(--text-muted)"> (${e.services_affected.length}件)</span>`
+            : ''}
+        </div>
+        <div class="usage-stop-action">${esc(e.action)}</div>
+      </div>`).join('');
+  }
+}
 
 // ── API 制御センターパネル ────────────────────────────────────────
 let ctrlLoaded = false;

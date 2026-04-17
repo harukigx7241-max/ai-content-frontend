@@ -224,6 +224,9 @@ class ApiControlService:
     flags._runtime_overrides を通じて FeatureFlags と連携する。
     """
 
+    # 自動停止履歴 (in-memory, Phase 16 で DB 永続化予定)
+    _stop_history: list = []
+
     # ── 個別トグル ────────────────────────────────────────────────
 
     def toggle_service(self, service_name: str, enabled: bool) -> dict:
@@ -285,6 +288,17 @@ class ApiControlService:
                     "label": svc.label,
                     "enabled": target,
                 })
+
+        # 停止イベントを記録
+        stopped = [a["service"] for a in applied if not a["enabled"]]
+        if stopped:
+            self._record_stop_event(
+                reason="manual_preset",
+                reason_label=f'バッチプリセット「{BATCH_PRESETS[preset]["label"]}」',
+                action="disable",
+                services_affected=stopped,
+                triggered_by="admin",
+            )
 
         return {
             "preset": preset,
@@ -350,6 +364,33 @@ class ApiControlService:
         if budget.is_over_limit and budget.over_limit_action == "disable":
             return False
         return True
+
+    def get_stop_history(self) -> list:
+        """自動停止・手動停止の履歴を返す (UsageDashboardService 用)。"""
+        from app.services.usage_dashboard_service import AutoStopEvent
+        return [AutoStopEvent(**e) for e in self._stop_history]
+
+    def _record_stop_event(
+        self,
+        reason: str,
+        reason_label: str,
+        action: str,
+        services_affected: list[str],
+        triggered_by: str = "system",
+    ) -> None:
+        """停止イベントを記録する (Phase 16 で DB 永続化予定)。"""
+        from datetime import datetime
+        self._stop_history.append({
+            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "reason": reason,
+            "reason_label": reason_label,
+            "action": action,
+            "services_affected": services_affected,
+            "triggered_by": triggered_by,
+        })
+        # 最新 50 件のみ保持
+        if len(self._stop_history) > 50:
+            self._stop_history = self._stop_history[-50:]
 
     def check_budget_for_service(self, service_name: str) -> dict:
         """

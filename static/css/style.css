@@ -6106,3 +6106,280 @@ img, video, iframe, canvas {
   cursor: pointer;
 }
 .ctrl-override-badge:hover { background: rgba(129,140,248,0.25); }
+
+/* ═══════════════════════════════════════════════════════════════
+   Phase 14 — 使用量ダッシュボード UI
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── KPI カード (4列) ─────────────────────────────────────────── */
+.usage-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+@media (max-width: 800px) { .usage-kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 480px) { .usage-kpi-grid { grid-template-columns: 1fr; } }
+
+.usage-kpi-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 14px 16px;
+  position: relative;
+  overflow: hidden;
+}
+.usage-kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--kpi-accent, rgba(168,85,247,0.6));
+}
+.usage-kpi-card.accent-purple  { --kpi-accent: linear-gradient(90deg,#a855f7,#818cf8); }
+.usage-kpi-card.accent-cyan    { --kpi-accent: linear-gradient(90deg,#06b6d4,#34d399); }
+.usage-kpi-card.accent-gold    { --kpi-accent: linear-gradient(90deg,#f59e0b,#fbbf24); }
+.usage-kpi-card.accent-green   { --kpi-accent: #34d399; }
+
+.usage-kpi-label { font-size: 0.73rem; color: var(--text-muted); margin-bottom: 4px; font-weight: 600; letter-spacing: 0.04em; }
+.usage-kpi-value { font-size: 1.3rem; font-weight: 800; color: var(--text-primary); margin-bottom: 2px; }
+.usage-kpi-sub   { font-size: 0.7rem; color: var(--text-muted); }
+
+/* ── 期間切替タブ ────────────────────────────────────────────── */
+.usage-period-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.usage-period-tab {
+  padding: 5px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.usage-period-tab.active,
+.usage-period-tab:hover {
+  background: rgba(168,85,247,0.15);
+  border-color: rgba(168,85,247,0.4);
+  color: #c084fc;
+}
+
+/* ── CSS 横棒グラフ ─────────────────────────────────────────── */
+.usage-bar-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.usage-bar-row {
+  display: grid;
+  grid-template-columns: 140px 1fr 80px;
+  align-items: center;
+  gap: 10px;
+}
+@media (max-width: 500px) {
+  .usage-bar-row { grid-template-columns: 100px 1fr 60px; }
+}
+.usage-bar-name {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.usage-bar-track {
+  height: 8px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.usage-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.7s cubic-bezier(.4,0,.2,1);
+}
+.usage-bar-fill.purple { background: linear-gradient(90deg,#a855f7,#818cf8); }
+.usage-bar-fill.cyan   { background: linear-gradient(90deg,#06b6d4,#34d399); }
+.usage-bar-fill.gold   { background: linear-gradient(90deg,#f59e0b,#fbbf24); }
+.usage-bar-fill.red    { background: linear-gradient(90deg,#f97316,#f87171); }
+.usage-bar-value {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* ── 機能別テーブル ─────────────────────────────────────────── */
+.usage-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+.usage-table th {
+  text-align: left;
+  padding: 6px 10px;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.usage-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  color: var(--text-secondary);
+}
+.usage-table tr:last-child td { border-bottom: none; }
+.usage-table tr:hover td { background: rgba(255,255,255,0.02); }
+.usage-table .rank-col  { color: var(--text-muted); font-size: 0.7rem; width: 28px; }
+.usage-table .label-col { color: var(--text-primary); font-weight: 600; }
+.usage-table .cost-col  { color: #34d399; font-family: monospace; font-size: 0.78rem; }
+.usage-table .hc-badge  {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 0.64rem;
+  background: rgba(249,115,22,0.15);
+  color: #fb923c;
+  border: 1px solid rgba(249,115,22,0.3);
+  margin-left: 4px;
+}
+
+/* ── モデル別ドーナツ代替 (CSS バー) ────────────────────────── */
+.usage-model-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.usage-model-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 12px 14px;
+}
+.usage-model-name    { font-size: 0.78rem; font-weight: 700; color: var(--text-primary); margin-bottom: 2px; }
+.usage-model-provider{ font-size: 0.68rem; color: var(--text-muted); margin-bottom: 8px; }
+.usage-model-tokens  { font-size: 0.85rem; font-weight: 700; color: #a78bfa; }
+.usage-model-cost    { font-size: 0.72rem; color: var(--text-muted); font-family: monospace; }
+
+/* ── HQ 拡張エリア ──────────────────────────────────────────── */
+.usage-hq-section {
+  margin-top: 28px;
+  padding: 18px 20px;
+  background: rgba(168,85,247,0.05);
+  border: 1px solid rgba(168,85,247,0.2);
+  border-radius: 14px;
+}
+.usage-hq-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #c084fc;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.usage-hq-badge {
+  font-size: 0.65rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(168,85,247,0.2);
+  border: 1px solid rgba(168,85,247,0.4);
+  color: #c084fc;
+}
+
+/* ── 7日コスト推移スパークライン (CSS) ─────────────────────── */
+.usage-sparkline {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 48px;
+  margin-bottom: 12px;
+}
+.usage-spark-bar {
+  flex: 1;
+  border-radius: 3px 3px 0 0;
+  background: rgba(168,85,247,0.4);
+  transition: height 0.5s ease;
+  min-height: 3px;
+  position: relative;
+}
+.usage-spark-bar:hover { background: rgba(168,85,247,0.7); }
+.usage-spark-bar::after {
+  content: attr(data-val);
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.6rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  display: none;
+}
+.usage-spark-bar:hover::after { display: block; }
+
+/* ── 警告バナー (HQ) ─────────────────────────────────────────── */
+.usage-alert-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.usage-alert-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border-radius: 7px;
+  font-size: 0.78rem;
+}
+.usage-alert-item.warn     { background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.3); color: #fbbf24; }
+.usage-alert-item.critical { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.35); color: #f87171; }
+.usage-alert-item.safe     { background: rgba(52,211,153,0.08); border: 1px solid rgba(52,211,153,0.25); color: #34d399; }
+
+/* ── 自動停止履歴テーブル ──────────────────────────────────── */
+.usage-stop-list {
+  font-size: 0.78rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.usage-stop-row {
+  display: grid;
+  grid-template-columns: 130px 1fr auto;
+  align-items: start;
+  gap: 8px;
+  padding: 6px 10px;
+  background: rgba(255,255,255,0.02);
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.usage-stop-time   { color: var(--text-muted); font-size: 0.7rem; font-family: monospace; }
+.usage-stop-reason { color: var(--text-secondary); }
+.usage-stop-action {
+  font-size: 0.68rem;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: rgba(249,115,22,0.15);
+  color: #fb923c;
+  border: 1px solid rgba(249,115,22,0.3);
+  white-space: nowrap;
+}
+
+/* ── モードバッジ (mock/live) ────────────────────────────────── */
+.usage-mode-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+.usage-mode-badge.mock { background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.3); color: #fbbf24; }
+.usage-mode-badge.live { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.3); color: #34d399; }

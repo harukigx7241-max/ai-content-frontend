@@ -21,7 +21,7 @@ from app.admin.schemas import (
     UserAdminResponse,
     UserUsageResponse,
 )
-from app.auth.dependencies import require_admin
+from app.auth.dependencies import require_admin, require_hq
 from app.db.models.user import User
 from app.db.session import get_db
 
@@ -220,3 +220,46 @@ def get_budget(admin: User = Depends(require_admin)):
     from app.services.api_control_service import api_control_service
     budget = api_control_service.get_budget()
     return JSONResponse(budget.to_dict())
+
+
+# ── Phase 14: 使用量ダッシュボード ───────────────────────────────
+
+
+@router.get("/usage")
+def get_usage_report(admin: User = Depends(require_admin)):
+    """
+    API使用量・コストレポート (管理者向け)。
+    管理者には今日+今月の概要・機能別・モデル別内訳を返す。
+    管理本部 (HQ) には拡張データ (予算消化率・危険機能・自動停止履歴) も付与する。
+    """
+    from app.core.roles import HQ_ROLES
+    from app.services.usage_dashboard_service import usage_dashboard_service
+    is_hq = admin.role in HQ_ROLES
+    result = usage_dashboard_service.get_report(is_hq=is_hq)
+    return JSONResponse(result.to_dict() if hasattr(result, "to_dict") else result.content or {})
+
+
+@router.get("/usage/summary")
+def get_usage_summary(admin: User = Depends(require_admin)):
+    """今日・今月のサマリのみを返す (軽量エンドポイント)。"""
+    from app.services.usage_dashboard_service import usage_dashboard_service
+    result = usage_dashboard_service.get_report(is_hq=False)
+    data = result.content or {}
+    return JSONResponse({
+        "today":   data.get("today", {}),
+        "monthly": data.get("monthly", {}),
+        "mode":    data.get("mode", "mock"),
+    })
+
+
+@router.get("/usage/hq")
+def get_usage_hq(hq: User = Depends(require_hq)):
+    """
+    管理本部専用の拡張分析データ。
+    予算消化率・閾値警告・危険機能・自動停止履歴を含む。
+    require_hq により headquarters ロール以外はアクセス不可。
+    """
+    from app.services.usage_dashboard_service import usage_dashboard_service
+    result = usage_dashboard_service.get_report(is_hq=True)
+    data = result.content or {}
+    return JSONResponse(data.get("hq", {}))

@@ -38,7 +38,8 @@
 | **10** | **マイページ育成画面化** (KPI×4・育成ヒーロー・XP履歴・保管庫タブ・クエストスキャフォールド) | phase13-mobile-game-ui | 22fec32 |
 | **11** | **混雑状況見える化** (4段階・一般向け/管理向け・優先レーン土台・ヘッダーピル・管理パネル) | phase13-mobile-game-ui | e75cb4f |
 | **12** | **API接続インフラ基盤** (ギルド書記AI・サービスレジストリ13件・/api/system/services・管理サービス状態パネル・docs/api_connection.md) | phase13-mobile-game-ui | 4137474 |
-| **13** | **API制御センター** (機能単位ON/OFF・6バッチプリセット・予算ガード・実行時オーバーライド・🎛管理パネル・docs/api_budget.md) | phase13-mobile-game-ui | (本コミット) |
+| **13** | **API制御センター** (機能単位ON/OFF・6バッチプリセット・予算ガード・実行時オーバーライド・🎛管理パネル・docs/api_budget.md) | phase13-mobile-game-ui | 0e007e7 |
+| **14** | **トークン使用量・コストダッシュボード** (管理者/HQ権限分離・モック+APIscaffold・KPI4枚・機能別バー・モデル別・HQ専用拡張・自動停止履歴) | phase13-mobile-game-ui | (本コミット) |
 
 ---
 
