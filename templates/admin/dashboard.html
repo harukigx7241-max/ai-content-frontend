@@ -65,6 +65,7 @@
     <button class="admin-filter-btn"        data-panel="apictrl"    role="tab">🎛 API制御</button>
     <button class="admin-filter-btn"        data-panel="usage"      role="tab">📊 使用量</button>
     <button class="admin-filter-btn"        data-panel="settings"   role="tab">システム設定</button>
+    <button class="admin-filter-btn"        data-panel="growth"     role="tab">🚀 集客工房</button>
   </div>
 
   <!-- ═══ パネル: 統計 ═══ -->
@@ -678,6 +679,70 @@
       </button>
     </form>
   </section>
+
+  <!-- ═══ パネル: 集客工房 ═══ -->
+  <section id="panel-growth" style="display:none">
+    <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:8px">
+      管理者専用の集客支援ツール。各ツールで生成したプロンプトを ChatGPT / Gemini / Claude に貼り付けてご利用ください。
+    </p>
+    <p style="color:var(--text-muted);font-size:0.75rem;margin-bottom:24px">
+      Phase 17 — 初期は管理者専用。将来的に有料会員へ段階的解放予定。
+    </p>
+
+    <!-- ツールグリッド -->
+    <div id="growthToolsGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:32px">
+      <p style="color:var(--text-muted)">読み込み中...</p>
+    </div>
+
+    <!-- ツール実行モーダル -->
+    <div id="growthModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;overflow-y:auto" onclick="closeGrowthModal(event)">
+      <div style="max-width:680px;margin:40px auto;background:var(--card-bg,#1a1a2e);border:1px solid rgba(255,255,255,0.12);border-radius:16px;padding:28px" onclick="event.stopPropagation()">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+          <div>
+            <span id="gModalIcon" style="font-size:1.5rem;margin-right:8px"></span>
+            <strong id="gModalTitle" style="font-size:1.1rem"></strong>
+          </div>
+          <button onclick="closeGrowthModal()" style="background:none;border:none;color:var(--text-muted);font-size:1.2rem;cursor:pointer">✕</button>
+        </div>
+        <p id="gModalDesc" style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:20px"></p>
+
+        <!-- 動的フォームフィールド -->
+        <div id="gModalFields" style="display:flex;flex-direction:column;gap:14px;margin-bottom:20px"></div>
+
+        <div style="display:flex;gap:12px;align-items:center">
+          <button id="gModalRunBtn" onclick="runGrowthTool()"
+                  style="background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;border:none;border-radius:8px;padding:10px 22px;cursor:pointer;font-size:0.9rem;font-weight:600">
+            ▶ プロンプト生成
+          </button>
+          <span id="gModalLoading" style="display:none;color:var(--text-muted);font-size:0.85rem">生成中...</span>
+        </div>
+
+        <!-- 結果表示エリア -->
+        <div id="gResultArea" style="display:none;margin-top:20px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <strong style="font-size:0.85rem;color:var(--text-secondary)">生成されたプロンプト</strong>
+            <button onclick="copyGrowthPrompt()"
+                    style="background:rgba(168,85,247,0.15);border:1px solid rgba(168,85,247,0.4);color:#a855f7;border-radius:6px;padding:5px 12px;cursor:pointer;font-size:0.8rem">
+              📋 コピー
+            </button>
+          </div>
+          <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:16px;max-height:400px;overflow-y:auto">
+            <pre id="gResultText" style="white-space:pre-wrap;font-size:0.82rem;color:var(--text-primary,#f8fafc);line-height:1.6;margin:0"></pre>
+          </div>
+          <p id="gResultHint" style="color:var(--text-muted);font-size:0.75rem;margin-top:8px"></p>
+          <div style="margin-top:12px;display:flex;gap:10px">
+            <a href="https://chat.openai.com" target="_blank" rel="noopener noreferrer"
+               style="display:inline-block;padding:5px 12px;background:rgba(16,163,127,0.15);border:1px solid rgba(16,163,127,0.4);border-radius:6px;color:#10a37f;font-size:0.78rem;text-decoration:none">ChatGPT で使う →</a>
+            <a href="https://gemini.google.com" target="_blank" rel="noopener noreferrer"
+               style="display:inline-block;padding:5px 12px;background:rgba(66,133,244,0.15);border:1px solid rgba(66,133,244,0.4);border-radius:6px;color:#4285f4;font-size:0.78rem;text-decoration:none">Gemini で使う →</a>
+            <a href="https://claude.ai" target="_blank" rel="noopener noreferrer"
+               style="display:inline-block;padding:5px 12px;background:rgba(168,85,247,0.15);border:1px solid rgba(168,85,247,0.4);border-radius:6px;color:#a855f7;font-size:0.78rem;text-decoration:none">Claude で使う →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
 </main>
 
 <script>
@@ -685,7 +750,7 @@
 const STATUS_LABELS = {pending:'承認待ち', approved:'承認済み', rejected:'却下', suspended:'停止中'};
 
 // ── タブ切替 ──────────────────────────────────────────────────────
-const ALL_PANELS = ['stats', 'users', 'analytics', 'feedback', 'trends', 'congestion', 'services', 'apictrl', 'usage', 'settings'];
+const ALL_PANELS = ['stats', 'users', 'analytics', 'feedback', 'trends', 'congestion', 'services', 'apictrl', 'usage', 'settings', 'growth'];
 let currentPanel = 'stats';
 document.querySelectorAll('[data-panel]').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -704,6 +769,7 @@ document.querySelectorAll('[data-panel]').forEach(btn => {
     if (currentPanel === 'apictrl'    && !ctrlLoaded)       loadApiControl();
     if (currentPanel === 'usage'      && !usageLoaded)      loadUsage();
     if (currentPanel === 'settings'   && !settingsLoaded)   loadSettings();
+    if (currentPanel === 'growth'     && !growthLoaded)     loadGrowthTools();
   });
 });
 
@@ -1971,6 +2037,187 @@ async function loadCongestion() {
     const errEl = document.getElementById('congError');
     if (errEl) errEl.style.display = '';
   }
+}
+
+// ── 集客工房パネル ────────────────────────────────────────────────
+
+let growthLoaded = false;
+let growthTools = [];
+let activeToolId = '';
+
+const GROWTH_CATEGORY_LABELS = {
+  promotion: '販促・告知',
+  content: 'コンテンツ生成',
+  image: '画像プロンプト',
+  calendar: 'スケジュール',
+  analysis: '分析・スコアリング',
+};
+const UNLOCK_LABELS = {
+  member_paid: 'プロ解放予定',
+  member_master: 'マスター解放予定',
+  admin_only: '管理者専用',
+};
+const UNLOCK_COLORS = {
+  member_paid: '#f59e0b',
+  member_master: '#a855f7',
+  admin_only: '#6b7280',
+};
+
+const TOOL_FIELD_DEFS = {
+  title:            {label: '記事タイトル', placeholder: '例: 副業で月5万円を稼ぐ方法'},
+  target:           {label: 'ターゲット読者', placeholder: '例: 20〜30代の会社員'},
+  value:            {label: '記事の価値・内容', placeholder: '例: 副業の始め方を5ステップで解説'},
+  price:            {label: '価格 (円)', placeholder: '例: 980', type: 'number'},
+  product_name:     {label: '商品・サービス名', placeholder: '例: 副業スタートガイド'},
+  platform:         {label: 'プラットフォーム', placeholder: '例: note / tips / Brain'},
+  target_audience:  {label: 'ターゲット読者', placeholder: '例: 副業を始めたい30代会社員'},
+  strengths:        {label: '強み・差別化ポイント', placeholder: '例: 実体験に基づく具体的な手順'},
+  theme:            {label: 'テーマ', placeholder: '例: AI副業で月収10万円'},
+  audience:         {label: 'ターゲット読者', placeholder: '例: 20〜40代の会社員'},
+  tone:             {label: '文章トーン', placeholder: '例: です・ます調 / だ・である調'},
+  image_type:       {label: '画像タイプ', placeholder: '例: social / thumbnail / cover'},
+  style:            {label: 'スタイル', placeholder: '例: モダン・クリーン・プロフェッショナル'},
+  article_title:    {label: '記事タイトル', placeholder: '例: AI時代の副業戦略'},
+  key_points:       {label: '主要ポイント (改行区切り)', placeholder: '例: ・AIツールの活用法\n・収益化の仕組み', textarea: true},
+  launch_date:      {label: 'ローンチ日', placeholder: '例: 2026-05-01'},
+  unique_value:     {label: '独自の価値・差別化点', placeholder: '例: 初心者でも1週間で収益化できる'},
+  start_date:       {label: '販促開始日', placeholder: '例: 2026-05-01'},
+  original_content: {label: '元のコンテンツ', placeholder: 'リライトしたいコンテンツを貼り付けてください', textarea: true},
+  variation_style:  {label: 'バリエーションスタイル指示', placeholder: '例: よりカジュアルに、関西弁風に'},
+  promotion_plan:   {label: '販促プラン概要', placeholder: '現在の販促プランを記述してください', textarea: true},
+  target_platform:  {label: '対象プラットフォーム', placeholder: '例: note / X / Instagram'},
+  campaign_theme:   {label: 'キャンペーンテーマ', placeholder: '例: 春の副業チャレンジ企画'},
+  point1:           {label: 'ポイント1', placeholder: '例: 初心者でも即実践できる手順'},
+  point2:           {label: 'ポイント2', placeholder: '例: 月収5万円達成の具体的なロードマップ'},
+};
+
+async function loadGrowthTools() {
+  if (growthLoaded) return;
+  const grid = document.getElementById('growthToolsGrid');
+  try {
+    const res = await fetch('/api/admin/growth/tools');
+    const data = await res.json();
+    growthTools = data.tools || [];
+    growthLoaded = true;
+
+    if (!growthTools.length) {
+      grid.innerHTML = '<p style="color:var(--text-muted)">ツールが見つかりません</p>';
+      return;
+    }
+
+    grid.innerHTML = growthTools.map(t => `
+      <div class="mypage-card" style="cursor:pointer;transition:border-color 0.2s"
+           onclick="openGrowthModal('${esc(t.tool_id)}')"
+           onmouseenter="this.style.borderColor='rgba(168,85,247,0.5)'"
+           onmouseleave="this.style.borderColor=''">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+          <span style="font-size:1.8rem">${esc(t.icon)}</span>
+          <span style="font-size:0.7rem;padding:2px 8px;border-radius:12px;
+                background:rgba(255,255,255,0.05);color:${UNLOCK_COLORS[t.future_unlock]||'#6b7280'};
+                border:1px solid ${UNLOCK_COLORS[t.future_unlock]||'#6b7280'}">
+            ${UNLOCK_LABELS[t.future_unlock]||t.future_unlock}
+          </span>
+        </div>
+        <div style="font-weight:600;margin-bottom:4px">${esc(t.label)}</div>
+        <div style="font-size:0.78rem;color:var(--text-secondary);margin-bottom:10px">${esc(t.description)}</div>
+        <div style="font-size:0.7rem;color:var(--text-muted);padding:3px 8px;background:rgba(255,255,255,0.04);
+                border-radius:6px;display:inline-block">
+          ${GROWTH_CATEGORY_LABELS[t.category]||t.category}
+        </div>
+      </div>
+    `).join('');
+  } catch (e) {
+    grid.innerHTML = `<p style="color:var(--text-muted)">読み込みに失敗しました: ${esc(String(e))}</p>`;
+  }
+}
+
+function openGrowthModal(toolId) {
+  const tool = growthTools.find(t => t.tool_id === toolId);
+  if (!tool) return;
+  activeToolId = toolId;
+
+  document.getElementById('gModalIcon').textContent = tool.icon;
+  document.getElementById('gModalTitle').textContent = tool.label;
+  document.getElementById('gModalDesc').textContent = tool.description;
+  document.getElementById('gResultArea').style.display = 'none';
+  document.getElementById('gModalLoading').style.display = 'none';
+
+  const fields = document.getElementById('gModalFields');
+  fields.innerHTML = (tool.inputs || []).map(fieldId => {
+    const def = TOOL_FIELD_DEFS[fieldId] || {label: fieldId, placeholder: ''};
+    if (def.textarea) {
+      return `<div>
+        <label style="font-size:0.82rem;color:var(--text-secondary);display:block;margin-bottom:4px">${esc(def.label)}</label>
+        <textarea id="gf_${esc(fieldId)}" placeholder="${esc(def.placeholder)}"
+          style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;
+                 padding:10px;color:var(--text-primary,#f8fafc);font-size:0.85rem;resize:vertical;min-height:90px;box-sizing:border-box"></textarea>
+      </div>`;
+    }
+    return `<div>
+      <label style="font-size:0.82rem;color:var(--text-secondary);display:block;margin-bottom:4px">${esc(def.label)}</label>
+      <input id="gf_${esc(fieldId)}" type="${def.type||'text'}" placeholder="${esc(def.placeholder)}"
+        style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;
+               padding:10px;color:var(--text-primary,#f8fafc);font-size:0.85rem;box-sizing:border-box">
+    </div>`;
+  }).join('');
+
+  document.getElementById('growthModal').style.display = '';
+}
+
+function closeGrowthModal(e) {
+  if (e && e.target !== document.getElementById('growthModal')) return;
+  document.getElementById('growthModal').style.display = 'none';
+  activeToolId = '';
+}
+
+async function runGrowthTool() {
+  if (!activeToolId) return;
+  const tool = growthTools.find(t => t.tool_id === activeToolId);
+  if (!tool) return;
+
+  const params = {};
+  (tool.inputs || []).forEach(fieldId => {
+    const el = document.getElementById('gf_' + fieldId);
+    if (el) params[fieldId] = el.value.trim();
+  });
+
+  const btn = document.getElementById('gModalRunBtn');
+  const loading = document.getElementById('gModalLoading');
+  btn.disabled = true;
+  loading.style.display = '';
+  document.getElementById('gResultArea').style.display = 'none';
+
+  try {
+    const res = await fetch('/api/admin/growth/run', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({tool_id: activeToolId, params}),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      alert('エラー: ' + (data.detail || '生成に失敗しました'));
+      return;
+    }
+    const prompt = data.prompt || data.draft || data.plan || data.text || data.post || JSON.stringify(data, null, 2);
+    document.getElementById('gResultText').textContent = prompt;
+    document.getElementById('gResultHint').textContent = data.hint || '';
+    document.getElementById('gResultArea').style.display = '';
+  } catch (err) {
+    alert('通信エラーが発生しました: ' + err);
+  } finally {
+    btn.disabled = false;
+    loading.style.display = 'none';
+  }
+}
+
+function copyGrowthPrompt() {
+  const text = document.getElementById('gResultText').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = event.target;
+    const orig = btn.textContent;
+    btn.textContent = '✓ コピー完了';
+    setTimeout(() => { btn.textContent = orig; }, 2000);
+  });
 }
 
 // 初期読み込み

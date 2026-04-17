@@ -348,6 +348,62 @@ FEATURE_POLICIES: dict[str, FeaturePolicy] = {
         category="admin",
     ),
 
+    # ── Phase 17: 管理者専用集客工房 (将来 member_paid/master へ解放) ──
+    "admin_growth_multi_channel": FeaturePolicy(
+        feature_id="admin_growth_multi_channel",
+        label="マルチチャンネル記事パック",
+        required_role=RoleValue.ADMIN,
+        status=FeatureStatus.ADMIN_ONLY,
+        flag_key="ADMIN_GROWTH_MULTI_CHANNEL",
+        description="1記事を5チャンネル向けにアレンジするプロンプト生成",
+        category="admin_growth",
+    ),
+    "admin_growth_launch_pack": FeaturePolicy(
+        feature_id="admin_growth_launch_pack",
+        label="ローンチパックビルダー",
+        required_role=RoleValue.ADMIN,
+        status=FeatureStatus.ADMIN_ONLY,
+        flag_key="ADMIN_GROWTH_LAUNCH_PACK",
+        description="商品ローンチに必要な7素材のプロンプトを一括生成",
+        category="admin_growth",
+    ),
+    "admin_growth_promo_calendar": FeaturePolicy(
+        feature_id="admin_growth_promo_calendar",
+        label="販促カレンダー生成",
+        required_role=RoleValue.ADMIN,
+        status=FeatureStatus.ADMIN_ONLY,
+        flag_key="ADMIN_GROWTH_PROMO_CALENDAR",
+        description="30日間の販促スケジュールプロンプトを自動生成",
+        category="admin_growth",
+    ),
+    "admin_growth_hook_library": FeaturePolicy(
+        feature_id="admin_growth_hook_library",
+        label="フック文ライブラリ",
+        required_role=RoleValue.ADMIN,
+        status=FeatureStatus.ADMIN_ONLY,
+        flag_key="ADMIN_GROWTH_HOOK_LIBRARY",
+        description="読者を引き込む冒頭フック文を10スタイルで生成",
+        category="admin_growth",
+    ),
+    "admin_growth_variation": FeaturePolicy(
+        feature_id="admin_growth_variation",
+        label="バリエーション生成",
+        required_role=RoleValue.ADMIN,
+        status=FeatureStatus.ADMIN_ONLY,
+        flag_key="ADMIN_GROWTH_VARIATION",
+        description="既存コンテンツを3トーンでリライト",
+        category="admin_growth",
+    ),
+    "admin_growth_promo_score": FeaturePolicy(
+        feature_id="admin_growth_promo_score",
+        label="販促スコアリング",
+        required_role=RoleValue.ADMIN,
+        status=FeatureStatus.ADMIN_ONLY,
+        flag_key="ADMIN_GROWTH_PROMO_SCORE",
+        description="販促プランを5軸で採点・改善提案を生成",
+        category="admin_growth",
+    ),
+
     # ── 管理本部のみ (HQ) ─────────────────────────────────────────────
     "hq_dashboard": FeaturePolicy(
         feature_id="hq_dashboard",

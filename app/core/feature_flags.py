@@ -42,6 +42,14 @@ class FeatureFlags:
     PROMOTION_PLANNER: bool   = settings.ENABLE_PROMOTION_PLANNER
     GUILD_SCRIBE_AI: bool     = settings.ENABLE_GUILD_SCRIBE_AI
 
+    # ── Phase 17: 管理者専用集客工房 ──────────────────────────────
+    ADMIN_GROWTH_MULTI_CHANNEL: bool  = settings.ENABLE_ADMIN_GROWTH_MULTI_CHANNEL
+    ADMIN_GROWTH_LAUNCH_PACK: bool    = settings.ENABLE_ADMIN_GROWTH_LAUNCH_PACK
+    ADMIN_GROWTH_PROMO_CALENDAR: bool = settings.ENABLE_ADMIN_GROWTH_PROMO_CALENDAR
+    ADMIN_GROWTH_HOOK_LIBRARY: bool   = settings.ENABLE_ADMIN_GROWTH_HOOK_LIBRARY
+    ADMIN_GROWTH_VARIATION: bool      = settings.ENABLE_ADMIN_GROWTH_VARIATION
+    ADMIN_GROWTH_PROMO_SCORE: bool    = settings.ENABLE_ADMIN_GROWTH_PROMO_SCORE
+
     # ── 実行時オーバーライド (Phase 13) ────────────────────────────
     # 管理ダッシュボードから動的に ON/OFF できる runtime override dict。
     # キー: フラグ名 (例: "PROMPT_DOCTOR")、値: bool
@@ -130,6 +138,13 @@ class FeatureFlags:
                 "congestion_display": self.CONGESTION_DISPLAY,
                 "promotion_planner": self.PROMOTION_PLANNER,
                 "guild_scribe_ai": self.GUILD_SCRIBE_AI,
+                # Phase 17 admin growth tools
+                "admin_growth_multi_channel": self.ADMIN_GROWTH_MULTI_CHANNEL,
+                "admin_growth_launch_pack": self.ADMIN_GROWTH_LAUNCH_PACK,
+                "admin_growth_promo_calendar": self.ADMIN_GROWTH_PROMO_CALENDAR,
+                "admin_growth_hook_library": self.ADMIN_GROWTH_HOOK_LIBRARY,
+                "admin_growth_variation": self.ADMIN_GROWTH_VARIATION,
+                "admin_growth_promo_score": self.ADMIN_GROWTH_PROMO_SCORE,
             },
         }
 

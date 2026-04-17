@@ -299,6 +299,42 @@ def get_usage_summary(admin: User = Depends(require_admin)):
     })
 
 
+# ── Phase 17: 管理者専用集客工房 ─────────────────────────────────
+
+
+class GrowthRunRequest(BaseModel):
+    tool_id: str
+    params: dict = {}
+
+
+@router.get("/growth/tools")
+def list_growth_tools(admin: User = Depends(require_admin)):
+    """集客工房ツール一覧を返す。"""
+    from app.services.admin_growth_service import admin_growth_service
+    result = admin_growth_service.list_tools()
+    return JSONResponse(result.content or {})
+
+
+@router.post("/growth/run")
+def run_growth_tool(
+    body: GrowthRunRequest,
+    admin: User = Depends(require_admin),
+):
+    """
+    指定した集客工房ツールを実行してプロンプトを返す。
+    tool_id: campaign_forge | note_promotion | auto_research | image_campaign |
+             multi_channel_pack | launch_pack | promo_calendar | hook_library |
+             variation_generator | promo_score | scribe_campaign
+    """
+    from app.services.admin_growth_service import admin_growth_service, GROWTH_TOOLS
+    if body.tool_id not in GROWTH_TOOLS:
+        raise HTTPException(status_code=400, detail=f"Unknown tool_id: {body.tool_id}")
+    result = admin_growth_service.run_tool(body.tool_id, body.params)
+    if not result.available:
+        raise HTTPException(status_code=503, detail=result.hint or "ツールが無効です")
+    return JSONResponse(result.content or {})
+
+
 @router.get("/usage/hq")
 def get_usage_hq(hq: User = Depends(require_hq)):
     """

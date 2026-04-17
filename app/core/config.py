@@ -171,6 +171,14 @@ class Settings:
     # 有料会員の API 呼び出し許可
     API_ALLOW_PAID_MEMBER: bool = _bool("API_ALLOW_PAID_MEMBER", "true")
 
+    # ── Phase 17: 管理者専用集客工房 ───────────────────────────────
+    ENABLE_ADMIN_GROWTH_MULTI_CHANNEL: bool = _bool("ENABLE_ADMIN_GROWTH_MULTI_CHANNEL", "true")
+    ENABLE_ADMIN_GROWTH_LAUNCH_PACK: bool   = _bool("ENABLE_ADMIN_GROWTH_LAUNCH_PACK", "true")
+    ENABLE_ADMIN_GROWTH_PROMO_CALENDAR: bool = _bool("ENABLE_ADMIN_GROWTH_PROMO_CALENDAR", "true")
+    ENABLE_ADMIN_GROWTH_HOOK_LIBRARY: bool  = _bool("ENABLE_ADMIN_GROWTH_HOOK_LIBRARY", "true")
+    ENABLE_ADMIN_GROWTH_VARIATION: bool     = _bool("ENABLE_ADMIN_GROWTH_VARIATION", "true")
+    ENABLE_ADMIN_GROWTH_PROMO_SCORE: bool   = _bool("ENABLE_ADMIN_GROWTH_PROMO_SCORE", "true")
+
     # ── Phase 16: サブスクリプション / 課金 ────────────────────────
     # Stripe シークレットキー (未設定 = 課金機能無効・スタブモード)
     STRIPE_SECRET_KEY: str = os.getenv("STRIPE_SECRET_KEY", "")
