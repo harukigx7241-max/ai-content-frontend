@@ -24,6 +24,22 @@ router = APIRouter(tags=["analytics"])
 
 # ── KPI / 分析 (管理者のみ) ──────────────────────────────────────────
 
+@router.get("/api/admin/congestion")
+def admin_congestion(
+    admin: User = Depends(require_admin),
+    db: Session = Depends(get_db),
+):
+    """
+    管理者向け混雑詳細指標。
+    一般ステータス + admin 詳細 (active_5m / events / posts_1h / error_rate) を返す。
+    """
+    from app.services.congestion_service import congestion_service
+    from app.services.priority_lane import lane_summary
+    data = congestion_service.get_admin_metrics(db=db)
+    data["priority_lanes"] = lane_summary()
+    return data
+
+
 @router.get("/api/analytics/kpi", response_model=KpiResponse)
 def kpi(
     admin: User = Depends(require_admin),

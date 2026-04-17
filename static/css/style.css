@@ -5593,3 +5593,159 @@ img, video, iframe, canvas {
   border: 1px dashed rgba(255,255,255,0.1);
   border-radius: 12px;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   Phase 11 — 混雑状況ウィジェット & 管理パネル
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── ヘッダー内 混雑ピル ─────────────────────────────────────────── */
+.congestion-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 0.72rem; font-weight: 600;
+  border: 1px solid transparent;
+  cursor: default; user-select: none;
+  transition: opacity 0.3s;
+  white-space: nowrap;
+}
+.congestion-pill[data-level="low"] {
+  background: rgba(52,211,153,0.12);
+  border-color: rgba(52,211,153,0.3);
+  color: #34d399;
+}
+.congestion-pill[data-level="medium"] {
+  background: rgba(251,191,36,0.12);
+  border-color: rgba(251,191,36,0.3);
+  color: #fbbf24;
+}
+.congestion-pill[data-level="high"] {
+  background: rgba(249,115,22,0.12);
+  border-color: rgba(249,115,22,0.3);
+  color: #f97316;
+}
+.congestion-pill[data-level="critical"] {
+  background: rgba(248,113,113,0.12);
+  border-color: rgba(248,113,113,0.3);
+  color: #f87171;
+  animation: congestion-pulse 2s ease-in-out infinite;
+}
+@keyframes congestion-pulse {
+  0%,100% { opacity: 1; }
+  50%      { opacity: 0.6; }
+}
+
+/* ── 混雑バナー (high / critical 時にメインコンテンツ上部へ) ──────── */
+.congestion-banner {
+  display: none;
+  margin: 0 0 16px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  border: 1px solid transparent;
+  align-items: flex-start; gap: 10px;
+}
+.congestion-banner.show { display: flex; }
+.congestion-banner[data-level="medium"] {
+  background: rgba(251,191,36,0.08);
+  border-color: rgba(251,191,36,0.25);
+  color: #fbbf24;
+}
+.congestion-banner[data-level="high"] {
+  background: rgba(249,115,22,0.08);
+  border-color: rgba(249,115,22,0.25);
+  color: #fdba74;
+}
+.congestion-banner[data-level="critical"] {
+  background: rgba(248,113,113,0.1);
+  border-color: rgba(248,113,113,0.3);
+  color: #fca5a5;
+}
+.congestion-banner-body { flex: 1; min-width: 0; }
+.congestion-banner-title { font-weight: 700; margin-bottom: 2px; }
+.congestion-banner-detail { font-size: 0.76rem; opacity: 0.85; }
+.congestion-banner-hint {
+  font-size: 0.72rem; margin-top: 4px;
+  opacity: 0.75;
+  padding: 4px 8px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 6px;
+  display: inline-block;
+}
+
+/* ── 管理ダッシュボード 混雑モニターパネル ──────────────────────── */
+.cong-monitor-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.cong-monitor-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 14px 14px 12px;
+  text-align: center;
+}
+.cong-monitor-card.highlight-green { border-color: rgba(52,211,153,0.35); }
+.cong-monitor-card.highlight-yellow { border-color: rgba(251,191,36,0.35); }
+.cong-monitor-card.highlight-orange { border-color: rgba(249,115,22,0.35); }
+.cong-monitor-card.highlight-red    { border-color: rgba(248,113,113,0.35); }
+.cong-monitor-val {
+  font-size: 1.8rem; font-weight: 800;
+  color: var(--text-primary); line-height: 1.1;
+}
+.cong-monitor-label {
+  font-size: 0.7rem; color: var(--text-muted); margin-top: 4px;
+}
+.cong-level-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 20px;
+  font-size: 0.88rem; font-weight: 700;
+  margin-bottom: 16px;
+}
+.cong-level-badge[data-level="low"]      { background:rgba(52,211,153,0.15); color:#34d399; }
+.cong-level-badge[data-level="medium"]   { background:rgba(251,191,36,0.15); color:#fbbf24; }
+.cong-level-badge[data-level="high"]     { background:rgba(249,115,22,0.15); color:#f97316; }
+.cong-level-badge[data-level="critical"] { background:rgba(248,113,113,0.15); color:#f87171; }
+
+/* ── 優先レーンテーブル ──────────────────────────────────────────── */
+.cong-lane-table {
+  width: 100%; border-collapse: collapse;
+  font-size: 0.82rem;
+}
+.cong-lane-table th {
+  text-align: left; padding: 8px 10px;
+  color: var(--text-muted); font-weight: 600; font-size: 0.72rem;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.cong-lane-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  color: var(--text-secondary);
+}
+.cong-lane-badge {
+  display: inline-block; padding: 2px 8px; border-radius: 12px;
+  font-size: 0.7rem; font-weight: 700;
+}
+.cong-lane-badge.fast { background:rgba(168,85,247,0.2); color:var(--accent-purple); }
+.cong-lane-badge.std  { background:rgba(34,211,238,0.15); color:var(--accent-cyan); }
+.cong-lane-badge.slow { background:rgba(255,255,255,0.08); color:var(--text-muted); }
+.cong-priority-bar {
+  display: inline-block; height: 6px; border-radius: 3px;
+  background: linear-gradient(90deg, var(--accent-purple), var(--accent-cyan));
+  vertical-align: middle; margin-right: 6px;
+}
+
+/* ── 自動更新タイムスタンプ ──────────────────────────────────────── */
+.cong-refresh-row {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 0.72rem; color: var(--text-muted);
+  margin-bottom: 12px;
+}
+.cong-refresh-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #34d399;
+  animation: cong-blink 2s ease-in-out infinite;
+}
+@keyframes cong-blink { 0%,100%{opacity:1} 50%{opacity:0.3} }

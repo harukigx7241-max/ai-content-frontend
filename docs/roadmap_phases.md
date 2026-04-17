@@ -35,7 +35,8 @@
 | **7** | **テンプレ鍛冶場** (Mixer・Path・Compare・Vault・forge.js・/api/templates/parts) | phase13-mobile-game-ui | 420348a |
 | **8** | **診断 Lite** (プロンプト診断10項目・日本語品質10項目・diagnose.js・/api/diagnose) | phase13-mobile-game-ui | ee5b0f4 |
 | **9** | **ギルド掲示板 + テンプレ市場** (sort×4・Fork・Remix・保管庫連携・popularity_tier) | phase13-mobile-game-ui | 6b05c5d |
-| **10** | **マイページ育成画面化** (KPI×4・育成ヒーロー・XP履歴・保管庫タブ・クエストスキャフォールド) | phase13-mobile-game-ui | (本コミット) |
+| **10** | **マイページ育成画面化** (KPI×4・育成ヒーロー・XP履歴・保管庫タブ・クエストスキャフォールド) | phase13-mobile-game-ui | 22fec32 |
+| **11** | **混雑状況見える化** (4段階・一般向け/管理向け・優先レーン土台・ヘッダーピル・管理パネル) | phase13-mobile-game-ui | (本コミット) |
 
 ---
 

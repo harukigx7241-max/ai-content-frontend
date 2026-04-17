@@ -59,8 +59,9 @@
     <button class="admin-filter-btn"        data-panel="users"    role="tab">ユーザー管理</button>
     <button class="admin-filter-btn"        data-panel="analytics" role="tab">分析</button>
     <button class="admin-filter-btn"        data-panel="feedback" role="tab">要望</button>
-    <button class="admin-filter-btn"        data-panel="trends"   role="tab">🔥 トレンド管理</button>
-    <button class="admin-filter-btn"        data-panel="settings" role="tab">システム設定</button>
+    <button class="admin-filter-btn"        data-panel="trends"     role="tab">🔥 トレンド管理</button>
+    <button class="admin-filter-btn"        data-panel="congestion" role="tab">🌡 混雑モニター</button>
+    <button class="admin-filter-btn"        data-panel="settings"   role="tab">システム設定</button>
   </div>
 
   <!-- ═══ パネル: 統計 ═══ -->
@@ -293,6 +294,84 @@
     </div>
   </section>
 
+  <!-- ═══ パネル: 混雑モニター ═══ -->
+  <section id="panel-congestion" style="display:none">
+    <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:20px">
+      xp_events テーブルのアクティブユーザー数を代理指標として混雑度を算出しています。
+      60秒ごとに自動更新されます（Phase 16 の生成ログ実装後に精度が向上します）。
+    </p>
+
+    <!-- 自動更新インジケーター -->
+    <div class="cong-refresh-row">
+      <span class="cong-refresh-dot"></span>
+      <span id="congLastUpdated">読み込み中...</span>
+      <button onclick="loadCongestion()" class="auth-nav-btn outline" style="font-size:0.72rem;padding:4px 10px;margin-left:auto">
+        🔄 今すぐ更新
+      </button>
+    </div>
+
+    <!-- 現在レベルバッジ -->
+    <div id="congLevelBadge" class="cong-level-badge" data-level="low" style="display:none">
+      <span id="congLevelIcon"></span>
+      <span id="congLevelLabel"></span>
+    </div>
+
+    <!-- メトリクスカード -->
+    <div class="cong-monitor-grid" id="congMetricGrid">
+      <div class="cong-monitor-card">
+        <div class="cong-monitor-val" id="cong-active5">—</div>
+        <div class="cong-monitor-label">同時利用 (直近5分)</div>
+      </div>
+      <div class="cong-monitor-card">
+        <div class="cong-monitor-val" id="cong-active30">—</div>
+        <div class="cong-monitor-label">アクティブ (直近30分)</div>
+      </div>
+      <div class="cong-monitor-card">
+        <div class="cong-monitor-val" id="cong-events5">—</div>
+        <div class="cong-monitor-label">現在の生成待ち (代理)</div>
+      </div>
+      <div class="cong-monitor-card">
+        <div class="cong-monitor-val" id="cong-epm">—</div>
+        <div class="cong-monitor-label">平均イベント/分</div>
+      </div>
+      <div class="cong-monitor-card">
+        <div class="cong-monitor-val" id="cong-posts1h">—</div>
+        <div class="cong-monitor-label">投稿数 (直近1時間)</div>
+      </div>
+      <div class="cong-monitor-card">
+        <div class="cong-monitor-val" id="cong-errrate">—</div>
+        <div class="cong-monitor-label">エラー率 (Phase 16~)</div>
+      </div>
+    </div>
+
+    <!-- 優先レーン設定テーブル -->
+    <div class="mypage-card">
+      <div class="mypage-section-title" style="margin-bottom:14px">🚦 優先レーン設定</div>
+      <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:14px">
+        Phase 16+ で実際のキュー制御・レート制限に使用します。現時点では参照用です。
+      </p>
+      <div class="admin-table-wrap">
+        <table class="cong-lane-table" id="congLaneTable">
+          <thead>
+            <tr>
+              <th>ロール</th>
+              <th>優先度</th>
+              <th>レーン</th>
+              <th>同時上限</th>
+              <th>RPM上限</th>
+              <th>説明</th>
+            </tr>
+          </thead>
+          <tbody id="congLaneBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <p id="congError" style="display:none;color:var(--text-muted);font-size:0.82rem">
+      読み込みに失敗しました
+    </p>
+  </section>
+
   <!-- ═══ パネル: システム設定 ═══ -->
   <section id="panel-settings" style="display:none">
     <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:24px">
@@ -356,7 +435,7 @@
 const STATUS_LABELS = {pending:'承認待ち', approved:'承認済み', rejected:'却下', suspended:'停止中'};
 
 // ── タブ切替 ──────────────────────────────────────────────────────
-const ALL_PANELS = ['stats', 'users', 'analytics', 'feedback', 'trends', 'settings'];
+const ALL_PANELS = ['stats', 'users', 'analytics', 'feedback', 'trends', 'congestion', 'settings'];
 let currentPanel = 'stats';
 document.querySelectorAll('[data-panel]').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -366,11 +445,12 @@ document.querySelectorAll('[data-panel]').forEach(btn => {
       document.getElementById('panel-' + id).style.display = id === btn.dataset.panel ? '' : 'none';
     });
     currentPanel = btn.dataset.panel;
-    if (currentPanel === 'users'     && !usersLoaded)     loadUsers('');
-    if (currentPanel === 'analytics' && !analyticsLoaded) loadAnalytics();
-    if (currentPanel === 'feedback'  && !feedbackLoaded)  loadFeedback('');
-    if (currentPanel === 'trends'    && !trendsLoaded)    loadTrends();
-    if (currentPanel === 'settings'  && !settingsLoaded)  loadSettings();
+    if (currentPanel === 'users'      && !usersLoaded)      loadUsers('');
+    if (currentPanel === 'analytics'  && !analyticsLoaded)  loadAnalytics();
+    if (currentPanel === 'feedback'   && !feedbackLoaded)   loadFeedback('');
+    if (currentPanel === 'trends'     && !trendsLoaded)     loadTrends();
+    if (currentPanel === 'congestion')                      loadCongestion();
+    if (currentPanel === 'settings'   && !settingsLoaded)   loadSettings();
   });
 });
 
@@ -822,8 +902,6 @@ async function saveTrend(workshop) {
   }
 }
 
-function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-
 // ── システム設定パネル ────────────────────────────────────────────
 let settingsLoaded = false;
 
@@ -1015,6 +1093,74 @@ function closeUserDetail(event) {
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') document.getElementById('userDetailOverlay').style.display = 'none';
 });
+
+// ── 混雑モニター ──────────────────────────────────────────────────
+let _congTimer = null;
+
+async function loadCongestion() {
+  const errEl = document.getElementById('congError');
+  if (errEl) errEl.style.display = 'none';
+  try {
+    const res = await fetch('/api/admin/congestion');
+    if (!res.ok) throw new Error('api error');
+    const d = await res.json();
+
+    // 更新タイムスタンプ
+    const updEl = document.getElementById('congLastUpdated');
+    if (updEl) updEl.textContent = `最終更新: ${new Date().toLocaleTimeString('ja-JP')}`;
+
+    // レベルバッジ
+    const badgeEl = document.getElementById('congLevelBadge');
+    if (badgeEl) {
+      badgeEl.dataset.level = d.level || 'low';
+      document.getElementById('congLevelIcon').textContent  = d.icon  || '🟢';
+      document.getElementById('congLevelLabel').textContent = d.label || '空いています';
+      badgeEl.style.display = '';
+    }
+
+    // 管理者指標
+    const a = d.admin || {};
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    set('cong-active5',  a.active_5m   ?? '—');
+    set('cong-active30', a.active_30m  ?? '—');
+    set('cong-events5',  a.events_5m   ?? '—');
+    set('cong-epm',      a.events_per_min != null ? a.events_per_min.toFixed(1) : '—');
+    set('cong-posts1h',  a.posts_1h    ?? '—');
+    set('cong-errrate',  a.error_rate  != null ? (a.error_rate * 100).toFixed(1) + '%' : '—');
+
+    // カードのハイライト色 (レベルに応じて)
+    const colorMap = { low:'green', medium:'yellow', high:'orange', critical:'red' };
+    const col = colorMap[d.level] || 'green';
+    document.querySelectorAll('#congMetricGrid .cong-monitor-card').forEach((card, i) => {
+      card.className = `cong-monitor-card${i < 3 ? ' highlight-' + col : ''}`;
+    });
+
+    // 優先レーンテーブル
+    const tbody = document.getElementById('congLaneBody');
+    if (tbody && d.priority_lanes) {
+      tbody.innerHTML = d.priority_lanes.map(lane => `
+        <tr>
+          <td><strong>${esc(lane.label)}</strong><br><span style="font-size:0.7rem;color:var(--text-muted)">${esc(lane.role)}</span></td>
+          <td>
+            <span class="cong-priority-bar" style="width:${lane.priority}px"></span>
+            ${lane.priority}
+          </td>
+          <td><span class="cong-lane-badge ${esc(lane.lane)}">${esc(lane.lane.toUpperCase())}</span></td>
+          <td>${lane.max_concurrent === -1 ? '∞' : lane.max_concurrent}</td>
+          <td>${lane.rate_limit_rpm === -1 ? '∞' : lane.rate_limit_rpm + ' rpm'}</td>
+          <td style="font-size:0.75rem;color:var(--text-muted)">${esc(lane.description)}</td>
+        </tr>
+      `).join('');
+    }
+
+    // 60秒ごとに自動更新
+    clearInterval(_congTimer);
+    _congTimer = setInterval(loadCongestion, 60_000);
+  } catch {
+    const errEl = document.getElementById('congError');
+    if (errEl) errEl.style.display = '';
+  }
+}
 
 // 初期読み込み
 loadStats();
