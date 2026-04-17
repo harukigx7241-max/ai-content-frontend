@@ -1,7 +1,7 @@
 """
 app/admin/router.py — /api/admin/* エンドポイント (薄いルーター)
 重いロジックは admin/service.py に委譲。
-TODO: Phase 4+ メール通知 / 一括操作 / 監査ログ
+Phase 13: API制御センター (/api/admin/api-control, /api/admin/budget) 追加
 """
 import json
 import pathlib
@@ -9,6 +9,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from app.admin import service as admin_service
@@ -164,3 +165,58 @@ def update_trend(
     invalidate_cache(f"workshops/{workshop}/trend_signals.json")
 
     return JSONResponse({"message": f"{workshop} のトレンドデータを更新しました"})
+
+
+# ── Phase 13: API 制御センター ─────────────────────────────────────
+
+
+class ToggleRequest(BaseModel):
+    service: str
+    enabled: bool
+
+
+class BatchRequest(BaseModel):
+    preset: str
+
+
+@router.get("/api-control")
+def get_api_control(admin: User = Depends(require_admin)):
+    """全 AI サービスの現在の制御状態を返す。"""
+    from app.services.api_control_service import api_control_service
+    return JSONResponse(api_control_service.get_control_state())
+
+
+@router.post("/api-control/toggle")
+def toggle_api_service(
+    body: ToggleRequest,
+    admin: User = Depends(require_admin),
+):
+    """個別サービスの ON/OFF を切り替える。"""
+    from app.services.api_control_service import api_control_service
+    try:
+        result = api_control_service.toggle_service(body.service, body.enabled)
+        return JSONResponse(result)
+    except KeyError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+
+@router.post("/api-control/batch")
+def batch_api_control(
+    body: BatchRequest,
+    admin: User = Depends(require_admin),
+):
+    """一括プリセットを適用する。"""
+    from app.services.api_control_service import api_control_service
+    try:
+        result = api_control_service.apply_preset(body.preset)
+        return JSONResponse(result)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.get("/budget")
+def get_budget(admin: User = Depends(require_admin)):
+    """日次・月次の予算状態を返す。"""
+    from app.services.api_control_service import api_control_service
+    budget = api_control_service.get_budget()
+    return JSONResponse(budget.to_dict())

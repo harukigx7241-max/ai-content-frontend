@@ -36,7 +36,9 @@
 | **8** | **診断 Lite** (プロンプト診断10項目・日本語品質10項目・diagnose.js・/api/diagnose) | phase13-mobile-game-ui | ee5b0f4 |
 | **9** | **ギルド掲示板 + テンプレ市場** (sort×4・Fork・Remix・保管庫連携・popularity_tier) | phase13-mobile-game-ui | 6b05c5d |
 | **10** | **マイページ育成画面化** (KPI×4・育成ヒーロー・XP履歴・保管庫タブ・クエストスキャフォールド) | phase13-mobile-game-ui | 22fec32 |
-| **11** | **混雑状況見える化** (4段階・一般向け/管理向け・優先レーン土台・ヘッダーピル・管理パネル) | phase13-mobile-game-ui | (本コミット) |
+| **11** | **混雑状況見える化** (4段階・一般向け/管理向け・優先レーン土台・ヘッダーピル・管理パネル) | phase13-mobile-game-ui | e75cb4f |
+| **12** | **API接続インフラ基盤** (ギルド書記AI・サービスレジストリ13件・/api/system/services・管理サービス状態パネル・docs/api_connection.md) | phase13-mobile-game-ui | 4137474 |
+| **13** | **API制御センター** (機能単位ON/OFF・6バッチプリセット・予算ガード・実行時オーバーライド・🎛管理パネル・docs/api_budget.md) | phase13-mobile-game-ui | (本コミット) |
 
 ---
 

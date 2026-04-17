@@ -5878,3 +5878,231 @@ img, video, iframe, canvas {
   border-color: rgba(168,85,247,0.5);
   color: #c084fc;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   Phase 13 — API制御センター UI
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── 予算バー ─────────────────────────────────────────────────── */
+.budget-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+@media (max-width: 600px) { .budget-section { grid-template-columns: 1fr; } }
+
+.budget-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  padding: 14px 16px;
+}
+.budget-card.warn   { border-color: rgba(251,191,36,0.5); }
+.budget-card.critical { border-color: rgba(248,113,113,0.6); }
+
+.budget-card-title {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+.budget-card-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+.budget-bar-track {
+  height: 6px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.budget-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #34d399, #a78bfa);
+  transition: width 0.6s ease;
+}
+.budget-bar-fill.warn     { background: linear-gradient(90deg, #fbbf24, #f97316); }
+.budget-bar-fill.critical { background: linear-gradient(90deg, #f97316, #f87171); }
+.budget-bar-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* ── 予算ステータスバナー ──────────────────────────────────────── */
+.budget-status-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 0.82rem;
+}
+.budget-status-banner.none     { display: none; }
+.budget-status-banner.warn     { background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.4); color: #fbbf24; }
+.budget-status-banner.critical { background: rgba(248,113,113,0.12); border: 1px solid rgba(248,113,113,0.5); color: #f87171; }
+
+/* ── サービストグルグリッド ──────────────────────────────────── */
+.ctrl-svc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.ctrl-svc-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: border-color 0.2s;
+}
+.ctrl-svc-card:hover   { border-color: rgba(255,255,255,0.2); }
+.ctrl-svc-card.enabled { border-left: 3px solid #34d399; }
+.ctrl-svc-card.disabled{ border-left: 3px solid #374151; opacity: 0.75; }
+.ctrl-svc-card.overridden { background: rgba(168,85,247,0.06); }
+
+.ctrl-svc-info { flex: 1; min-width: 0; }
+.ctrl-svc-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ctrl-svc-meta {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+.ctrl-svc-tag {
+  font-size: 0.65rem;
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.15);
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.ctrl-svc-tag.high-cost  { border-color: rgba(249,115,22,0.5); color: #fb923c; }
+.ctrl-svc-tag.api-only   { border-color: rgba(168,85,247,0.4); color: #c084fc; }
+.ctrl-svc-tag.admin-only { border-color: rgba(251,191,36,0.4); color: #fbbf24; }
+.ctrl-svc-tag.overridden { border-color: rgba(129,140,248,0.5); color: #818cf8; }
+
+/* ── ON/OFF トグルスイッチ ──────────────────────────────────────── */
+.ctrl-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.ctrl-toggle input[type="checkbox"] {
+  appearance: none;
+  width: 40px;
+  height: 22px;
+  background: rgba(255,255,255,0.12);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.25s;
+  position: relative;
+  border: none;
+  outline: none;
+}
+.ctrl-toggle input[type="checkbox"]:checked { background: #34d399; }
+.ctrl-toggle input[type="checkbox"]::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  background: #fff;
+  border-radius: 50%;
+  transition: left 0.2s;
+}
+.ctrl-toggle input[type="checkbox"]:checked::after { left: 21px; }
+.ctrl-toggle input[type="checkbox"]:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* ── バッチプリセットボタン ──────────────────────────────────── */
+.ctrl-preset-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  margin-bottom: 24px;
+}
+.ctrl-preset-btn {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.04);
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.ctrl-preset-btn:hover {
+  background: rgba(168,85,247,0.12);
+  border-color: rgba(168,85,247,0.4);
+}
+.ctrl-preset-btn.danger:hover {
+  background: rgba(248,113,113,0.1);
+  border-color: rgba(248,113,113,0.4);
+}
+.ctrl-preset-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+.ctrl-preset-info { flex: 1; }
+.ctrl-preset-label { font-weight: 700; margin-bottom: 2px; }
+.ctrl-preset-desc  { font-size: 0.7rem; color: var(--text-muted); line-height: 1.4; }
+
+/* ── コントロール結果トースト ────────────────────────────────── */
+.ctrl-toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  background: rgba(52,211,153,0.15);
+  border: 1px solid rgba(52,211,153,0.4);
+  color: #34d399;
+  font-size: 0.82rem;
+  font-weight: 600;
+  z-index: 9000;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.3s, transform 0.3s;
+  pointer-events: none;
+}
+.ctrl-toast.show  { opacity: 1; transform: translateY(0); }
+.ctrl-toast.error { background: rgba(248,113,113,0.12); border-color: rgba(248,113,113,0.5); color: #f87171; }
+
+/* ── override 状態バッジ ─────────────────────────────────────── */
+.ctrl-override-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  background: rgba(129,140,248,0.15);
+  border: 1px solid rgba(129,140,248,0.35);
+  color: #818cf8;
+  margin-bottom: 12px;
+  cursor: pointer;
+}
+.ctrl-override-badge:hover { background: rgba(129,140,248,0.25); }

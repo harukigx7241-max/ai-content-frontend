@@ -140,11 +140,36 @@ class Settings:
     # 月次概算コスト上限 (USD, 0 = 無制限)
     API_MONTHLY_COST_LIMIT_USD: float = float(os.getenv("API_MONTHLY_COST_LIMIT_USD", "0"))
 
+    # 日次トークン上限 (0 = 無制限)
+    API_DAILY_TOKEN_LIMIT: int = int(os.getenv("API_DAILY_TOKEN_LIMIT", "0"))
+
+    # 日次概算コスト上限 (USD, 0 = 無制限)
+    API_DAILY_COST_LIMIT_USD: float = float(os.getenv("API_DAILY_COST_LIMIT_USD", "0"))
+
+    # 警告しきい値 (上限の何%で警告を出すか)
+    API_WARN_THRESHOLD_PCT: int = int(os.getenv("API_WARN_THRESHOLD_PCT", "80"))
+
     # 上限超過時の動作: "disable" | "fallback" | "notify_only"
     API_OVER_LIMIT_ACTION: str = os.getenv("API_OVER_LIMIT_ACTION", "fallback")
 
     # 管理者通知メール (上限超過時、空白は通知なし)
     ADMIN_ALERT_EMAIL: str = os.getenv("ADMIN_ALERT_EMAIL", "")
+
+    # ────────────────────────────────────────────────────────────────
+    # Phase 13: API 制御
+    # ────────────────────────────────────────────────────────────────
+
+    # 高コストサービス一覧 (カンマ区切り)
+    API_HIGH_COST_SERVICES: str = os.getenv(
+        "API_HIGH_COST_SERVICES",
+        "workshop_master_ai,article_draft_ai,image_generation",
+    )
+
+    # ロール別 API 制限 (将来 Phase 16 で DB 管理に移行)
+    # 無料会員の API 呼び出し許可: true = 許可 / false = FREE tier のみ
+    API_ALLOW_FREE_MEMBER: bool = _bool("API_ALLOW_FREE_MEMBER", "true")
+    # 有料会員の API 呼び出し許可
+    API_ALLOW_PAID_MEMBER: bool = _bool("API_ALLOW_PAID_MEMBER", "true")
 
 
 # グローバルシングルトン

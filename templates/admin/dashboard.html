@@ -62,6 +62,7 @@
     <button class="admin-filter-btn"        data-panel="trends"     role="tab">🔥 トレンド管理</button>
     <button class="admin-filter-btn"        data-panel="congestion" role="tab">🌡 混雑モニター</button>
     <button class="admin-filter-btn"        data-panel="services"   role="tab">⚙ サービス状態</button>
+    <button class="admin-filter-btn"        data-panel="apictrl"    role="tab">🎛 API制御</button>
     <button class="admin-filter-btn"        data-panel="settings"   role="tab">システム設定</button>
   </div>
 
@@ -403,6 +404,70 @@
     </p>
   </section>
 
+  <!-- ═══ パネル: API制御センター ═══ -->
+  <section id="panel-apictrl" style="display:none">
+
+    <!-- 予算ステータスバナー -->
+    <div class="budget-status-banner none" id="ctrlBudgetBanner">
+      <span id="ctrlBudgetBannerIcon">⚠</span>
+      <span id="ctrlBudgetBannerMsg"></span>
+    </div>
+
+    <!-- override バッジ -->
+    <div class="ctrl-override-badge" id="ctrlOverrideBadge" style="display:none"
+         onclick="clearAllOverrides()" title="クリックで全オーバーライドをリセット">
+      🔧 実行時オーバーライド適用中 — クリックしてリセット
+    </div>
+
+    <!-- 予算セクション -->
+    <div class="mypage-section-title" style="margin-bottom:10px">📊 予算状況
+      <span style="font-size:0.72rem;color:var(--text-muted);margin-left:8px">(Phase 16 で実データ連携)</span>
+    </div>
+    <div class="budget-section">
+      <div class="budget-card" id="budgetDailyCard">
+        <div class="budget-card-title">日次</div>
+        <div class="budget-card-value" id="budgetDailyVal">0 / 無制限 tok</div>
+        <div class="budget-bar-track">
+          <div class="budget-bar-fill" id="budgetDailyBar" style="width:0%"></div>
+        </div>
+        <div class="budget-bar-label">
+          <span id="budgetDailyPct">0%</span>
+          <span id="budgetDailyCost">$0.00 / 無制限</span>
+        </div>
+      </div>
+      <div class="budget-card" id="budgetMonthCard">
+        <div class="budget-card-title">月次</div>
+        <div class="budget-card-value" id="budgetMonthVal">0 / 無制限 tok</div>
+        <div class="budget-bar-track">
+          <div class="budget-bar-fill" id="budgetMonthBar" style="width:0%"></div>
+        </div>
+        <div class="budget-bar-label">
+          <span id="budgetMonthPct">0%</span>
+          <span id="budgetMonthCost">$0.00 / 無制限</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- バッチプリセット -->
+    <div class="mypage-section-title" style="margin-bottom:10px">⚡ 一括操作</div>
+    <div class="ctrl-preset-grid" id="ctrlPresetGrid">
+      <!-- JS で生成 -->
+    </div>
+
+    <!-- 機能単位トグル -->
+    <div class="mypage-section-title" style="margin-bottom:10px">🔧 機能単位 ON/OFF
+      <button onclick="loadApiControl(true)" style="margin-left:10px;background:none;border:1px solid rgba(255,255,255,0.2);border-radius:6px;padding:2px 10px;font-size:0.72rem;color:var(--text-muted);cursor:pointer">更新</button>
+    </div>
+    <p id="ctrlLoading" style="color:var(--text-muted);font-size:0.85rem">読み込み中...</p>
+    <p id="ctrlError" style="display:none;color:var(--text-muted);font-size:0.82rem">読み込みに失敗しました</p>
+    <div class="ctrl-svc-grid" id="ctrlSvcGrid" style="display:none"></div>
+
+    <p style="margin-top:16px;font-size:0.76rem;color:var(--text-muted)">
+      ⚠ 実行時オーバーライドはサーバー再起動でリセットされます。
+      永続化は Phase 16 (DB管理) で実装予定です。
+    </p>
+  </section>
+
   <!-- ═══ パネル: システム設定 ═══ -->
   <section id="panel-settings" style="display:none">
     <p style="color:var(--text-secondary);font-size:0.85rem;margin-bottom:24px">
@@ -466,7 +531,7 @@
 const STATUS_LABELS = {pending:'承認待ち', approved:'承認済み', rejected:'却下', suspended:'停止中'};
 
 // ── タブ切替 ──────────────────────────────────────────────────────
-const ALL_PANELS = ['stats', 'users', 'analytics', 'feedback', 'trends', 'congestion', 'services', 'settings'];
+const ALL_PANELS = ['stats', 'users', 'analytics', 'feedback', 'trends', 'congestion', 'services', 'apictrl', 'settings'];
 let currentPanel = 'stats';
 document.querySelectorAll('[data-panel]').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -482,6 +547,7 @@ document.querySelectorAll('[data-panel]').forEach(btn => {
     if (currentPanel === 'trends'     && !trendsLoaded)     loadTrends();
     if (currentPanel === 'congestion')                      loadCongestion();
     if (currentPanel === 'services'   && !servicesLoaded)   loadServices();
+    if (currentPanel === 'apictrl'    && !ctrlLoaded)       loadApiControl();
     if (currentPanel === 'settings'   && !settingsLoaded)   loadSettings();
   });
 });
@@ -1023,6 +1089,179 @@ document.querySelectorAll('[data-svc-filter]').forEach(btn => {
     if (_svcData.length) _renderServices();
   });
 });
+
+// ── API 制御センターパネル ────────────────────────────────────────
+let ctrlLoaded = false;
+let _ctrlState = {};
+const PRESET_META = {
+  all_on:       { icon: '🟢', danger: false },
+  all_off:      { icon: '⚫', danger: true  },
+  high_cost_off:{ icon: '🟠', danger: false },
+  admin_only:   { icon: '🔴', danger: true  },
+  free_tier_off:{ icon: '🟡', danger: false },
+  reset:        { icon: '🔄', danger: false },
+};
+
+async function loadApiControl(force = false) {
+  if (ctrlLoaded && !force) return;
+  document.getElementById('ctrlLoading').style.display = '';
+  document.getElementById('ctrlError').style.display = 'none';
+  document.getElementById('ctrlSvcGrid').style.display = 'none';
+  try {
+    const [ctrlRes, budgetRes] = await Promise.all([
+      fetch('/api/admin/api-control'),
+      fetch('/api/admin/budget'),
+    ]);
+    if (!ctrlRes.ok) throw new Error();
+    _ctrlState = await ctrlRes.json();
+    _renderCtrlServices(_ctrlState.services || []);
+    _renderCtrlPresets(_ctrlState.presets || {});
+    _renderOverrideBadge(_ctrlState);
+    if (budgetRes.ok) _renderBudget(await budgetRes.json());
+    ctrlLoaded = true;
+  } catch {
+    document.getElementById('ctrlLoading').style.display = 'none';
+    document.getElementById('ctrlError').style.display = '';
+  }
+}
+
+function _renderCtrlServices(services) {
+  const grid = document.getElementById('ctrlSvcGrid');
+  grid.innerHTML = services.map(s => {
+    const tags = [];
+    if (s.is_high_cost)     tags.push('<span class="ctrl-svc-tag high-cost">高コスト</span>');
+    if (s.api_only)         tags.push('<span class="ctrl-svc-tag api-only">API専用</span>');
+    if (s.admin_only)       tags.push('<span class="ctrl-svc-tag admin-only">管理者専用</span>');
+    if (s.overridden)       tags.push('<span class="ctrl-svc-tag overridden">オーバーライド中</span>');
+    const stateClass = (s.enabled ? 'enabled' : 'disabled') + (s.overridden ? ' overridden' : '');
+    return `
+      <div class="ctrl-svc-card ${stateClass}" id="svc-card-${esc(s.name)}">
+        <div class="ctrl-svc-info">
+          <div class="ctrl-svc-name">${esc(s.label)}</div>
+          <div class="ctrl-svc-meta">${tags.join('')}</div>
+        </div>
+        <label class="ctrl-toggle" title="${esc(s.name)}">
+          <input type="checkbox" ${s.enabled ? 'checked' : ''}
+                 onchange="toggleSvc('${esc(s.name)}', this.checked)">
+        </label>
+      </div>`;
+  }).join('');
+  document.getElementById('ctrlLoading').style.display = 'none';
+  grid.style.display = '';
+}
+
+function _renderCtrlPresets(presets) {
+  const grid = document.getElementById('ctrlPresetGrid');
+  grid.innerHTML = Object.entries(presets).map(([key, p]) => {
+    const meta = PRESET_META[key] || { icon: '▶', danger: false };
+    return `
+      <button class="ctrl-preset-btn${meta.danger ? ' danger' : ''}"
+              onclick="applyPreset('${esc(key)}')"
+              title="${esc(p.description)}">
+        <span class="ctrl-preset-icon">${meta.icon}</span>
+        <div class="ctrl-preset-info">
+          <div class="ctrl-preset-label">${esc(p.label)}</div>
+          <div class="ctrl-preset-desc">${esc(p.description)}</div>
+        </div>
+      </button>`;
+  }).join('');
+}
+
+function _renderOverrideBadge(state) {
+  const badge = document.getElementById('ctrlOverrideBadge');
+  badge.style.display = state.has_overrides ? '' : 'none';
+}
+
+function _renderBudget(b) {
+  const daily = b.daily || {};
+  const month = b.monthly || {};
+
+  const fmt = (used, limit) => limit
+    ? `${used.toLocaleString()} / ${limit.toLocaleString()} tok`
+    : `${used.toLocaleString()} / 無制限 tok`;
+
+  document.getElementById('budgetDailyVal').textContent  = fmt(daily.tokens_used || 0, daily.tokens_limit || 0);
+  document.getElementById('budgetMonthVal').textContent  = fmt(month.tokens_used || 0, month.tokens_limit || 0);
+  document.getElementById('budgetDailyPct').textContent  = (daily.token_pct  || 0) + '%';
+  document.getElementById('budgetMonthPct').textContent  = (month.token_pct  || 0) + '%';
+  document.getElementById('budgetDailyCost').textContent = `$${(daily.cost_usd || 0).toFixed(4)} / ${daily.cost_limit_usd ? '$' + daily.cost_limit_usd : '無制限'}`;
+  document.getElementById('budgetMonthCost').textContent = `$${(month.cost_usd || 0).toFixed(4)} / ${month.cost_limit_usd ? '$' + month.cost_limit_usd : '無制限'}`;
+
+  const warnLevel = b.warn_level || 'none';
+  const setBar = (barId, cardId, pct) => {
+    const bar = document.getElementById(barId);
+    bar.style.width = pct + '%';
+    bar.className = 'budget-bar-fill' + (warnLevel === 'critical' ? ' critical' : warnLevel === 'warn' ? ' warn' : '');
+    document.getElementById(cardId).className = 'budget-card ' + (warnLevel !== 'none' ? warnLevel : '');
+  };
+  setBar('budgetDailyBar',  'budgetDailyCard',  daily.token_pct  || 0);
+  setBar('budgetMonthBar',  'budgetMonthCard',  month.token_pct  || 0);
+
+  const banner = document.getElementById('ctrlBudgetBanner');
+  banner.className = 'budget-status-banner ' + warnLevel;
+  if (warnLevel !== 'none') {
+    document.getElementById('ctrlBudgetBannerIcon').textContent = warnLevel === 'critical' ? '🔴' : '⚠';
+    document.getElementById('ctrlBudgetBannerMsg').textContent  = warnLevel === 'critical'
+      ? `API予算上限に達しました。アクション: ${b.over_limit_action}`
+      : `API予算が警告しきい値 (${b.warn_threshold_pct}%) に近づいています`;
+  }
+}
+
+async function toggleSvc(serviceName, enabled) {
+  try {
+    const res = await fetch('/api/admin/api-control/toggle', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ service: serviceName, enabled }),
+    });
+    if (!res.ok) throw new Error();
+    _showCtrlToast(`${serviceName} を ${enabled ? 'ON' : 'OFF'} にしました`);
+    await loadApiControl(true);
+  } catch {
+    _showCtrlToast('切り替えに失敗しました', true);
+    await loadApiControl(true); // revert UI
+  }
+}
+
+async function applyPreset(preset) {
+  const meta = PRESET_META[preset] || {};
+  if (meta.danger && !confirm(`「${preset}」を適用しますか？`)) return;
+  try {
+    const res = await fetch('/api/admin/api-control/batch', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ preset }),
+    });
+    if (!res.ok) throw new Error();
+    const d = await res.json();
+    const count = (d.applied || []).length;
+    _showCtrlToast(`プリセット「${d.preset_label || preset}」を適用しました (${count}件変更)`);
+    await loadApiControl(true);
+  } catch {
+    _showCtrlToast('プリセット適用に失敗しました', true);
+  }
+}
+
+async function clearAllOverrides() {
+  if (!confirm('全オーバーライドをリセットしますか？')) return;
+  await applyPreset('reset');
+}
+
+let _ctrlToastTimer = null;
+function _showCtrlToast(msg, isError = false) {
+  let toast = document.getElementById('ctrlToast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'ctrlToast';
+    toast.className = 'ctrl-toast';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  toast.className = 'ctrl-toast' + (isError ? ' error' : '');
+  requestAnimationFrame(() => toast.classList.add('show'));
+  clearTimeout(_ctrlToastTimer);
+  _ctrlToastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
+}
 
 // ── システム設定パネル ────────────────────────────────────────────
 let settingsLoaded = false;

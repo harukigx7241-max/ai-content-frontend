@@ -42,15 +42,35 @@ class FeatureFlags:
     PROMOTION_PLANNER: bool   = settings.ENABLE_PROMOTION_PLANNER
     GUILD_SCRIBE_AI: bool     = settings.ENABLE_GUILD_SCRIBE_AI
 
+    # ── 実行時オーバーライド (Phase 13) ────────────────────────────
+    # 管理ダッシュボードから動的に ON/OFF できる runtime override dict。
+    # キー: フラグ名 (例: "PROMPT_DOCTOR")、値: bool
+    # サーバー再起動でリセット。Phase 16 で DB 永続化予定。
+    _runtime_overrides: dict = {}
+
     # ── ヘルパーメソッド ────────────────────────────────────────────
 
     def is_enabled(self, flag_name: str) -> bool:
         """
         フラグ名 (文字列) でフラグの ON/OFF を確認する。
-        例: flags.is_enabled("PROMPT_DOCTOR")
+        Phase 13: runtime_overrides が優先される。
         存在しないフラグ名は True を返す (安全側・フォールバック許可)。
         """
+        if flag_name in self._runtime_overrides:
+            return bool(self._runtime_overrides[flag_name])
         return bool(getattr(self, flag_name, True))
+
+    def set_override(self, flag_key: str, enabled: bool) -> None:
+        """実行時オーバーライドを設定する (管理者専用)。"""
+        self._runtime_overrides[flag_key] = enabled
+
+    def clear_override(self, flag_key: str) -> None:
+        """実行時オーバーライドを削除し、環境変数ベースの値に戻す。"""
+        self._runtime_overrides.pop(flag_key, None)
+
+    def get_overrides(self) -> dict:
+        """現在の実行時オーバーライド一覧を返す。"""
+        return dict(self._runtime_overrides)
 
     def has_api_key(self) -> bool:
         """少なくとも1つの LLM API キーが設定されているか確認する。"""
