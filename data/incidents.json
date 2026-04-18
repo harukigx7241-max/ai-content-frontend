@@ -1,0 +1,15 @@
+{
+  "incidents": [
+    {
+      "id": "8a107c65",
+      "title": "テスト",
+      "severity": "warning",
+      "status": "resolved",
+      "description": "動作確認",
+      "created_at": "2026-04-18T05:11:37.153305+00:00",
+      "resolved_at": "2026-04-18T05:11:37.153681+00:00",
+      "resolution": "OK",
+      "created_by": "hq"
+    }
+  ]
+}
