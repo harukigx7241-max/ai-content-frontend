@@ -137,7 +137,7 @@ class GuildScribeService(BaseService):
             hint="テンプレートをベースに編集してご利用ください。",
         )
 
-    # ── API: LLM高品質生成 (未実装) ────────────────────────────────
+    # ── API: LLM高品質生成 ─────────────────────────────────────────
 
     def _run_api(
         self,
@@ -147,10 +147,38 @@ class GuildScribeService(BaseService):
         points: list[str] | None = None,
         **_: object,
     ) -> ServiceResult:
-        """
-        TODO: ユーザーの過去投稿・カテゴリ・トレンドを踏まえたLLM投稿文生成。
-        """
-        return ServiceResult.not_implemented(ServiceMode.API)
+        """LLM でギルド広場向け投稿文を生成する。"""
+        from app.services.llm_client import call_llm
+
+        pts = points or []
+        pts_text = "\n".join(f"・{p}" for p in pts) if pts else "・具体的なポイントを3つ含める"
+        cat_label = {
+            "note": "note記事・コンテンツ販売",
+            "cw": "クラウドワークス副業",
+            "fortune": "占い・スピリチュアル副業",
+            "sns": "SNS運用・マーケティング",
+        }.get(category, "副業・コンテンツ制作")
+
+        prompt = (
+            f"以下の情報をもとに、ギルド広場（副業コミュニティ）への投稿文を日本語で作成してください。\n\n"
+            f"カテゴリ: {cat_label}\n"
+            f"タイトル: {title or theme}\n"
+            f"テーマ: {theme}\n"
+            f"ポイント:\n{pts_text}\n\n"
+            "要件:\n"
+            "- 読者の共感を引き出す書き出しから始める\n"
+            "- 箇条書きで要点を整理する\n"
+            "- 最後に読者への行動喚起（コメント歓迎・いいね等）を入れる\n"
+            "- 全体200〜400文字程度\n"
+            "- 絵文字を適切に使用して視覚的に読みやすくする\n"
+            "- 投稿文のみ出力し、前置きや説明は不要"
+        )
+
+        text = call_llm(prompt, max_tokens=600)
+        return ServiceResult.api(
+            content={"text": text, "category": category},
+            hint="AIが生成した投稿文です。必要に応じて編集してください。",
+        )
 
     def _run_fallback(self, **kwargs: object) -> ServiceResult:
         return self._run_free(**kwargs)
