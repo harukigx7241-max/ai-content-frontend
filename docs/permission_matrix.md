@@ -18,8 +18,9 @@
 | `admin` | `"admin"` | 4 | ⚒ | 管理者。現場運営担当。 |
 | `headquarters` | `"headquarters"` | 5 | 🏛 | 管理本部。司令室・最上位制御。 |
 
-> **DB 注意:** Phase 15 まで DB に存在するロールは `"user"` と `"admin"` の 2 種のみ。  
-> `member_paid` / `member_master` / `headquarters` は Phase 15 の DB マイグレーションで追加予定。
+> **DB 注意:** 現在 DB に存在するロールは `"user"` と `"admin"` が主。  
+> `member_paid` / `member_master` は Phase 16 で DB カラム追加済み (subscription_plan で追跡)。  
+> `headquarters` ロールは手動で DB に設定可能。
 
 ---
 
@@ -168,12 +169,14 @@ async def foo(user = Depends(role_guard(RoleValue.MEMBER_MASTER))):
 | 層 | ファイル | 状態 |
 |----|---------|------|
 | ロール定義 | `app/core/roles.py` | ✅ Phase 2 実装済み |
-| ポリシーテーブル | `app/core/access_policy.py` | ✅ Phase 2 実装済み |
+| ポリシーテーブル | `app/core/access_policy.py` | ✅ Phase 18 時点で 30+ ポリシー定義済み |
 | 依存性 | `app/auth/dependencies.py` | ✅ Phase 2 実装済み |
 | アクセスサービス | `app/services/feature_access_service.py` | ✅ Phase 2 更新済み |
-| DB ロールカラム | `app/db/models/user.py` | 🟠 Phase 15 で拡張予定 |
+| DB ロールカラム | `app/db/models/user.py` | ✅ role カラムあり (subscription_plan も Phase 16 で追加) |
 | JWT ロールクレーム | `app/core/security.py` | ✅ role フィールドあり |
-| フロントへの公開 | `/api/system/features` | ❌ Phase 3 以降で実装予定 |
+| HQ 司令室 | `/hq` + `/api/hq/*` | ✅ Phase 18 実装済み |
+| 管理本部サービス | `app/services/hq_dashboard_service.py` | ✅ Phase 18 実装済み |
+| フロントへの公開 | `/api/system/features` | ✅ 実装済み |
 
 ---
 

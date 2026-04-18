@@ -81,6 +81,24 @@ def plans_page(
     )
 
 
+@router.get("/hq")
+def hq_page(
+    request: Request,
+    current_user: Optional[User] = Depends(get_current_user_soft),
+):
+    """管理本部司令室。未ログインは /login へ。headquarters 以外は /admin へ。"""
+    if not current_user:
+        return RedirectResponse("/login?next=/hq", status_code=302)
+    from app.core.roles import HQ_ROLES
+    if current_user.role not in HQ_ROLES:
+        return RedirectResponse("/admin", status_code=302)
+    return templates.TemplateResponse(
+        request=request,
+        name="hq/dashboard.html",
+        context={"user": current_user},
+    )
+
+
 @router.get("/admin")
 def admin_page(
     request: Request,

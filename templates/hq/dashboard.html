@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>管理本部 司令室 — プロンプトギルド</title>
+  <link rel="icon" type="image/svg+xml" href="/static/img/favicon.svg">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="/" class="logo" style="text-decoration:none">
+      <img src="/static/img/guild-emblem.svg" alt="" class="logo-emblem" width="44" height="44">
+      <span class="logo-text">プロンプトギルド</span>
+    </a>
+    <div class="auth-nav">
+      <span class="auth-user-name" style="color:var(--accent-gold)">🏛 {{ user.display_name }}</span>
+      <a href="/admin"  class="auth-nav-btn outline">⚒ 管理画面</a>
+      <a href="/"       class="auth-nav-btn outline">⚔ 工房</a>
+      <button class="auth-nav-btn outline" id="logoutBtn">ログアウト</button>
+    </div>
+    <button class="hamburger-btn" id="hamburgerBtn" aria-label="メニュー" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<div class="mobile-drawer" id="mobileDrawer" aria-hidden="true">
+  <div class="mobile-drawer-user" style="color:var(--accent-gold)">🏛 管理本部: {{ user.display_name }}</div>
+  <a href="/admin" class="auth-nav-btn outline">⚒ 管理画面</a>
+  <a href="/"      class="auth-nav-btn outline">⚔ 工房</a>
+  <button class="auth-nav-btn outline" id="drawerLogoutBtn">ログアウト</button>
+</div>
+
+<!-- インシデント作成モーダル -->
+<div id="incidentModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999" onclick="closeIncidentModal(event)">
+  <div style="max-width:520px;margin:80px auto;background:var(--card-bg,#1a1a2e);border:1px solid rgba(255,255,255,0.12);border-radius:16px;padding:28px" onclick="event.stopPropagation()">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <strong>🚨 インシデント作成</strong>
+      <button onclick="closeIncidentModal()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:1.1rem">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div>
+        <label style="font-size:0.82rem;color:var(--text-secondary);display:block;margin-bottom:4px">タイトル</label>
+        <input id="incTitle" style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:9px;color:#f8fafc;font-size:0.88rem;box-sizing:border-box" placeholder="例: API レートリミット超過">
+      </div>
+      <div>
+        <label style="font-size:0.82rem;color:var(--text-secondary);display:block;margin-bottom:4px">深刻度</label>
+        <select id="incSeverity" style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:9px;color:#f8fafc;font-size:0.88rem">
+          <option value="info">ℹ info — 情報</option>
+          <option value="warning">⚠ warning — 注意</option>
+          <option value="critical">🔴 critical — 緊急</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size:0.82rem;color:var(--text-secondary);display:block;margin-bottom:4px">説明</label>
+        <textarea id="incDesc" rows="3" style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:9px;color:#f8fafc;font-size:0.85rem;resize:vertical;box-sizing:border-box" placeholder="発生状況・影響範囲を記載"></textarea>
+      </div>
+      <button onclick="submitIncident()" style="background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff;border:none;border-radius:8px;padding:10px;cursor:pointer;font-weight:600">作成する</button>
+    </div>
+  </div>
+</div>
+
+<main class="admin-container">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+    <h1 class="admin-title" style="margin:0">🏛 管理本部 司令室</h1>
+    <span id="healthPill" style="font-size:0.72rem;padding:3px 10px;border-radius:12px;background:rgba(34,197,94,0.15);border:1px solid rgba(34,197,94,0.4);color:#22c55e">● 正常</span>
+  </div>
+  <p style="color:var(--text-muted);font-size:0.8rem;margin-bottom:24px">Phase 18 — headquarters 専用司令室</p>
+
+  <!-- タブナビ -->
+  <div class="admin-filter-bar" style="margin-bottom:28px" role="tablist">
+    <button class="admin-filter-btn active" data-hqpanel="kpi"      role="tab">📊 概要</button>
+    <button class="admin-filter-btn"        data-hqpanel="trends"   role="tab">🔥 Trend Room</button>
+    <button class="admin-filter-btn"        data-hqpanel="incident" role="tab">🚨 Incident Room <span id="incBadge" style="display:none;background:#ef4444;color:#fff;border-radius:10px;padding:1px 6px;font-size:0.7rem;margin-left:4px">0</span></button>
+    <button class="admin-filter-btn"        data-hqpanel="flags"    role="tab">⚙ Flag Console</button>
+    <button class="admin-filter-btn"        data-hqpanel="admins"   role="tab">👥 Admin管理</button>
+  </div>
+
+  <!-- ═══ KPI 概要 ═══ -->
+  <section id="hqpanel-kpi">
+    <p id="kpiLoading" style="color:var(--text-muted)">読み込み中...</p>
+    <div id="kpiContent" style="display:none">
+      <div class="dash-stats-grid" style="margin-bottom:24px">
+        <div class="dash-stat-card">
+          <div class="dash-stat-label">合計ユーザー</div>
+          <div class="dash-stat-value" id="kpi-total">—</div>
+        </div>
+        <div class="dash-stat-card pending">
+          <div class="dash-stat-label">承認待ち</div>
+          <div class="dash-stat-value" id="kpi-pending">—</div>
+        </div>
+        <div class="dash-stat-card approved">
+          <div class="dash-stat-label">7日間 プロンプト生成</div>
+          <div class="dash-stat-value" id="kpi-prompts">—</div>
+        </div>
+        <div class="dash-stat-card recent">
+          <div class="dash-stat-label">7日間 広場投稿</div>
+          <div class="dash-stat-value" id="kpi-posts">—</div>
+        </div>
+        <div class="dash-stat-card">
+          <div class="dash-stat-label">稼働サービス</div>
+          <div class="dash-stat-value" id="kpi-services">—</div>
+        </div>
+        <div class="dash-stat-card">
+          <div class="dash-stat-label">月次コスト (USD)</div>
+          <div class="dash-stat-value" id="kpi-cost">—</div>
+        </div>
+      </div>
+      <div id="kpiNote" style="font-size:0.78rem;color:var(--text-muted);margin-bottom:8px"></div>
+      <div class="mypage-card" style="margin-bottom:0">
+        <div class="mypage-section-title" style="margin-bottom:12px">オープンインシデント</div>
+        <div id="kpiIncidentSummary" style="color:var(--text-secondary);font-size:0.88rem">—</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ Trend Room ═══ -->
+  <section id="hqpanel-trends" style="display:none">
+    <p id="trendLoading" style="color:var(--text-muted)">読み込み中...</p>
+    <div id="trendContent" style="display:none">
+      <!-- ワークショップ鮮度テーブル -->
+      <div class="mypage-card" style="margin-bottom:20px">
+        <div class="mypage-section-title" style="margin-bottom:14px">ワークショップ トレンド鮮度</div>
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:0.83rem">
+            <thead>
+              <tr style="color:var(--text-muted);text-align:left">
+                <th style="padding:6px 10px">工房</th>
+                <th style="padding:6px 10px">鮮度</th>
+                <th style="padding:6px 10px">トップカテゴリ</th>
+                <th style="padding:6px 10px">モメンタム</th>
+                <th style="padding:6px 10px">パターン数</th>
+              </tr>
+            </thead>
+            <tbody id="trendTable"></tbody>
+          </table>
+        </div>
+      </div>
+      <!-- クロス分析 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="mypage-card">
+          <div class="mypage-section-title" style="margin-bottom:12px">🔥 全工房 トップカテゴリ</div>
+          <div id="crossCategories" style="font-size:0.83rem"></div>
+        </div>
+        <div class="mypage-card">
+          <div class="mypage-section-title" style="margin-bottom:12px">💡 トップ販売角度</div>
+          <div id="crossAngles" style="font-size:0.83rem"></div>
+        </div>
+      </div>
+      <div class="mypage-card" style="margin-top:16px">
+        <div class="mypage-section-title" style="margin-bottom:8px">推奨アクション</div>
+        <div id="trendActions" style="font-size:0.85rem;color:var(--text-secondary)"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ Incident Room ═══ -->
+  <section id="hqpanel-incident" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div>
+        <h2 style="margin:0;font-size:1rem">インシデント管理</h2>
+        <p style="margin:4px 0 0;font-size:0.78rem;color:var(--text-muted)">障害・異常・注意事項の記録・追跡</p>
+      </div>
+      <button onclick="document.getElementById('incidentModal').style.display=''"
+              style="background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;border:none;border-radius:8px;padding:8px 18px;cursor:pointer;font-size:0.85rem;font-weight:600">
+        + 新規作成
+      </button>
+    </div>
+    <!-- フィルター -->
+    <div style="display:flex;gap:8px;margin-bottom:16px">
+      <button class="inc-filter active" data-istatus="" onclick="filterIncidents(this,'')">すべて</button>
+      <button class="inc-filter" data-istatus="open" onclick="filterIncidents(this,'open')">🔴 オープン</button>
+      <button class="inc-filter" data-istatus="monitoring" onclick="filterIncidents(this,'monitoring')">🟡 モニタリング</button>
+      <button class="inc-filter" data-istatus="resolved" onclick="filterIncidents(this,'resolved')">✅ 解決済み</button>
+    </div>
+    <p id="incidentLoading" style="color:var(--text-muted)">読み込み中...</p>
+    <div id="incidentList"></div>
+  </section>
+
+  <!-- ═══ Feature Flag Console ═══ -->
+  <section id="hqpanel-flags" style="display:none">
+    <p style="color:var(--text-secondary);font-size:0.83rem;margin-bottom:6px">
+      ランタイムオーバーライドはサーバー再起動でリセットされます。永続変更は環境変数 (ENABLE_*) を更新してください。
+    </p>
+    <p id="flagLoading" style="color:var(--text-muted)">読み込み中...</p>
+    <div id="flagSummary" style="display:none;margin-bottom:16px;font-size:0.82rem;color:var(--text-secondary)"></div>
+    <div id="flagList"></div>
+  </section>
+
+  <!-- ═══ Admin 管理 ═══ -->
+  <section id="hqpanel-admins" style="display:none">
+    <p style="color:var(--text-secondary);font-size:0.83rem;margin-bottom:16px">
+      管理者ロールのユーザー一覧。ロール変更は HQ 専用権限です。
+    </p>
+    <p id="adminsLoading" style="color:var(--text-muted)">読み込み中...</p>
+    <div id="adminsList"></div>
+  </section>
+
+</main>
+
+<style>
+.inc-filter {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  color: var(--text-secondary);
+  padding: 5px 12px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.inc-filter.active, .inc-filter:hover {
+  background: rgba(168,85,247,0.15);
+  border-color: rgba(168,85,247,0.4);
+  color: #a855f7;
+}
+.inc-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  transition: border-color 0.2s;
+}
+.inc-card:hover { border-color: rgba(255,255,255,0.18); }
+.inc-sev-info     { color: #60a5fa; }
+.inc-sev-warning  { color: #f59e0b; }
+.inc-sev-critical { color: #ef4444; }
+.flag-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  font-size: 0.83rem;
+}
+.flag-row:last-child { border-bottom: none; }
+.flag-toggle {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  flex-shrink: 0;
+}
+.flag-toggle input { opacity: 0; width: 0; height: 0; }
+.flag-slider {
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.1);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+.flag-slider::before {
+  content: "";
+  position: absolute;
+  height: 14px; width: 14px;
+  left: 3px; bottom: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: 0.2s;
+}
+.flag-toggle input:checked + .flag-slider { background: #7c3aed; }
+.flag-toggle input:checked + .flag-slider::before { transform: translateX(16px); }
+.freshness-fresh    { color: #22c55e; }
+.freshness-expiring { color: #f59e0b; }
+.freshness-stale    { color: #ef4444; }
+.freshness-missing  { color: #6b7280; }
+.freshness-unknown  { color: #6b7280; }
+</style>
+
+<script>
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+const HQ_PANELS = ['kpi','trends','incident','flags','admins'];
+let loadedPanels = new Set();
+
+document.querySelectorAll('[data-hqpanel]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-hqpanel]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const id = btn.dataset.hqpanel;
+    HQ_PANELS.forEach(p => {
+      document.getElementById('hqpanel-' + p).style.display = p === id ? '' : 'none';
+    });
+    if (!loadedPanels.has(id)) {
+      loadedPanels.add(id);
+      if (id === 'kpi')      loadKPI();
+      if (id === 'trends')   loadTrends();
+      if (id === 'incident') loadIncidents('');
+      if (id === 'flags')    loadFlags();
+      if (id === 'admins')   loadAdmins();
+    }
+  });
+});
+
+// ── 認証 ───────────────────────────────────────────────────────────────
+document.getElementById('logoutBtn')?.addEventListener('click', async () => {
+  await fetch('/api/auth/logout', {method:'POST'});
+  location.href = '/login';
+});
+document.getElementById('drawerLogoutBtn')?.addEventListener('click', async () => {
+  await fetch('/api/auth/logout', {method:'POST'});
+  location.href = '/login';
+});
+const hbBtn = document.getElementById('hamburgerBtn');
+const drawer = document.getElementById('mobileDrawer');
+if (hbBtn) hbBtn.addEventListener('click', () => {
+  const open = drawer.getAttribute('aria-hidden') === 'false';
+  drawer.setAttribute('aria-hidden', open ? 'true' : 'false');
+  drawer.style.display = open ? 'none' : 'flex';
+  hbBtn.setAttribute('aria-expanded', String(!open));
+});
+
+// ── 1. KPI ─────────────────────────────────────────────────────────────
+async function loadKPI() {
+  try {
+    const res = await fetch('/api/hq/kpi');
+    const d = await res.json();
+    document.getElementById('kpi-total').textContent    = d.users?.total ?? '—';
+    document.getElementById('kpi-pending').textContent  = d.users?.pending ?? '—';
+    document.getElementById('kpi-prompts').textContent  = d.activity?.prompts_7d ?? '—';
+    document.getElementById('kpi-posts').textContent    = d.activity?.posts_7d ?? '—';
+    document.getElementById('kpi-services').textContent =
+      d.health ? `${d.health.services_up} / ${d.health.services_total}` : '—';
+    document.getElementById('kpi-cost').textContent =
+      d.costs?.monthly_usd != null ? `$${d.costs.monthly_usd.toFixed(2)}` : '—';
+    if (d.costs?.note) {
+      document.getElementById('kpiNote').textContent = '※ ' + d.costs.note;
+    }
+    // health pill
+    const pill = document.getElementById('healthPill');
+    if (d.health?.status === 'critical') {
+      pill.style.cssText = 'font-size:0.72rem;padding:3px 10px;border-radius:12px;background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);color:#ef4444';
+      pill.textContent = '● 緊急';
+    } else if (d.health?.status === 'warning') {
+      pill.style.cssText = 'font-size:0.72rem;padding:3px 10px;border-radius:12px;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.4);color:#f59e0b';
+      pill.textContent = '● 注意';
+    }
+    // incident summary
+    const open = d.health?.incidents_open ?? 0;
+    document.getElementById('kpiIncidentSummary').textContent =
+      open === 0 ? '✅ オープンインシデントなし' : `⚠ ${open}件のオープンインシデントがあります`;
+    // badge
+    if (open > 0) {
+      const badge = document.getElementById('incBadge');
+      badge.style.display = '';
+      badge.textContent = String(open);
+    }
+    document.getElementById('kpiLoading').style.display = 'none';
+    document.getElementById('kpiContent').style.display = '';
+  } catch(e) {
+    document.getElementById('kpiLoading').textContent = '読み込みに失敗しました: ' + e;
+  }
+}
+
+// ── 2. Trend Room ──────────────────────────────────────────────────────
+const FRESH_LABELS = {fresh:'✅ 新鮮',expiring:'⚡ 期限間近',stale:'❌ 期限切れ',missing:'— なし',unknown:'— 不明'};
+async function loadTrends() {
+  try {
+    const res = await fetch('/api/hq/trends');
+    const d = await res.json();
+
+    // テーブル
+    const tbody = document.getElementById('trendTable');
+    const WS_LABELS = {note:'📝 note',tips:'💰 tips',brain:'🧠 brain',cw:'💼 CW',fortune:'🔮 占い',sns:'✨ SNS',sales:'🛒 sales'};
+    tbody.innerHTML = (d.workshops || []).map(w => `
+      <tr style="border-bottom:1px solid rgba(255,255,255,0.05)">
+        <td style="padding:8px 10px;font-weight:600">${esc(WS_LABELS[w.workshop]||w.workshop)}</td>
+        <td style="padding:8px 10px" class="freshness-${esc(w.freshness)}">${esc(FRESH_LABELS[w.freshness]||w.freshness)}</td>
+        <td style="padding:8px 10px;color:var(--text-secondary)">${esc(w.top_category)}</td>
+        <td style="padding:8px 10px">
+          <div style="display:flex;align-items:center;gap:6px">
+            <div style="height:6px;border-radius:3px;background:linear-gradient(90deg,#7c3aed,#a855f7);width:${Math.round(w.top_momentum*100)}px;max-width:80px"></div>
+            <span style="font-size:0.75rem;color:var(--text-muted)">${(w.top_momentum*100).toFixed(0)}%</span>
+          </div>
+        </td>
+        <td style="padding:8px 10px;color:var(--text-muted)">${esc(w.title_patterns_count)} パターン</td>
+      </tr>
+    `).join('');
+
+    // クロス分析
+    const ca = d.cross_analysis || {};
+    document.getElementById('crossCategories').innerHTML = (ca.top_categories||[]).map((c,i) => `
+      <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+        <span>${i===0?'🥇':i===1?'🥈':i===2?'🥉':'  '} ${esc(c.category)}</span>
+        <span style="color:var(--text-muted)">${(c.max_score*100).toFixed(0)}%</span>
+      </div>`).join('') || '<span style="color:var(--text-muted)">データなし</span>';
+
+    document.getElementById('crossAngles').innerHTML = (ca.top_selling_angles||[]).map(a => `
+      <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+        <span>${esc(a.angle)}</span>
+        <span style="color:var(--text-muted)">強度 ${(a.max_strength*100).toFixed(0)}%</span>
+      </div>`).join('') || '<span style="color:var(--text-muted)">データなし</span>';
+
+    // 推奨アクション
+    const stale = ca.stale_workshops || [];
+    const actions = [];
+    if (stale.length > 0) actions.push(`⚡ トレンドデータ更新推奨: ${stale.join('、')} (管理画面 → トレンド管理から更新)`);
+    if (ca.freshest_workshop) actions.push(`✅ 最も新鮮な工房: ${ca.freshest_workshop}`);
+    document.getElementById('trendActions').innerHTML = actions.length
+      ? actions.map(a => `<p style="margin:4px 0">${esc(a)}</p>`).join('')
+      : '<p style="color:var(--text-muted)">特に推奨アクションはありません</p>';
+
+    document.getElementById('trendLoading').style.display = 'none';
+    document.getElementById('trendContent').style.display = '';
+  } catch(e) {
+    document.getElementById('trendLoading').textContent = '読み込みに失敗しました: ' + e;
+  }
+}
+
+// ── 3. Incident Room ───────────────────────────────────────────────────
+let allIncidents = [];
+const SEV_ICON = {info:'ℹ',warning:'⚠',critical:'🔴'};
+const STATUS_LABEL = {open:'オープン',monitoring:'モニタリング中',resolved:'解決済み'};
+const STATUS_COLOR = {open:'#ef4444',monitoring:'#f59e0b',resolved:'#22c55e'};
+
+async function loadIncidents(statusFilter) {
+  const url = '/api/hq/incidents' + (statusFilter ? `?status=${statusFilter}` : '');
+  try {
+    const res = await fetch(url);
+    const d = await res.json();
+    allIncidents = d.incidents || [];
+    renderIncidents(allIncidents);
+    document.getElementById('incidentLoading').style.display = 'none';
+    // update badge
+    if (d.open > 0) {
+      const badge = document.getElementById('incBadge');
+      badge.style.display = '';
+      badge.textContent = String(d.open);
+    }
+  } catch(e) {
+    document.getElementById('incidentLoading').textContent = '読み込みに失敗しました: ' + e;
+  }
+}
+
+function renderIncidents(list) {
+  const el = document.getElementById('incidentList');
+  if (!list.length) {
+    el.innerHTML = '<p style="color:var(--text-muted);font-size:0.88rem">インシデントはありません</p>';
+    return;
+  }
+  el.innerHTML = list.map(inc => `
+    <div class="inc-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+        <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:0">
+          <span class="inc-sev-${esc(inc.severity)}" style="font-size:1.1rem">${SEV_ICON[inc.severity]||'?'}</span>
+          <strong style="font-size:0.9rem">${esc(inc.title)}</strong>
+          <span style="font-size:0.72rem;padding:2px 8px;border-radius:10px;background:rgba(255,255,255,0.06);color:${STATUS_COLOR[inc.status]||'#fff'};border:1px solid ${STATUS_COLOR[inc.status]||'#fff'}40;white-space:nowrap">
+            ${STATUS_LABEL[inc.status]||inc.status}
+          </span>
+        </div>
+        <span style="font-size:0.72rem;color:var(--text-muted);white-space:nowrap">${esc(inc.created_at.slice(0,10))}</span>
+      </div>
+      ${inc.description ? `<p style="margin:8px 0 0;font-size:0.82rem;color:var(--text-secondary)">${esc(inc.description)}</p>` : ''}
+      ${inc.resolution ? `<p style="margin:6px 0 0;font-size:0.78rem;color:#22c55e">✅ ${esc(inc.resolution)}</p>` : ''}
+      ${inc.status !== 'resolved' ? `
+        <div style="margin-top:10px;display:flex;gap:8px">
+          ${inc.status === 'open' ? `<button onclick="updateIncident('${esc(inc.id)}','monitoring')" class="inc-action-btn" style="color:#f59e0b">→ モニタリング</button>` : ''}
+          <button onclick="resolveIncidentPrompt('${esc(inc.id)}')" class="inc-action-btn" style="color:#22c55e">✅ 解決済みにする</button>
+        </div>` : ''}
+    </div>
+  `).join('');
+}
+
+function filterIncidents(btn, status) {
+  document.querySelectorAll('.inc-filter').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  loadIncidents(status);
+}
+
+function closeIncidentModal(e) {
+  if (e && e.target !== document.getElementById('incidentModal')) return;
+  document.getElementById('incidentModal').style.display = 'none';
+}
+
+async function submitIncident() {
+  const title = document.getElementById('incTitle').value.trim();
+  const severity = document.getElementById('incSeverity').value;
+  const desc = document.getElementById('incDesc').value.trim();
+  if (!title) { alert('タイトルを入力してください'); return; }
+  try {
+    await fetch('/api/hq/incidents', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({title, severity, description: desc}),
+    });
+    document.getElementById('incidentModal').style.display = 'none';
+    document.getElementById('incTitle').value = '';
+    document.getElementById('incDesc').value = '';
+    loadIncidents('');
+  } catch(e) { alert('エラー: ' + e); }
+}
+
+async function updateIncident(id, status, resolution) {
+  try {
+    await fetch(`/api/hq/incidents/${id}`, {
+      method: 'PUT',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({status, resolution: resolution||''}),
+    });
+    loadIncidents('');
+  } catch(e) { alert('エラー: ' + e); }
+}
+
+function resolveIncidentPrompt(id) {
+  const res = prompt('解決内容を入力してください (任意):') ?? '';
+  updateIncident(id, 'resolved', res);
+}
+
+// ── 4. Feature Flag Console ────────────────────────────────────────────
+const CATEGORY_LABEL = {
+  system:'システム',marketing:'マーケティング',content:'コンテンツ',
+  prompt:'プロンプト',community:'コミュニティ',gamification:'ゲーミフィケーション',
+  admin:'管理',admin_growth:'集客工房',premium:'プレミアム',hq:'管理本部',
+  ui:'UI',general:'その他'
+};
+let allFlags = [];
+
+async function loadFlags() {
+  try {
+    const res = await fetch('/api/hq/flags');
+    const d = await res.json();
+    allFlags = d.flags || [];
+    document.getElementById('flagSummary').textContent =
+      `合計 ${d.total} フラグ / 有効 ${d.enabled_count} / 無効 ${d.disabled_count} / オーバーライド中 ${d.overrides_active}`;
+    renderFlags(allFlags);
+    document.getElementById('flagLoading').style.display = 'none';
+    document.getElementById('flagSummary').style.display = '';
+  } catch(e) {
+    document.getElementById('flagLoading').textContent = '読み込みに失敗しました: ' + e;
+  }
+}
+
+function renderFlags(flags) {
+  // カテゴリ別グループ
+  const groups = {};
+  flags.forEach(f => {
+    const cat = f.category || 'general';
+    if (!groups[cat]) groups[cat] = [];
+    groups[cat].push(f);
+  });
+  const el = document.getElementById('flagList');
+  el.innerHTML = Object.entries(groups).map(([cat, rows]) => `
+    <div class="mypage-card" style="margin-bottom:14px">
+      <div class="mypage-section-title" style="margin-bottom:2px">${esc(CATEGORY_LABEL[cat]||cat)}</div>
+      ${rows.map(f => `
+        <div class="flag-row">
+          <label class="flag-toggle">
+            <input type="checkbox" ${f.enabled?'checked':''} onchange="toggleFlag('${esc(f.key)}',this.checked)">
+            <span class="flag-slider"></span>
+          </label>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600;display:flex;align-items:center;gap:6px">
+              ${esc(f.label||f.key)}
+              ${f.has_override ? '<span style="font-size:0.65rem;padding:1px 6px;background:rgba(245,158,11,0.2);border:1px solid rgba(245,158,11,0.4);border-radius:8px;color:#f59e0b">OVERRIDE</span>' : ''}
+              ${f.status ? `<span style="font-size:0.65rem;padding:1px 6px;background:rgba(255,255,255,0.05);border-radius:8px;color:var(--text-muted)">${esc(f.status)}</span>` : ''}
+            </div>
+            <div style="font-size:0.75rem;color:var(--text-muted)">${esc(f.key)}${f.description?' — '+f.description:''}</div>
+          </div>
+          ${f.has_override ? `<button onclick="clearFlag('${esc(f.key)}')" style="font-size:0.72rem;padding:3px 8px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:6px;color:#f59e0b;cursor:pointer">解除</button>` : ''}
+        </div>`).join('')}
+    </div>
+  `).join('');
+}
+
+async function toggleFlag(key, enabled) {
+  try {
+    await fetch('/api/hq/flags/toggle', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({key, enabled, reason: 'HQ Console'}),
+    });
+    await loadFlags();
+  } catch(e) { alert('エラー: ' + e); }
+}
+
+async function clearFlag(key) {
+  try {
+    await fetch('/api/hq/flags/clear', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({key}),
+    });
+    await loadFlags();
+  } catch(e) { alert('エラー: ' + e); }
+}
+
+// ── 5. Admin 管理 ──────────────────────────────────────────────────────
+const ROLE_LABEL = {admin:'⚒ admin',headquarters:'🏛 headquarters',user:'⚗ user',member_free:'⚗ member_free'};
+const ROLE_COLOR = {admin:'#a855f7',headquarters:'#f59e0b',user:'#60a5fa',member_free:'#60a5fa'};
+
+async function loadAdmins() {
+  try {
+    const res = await fetch('/api/hq/admins');
+    const d = await res.json();
+    const el = document.getElementById('adminsList');
+    document.getElementById('adminsLoading').style.display = 'none';
+    if (d.note) {
+      el.innerHTML = `<p style="color:var(--text-muted);font-size:0.85rem">${esc(d.note)}</p>`;
+      return;
+    }
+    const admins = d.admins || [];
+    if (!admins.length) {
+      el.innerHTML = '<p style="color:var(--text-muted)">管理者ユーザーが見つかりません</p>';
+      return;
+    }
+    el.innerHTML = `
+      <div class="mypage-card">
+        <div class="mypage-section-title" style="margin-bottom:14px">管理者ユーザー (${admins.length}名)</div>
+        ${admins.map(u => `
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05)">
+            <div style="flex:1">
+              <div style="font-weight:600">${esc(u.display_name||'—')}</div>
+              <div style="font-size:0.75rem;color:var(--text-muted)">${esc(u.email||'')} / ID: ${u.id}</div>
+            </div>
+            <span style="font-size:0.75rem;padding:2px 10px;border-radius:10px;background:rgba(255,255,255,0.05);color:${ROLE_COLOR[u.role]||'#fff'};border:1px solid ${ROLE_COLOR[u.role]||'#fff'}40">${esc(ROLE_LABEL[u.role]||u.role)}</span>
+            <select onchange="changeAdminRole(${u.id}, this.value, this)"
+                    style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:4px 8px;color:#f8fafc;font-size:0.78rem">
+              <option value="">-- ロール変更 --</option>
+              <option value="headquarters">→ headquarters</option>
+              <option value="admin">→ admin</option>
+              <option value="member_free">→ member_free (降格)</option>
+            </select>
+          </div>`).join('')}
+      </div>`;
+  } catch(e) {
+    document.getElementById('adminsLoading').textContent = '読み込みに失敗しました: ' + e;
+  }
+}
+
+async function changeAdminRole(userId, newRole, selectEl) {
+  if (!newRole) return;
+  if (!confirm(`ユーザー ID ${userId} のロールを「${newRole}」に変更しますか？`)) {
+    selectEl.value = '';
+    return;
+  }
+  try {
+    const res = await fetch('/api/hq/admins/role', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({user_id: userId, new_role: newRole}),
+    });
+    const d = await res.json();
+    if (!res.ok) { alert('エラー: ' + (d.detail||'変更に失敗しました')); selectEl.value=''; return; }
+    alert(d.message || '変更しました');
+    loadAdmins();
+  } catch(e) { alert('エラー: ' + e); selectEl.value=''; }
+}
+
+// スタイルを追加 (inc-action-btn)
+const style = document.createElement('style');
+style.textContent = `.inc-action-btn{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:4px 12px;cursor:pointer;font-size:0.78rem;transition:background 0.2s}.inc-action-btn:hover{background:rgba(255,255,255,0.1)}`;
+document.head.appendChild(style);
+
+// 初期ロード
+loadKPI();
+</script>
+</body>
+</html>

@@ -41,7 +41,11 @@ def include_feature_routers(app: FastAPI) -> None:
     _reg(app, auth_router,   "/api/auth/*")
     _reg(app, admin_router,  "/api/admin/*")
     _reg(app, user_router,   "/api/user/*")
-    _reg(app, pages_router,  "/login /register /mypage /admin /plans")
+    _reg(app, pages_router,  "/login /register /mypage /admin /hq /plans")
+
+    # ── Phase 18: 管理本部 HQ API (require_hq 保護) ───────────────────
+    from app.admin.hq_router import router as hq_router
+    _reg(app, hq_router, "/api/hq/*")
 
     # ── Phase 16: サブスクリプション / プラン API (常時有効) ──────────
     from app.routers.subscription import router as subscription_router

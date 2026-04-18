@@ -40,6 +40,10 @@
 | **12** | **API接続インフラ基盤** (ギルド書記AI・サービスレジストリ13件・/api/system/services・管理サービス状態パネル・docs/api_connection.md) | phase13-mobile-game-ui | 4137474 |
 | **13** | **API制御センター** (機能単位ON/OFF・6バッチプリセット・予算ガード・実行時オーバーライド・🎛管理パネル・docs/api_budget.md) | phase13-mobile-game-ui | 0e007e7 |
 | **14** | **トークン使用量・コストダッシュボード** (管理者/HQ権限分離・モック+APIscaffold・KPI4枚・機能別バー・モデル別・HQ専用拡張・自動停止履歴) | phase13-mobile-game-ui | (本コミット) |
+| **15** | **定期的な傾向収集基盤** (7工房 trend_insights.json・TrendIngestionService・管理UI・CLI・systemd timer・docs) | side-hustle-web-app-195e3 | 3bc480a |
+| **16** | **サブスクリプション土台** (3プラン定義・Stripe scaffold・DB columns・/plans ページ・マイページバッジ・premium teaser) | side-hustle-web-app-195e3 | 8a7756c |
+| **17** | **管理者専用集客工房** (11ツール・AdminGrowthService・/api/admin/growth/*・集客工房パネル・6新ツール実装) | side-hustle-web-app-195e3 | 65ec5b2 |
+| **18** | **管理本部司令室** (HQ Dashboard・Trend Room・Incident Room・Flag Console・Admin管理・/hq・/api/hq/*・docs/operations.md) | side-hustle-web-app-195e3 | (本コミット) |
 
 ---
 
