@@ -61,31 +61,48 @@ const ForgeVault = (() => {
     localStorage.setItem(KEY, JSON.stringify(items));
   }
 
-  function add(title, content) {
+  async function add(title, content) {
     const items = load();
     const item = {
-      id: Date.now(),
-      title: title.slice(0, 60),
+      id:       Date.now(),
+      title:    title.slice(0, 60),
       content,
-      savedAt: new Date().toLocaleDateString('ja-JP'),
+      savedAt:  new Date().toLocaleDateString('ja-JP'),
+      serverId: null,   // サーバー保存後に設定
     };
     items.unshift(item);
     if (items.length > MAX) items.length = MAX;
     save(items);
     updateBadge();
-    // ログイン済みの場合はサーバーにも保存 (fire & forget)
+    // ログイン済みの場合はサーバーにも保存し、serverId をローカルに記録
     if (window._pguildLoggedIn) {
-      fetch('/api/vault', {
-        method: 'POST', credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: item.title, content: item.content, source: 'forge' }),
-      }).catch(() => {});
+      try {
+        const r = await fetch('/api/vault', {
+          method: 'POST', credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title: item.title, content: item.content, source: 'forge' }),
+        });
+        if (r.ok) {
+          const data = await r.json();
+          const all  = load();
+          const local = all.find(i => i.id === item.id);
+          if (local) { local.serverId = data.id; save(all); }
+        }
+      } catch { /* サーバー保存失敗は無視 */ }
     }
     return item;
   }
 
   function remove(id) {
-    save(load().filter(i => i.id !== id));
+    const all  = load();
+    const item = all.find(i => i.id === id);
+    // ログイン済みでサーバーIDがあれば連動削除 (fire & forget)
+    if (window._pguildLoggedIn && item?.serverId) {
+      fetch(`/api/vault/${item.serverId}`, {
+        method: 'DELETE', credentials: 'include',
+      }).catch(() => {});
+    }
+    save(all.filter(i => i.id !== id));
     updateBadge();
   }
 

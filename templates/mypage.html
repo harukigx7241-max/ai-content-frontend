@@ -631,35 +631,109 @@
   </section>
 
   <!-- ══════════════════════════════════════════════
-       タブ 4: 保管庫
+       タブ 4: 保管庫 (Phase A: 完全永続化)
   ══════════════════════════════════════════════ -->
   <section id="tab-vault" style="display:none">
 
+    <!-- 編集モーダル -->
+    <div id="vaultEditModal"
+         style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,0.72);align-items:center;justify-content:center;padding:16px"
+         onclick="if(event.target===this)closeVaultEditModal()">
+      <div style="background:#1a1a2e;border:1px solid rgba(255,255,255,0.15);border-radius:16px;padding:24px;width:min(94vw,520px);max-height:90vh;overflow-y:auto">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+          <span style="font-weight:700;font-size:0.95rem">✏️ プロンプトを編集</span>
+          <button onclick="closeVaultEditModal()"
+                  style="background:none;border:none;color:var(--text-muted);font-size:1.3rem;cursor:pointer;line-height:1">✕</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div>
+            <label style="font-size:0.76rem;color:var(--text-muted);display:block;margin-bottom:4px">タイトル</label>
+            <input id="vaultEditTitle" type="text" maxlength="100"
+                   style="width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:8px 12px;color:var(--text-primary);font-size:0.88rem;box-sizing:border-box">
+          </div>
+          <div>
+            <label style="font-size:0.76rem;color:var(--text-muted);display:block;margin-bottom:4px">タグ（カンマ区切り）</label>
+            <input id="vaultEditTags" type="text" maxlength="200" placeholder="例: note副業, AI活用, テンプレ"
+                   style="width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:8px 12px;color:var(--text-primary);font-size:0.88rem;box-sizing:border-box">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div>
+              <label style="font-size:0.76rem;color:var(--text-muted);display:block;margin-bottom:4px">フォルダ</label>
+              <select id="vaultEditFolder"
+                      style="width:100%;background:rgba(30,30,60,0.9);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:8px 10px;color:var(--text-primary);font-size:0.85rem">
+                <option value="">📁 未分類</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:0.76rem;color:var(--text-muted);display:block;margin-bottom:4px">ステータス</label>
+              <select id="vaultEditStatus"
+                      style="width:100%;background:rgba(30,30,60,0.9);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:8px 10px;color:var(--text-primary);font-size:0.85rem">
+                <option value="draft">下書き</option>
+                <option value="completed">✅ 完成</option>
+                <option value="archived">📦 アーカイブ</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label style="font-size:0.76rem;color:var(--text-muted);display:block;margin-bottom:4px">メモ（任意）</label>
+            <textarea id="vaultEditSummary" maxlength="500" rows="2" placeholder="このプロンプトの使い方・メモ"
+                      style="width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:8px 12px;color:var(--text-primary);font-size:0.85rem;resize:vertical;box-sizing:border-box"></textarea>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:18px;justify-content:flex-end">
+          <button onclick="closeVaultEditModal()" class="auth-nav-btn outline" style="font-size:0.8rem">キャンセル</button>
+          <button onclick="vaultSaveEdit()" class="auth-nav-btn primary" style="font-size:0.8rem" id="vaultEditSaveBtn">💾 保存</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- メインカード -->
     <div class="mypage-card">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">
         <div class="mypage-section-title" style="margin-bottom:0">🗄 プロンプト保管庫</div>
-        <div style="display:flex;gap:8px">
-          <button class="auth-nav-btn outline" style="font-size:0.75rem" onclick="vaultExportAll()">📤 エクスポート</button>
-          <a href="/" class="auth-nav-btn primary" style="font-size:0.75rem;text-decoration:none">+ 工房へ</a>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="auth-nav-btn outline" style="font-size:0.73rem" onclick="toggleVaultFolderManager()">📁 フォルダ</button>
+          <button class="auth-nav-btn outline" style="font-size:0.73rem" onclick="vaultExportAll()">📤 エクスポート</button>
+          <a href="/" class="auth-nav-btn primary" style="font-size:0.73rem;text-decoration:none">+ 工房へ</a>
         </div>
       </div>
-      <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:14px">
-        工房の鍛冶場・広場から保存したプロンプトを管理できます。最大50件（サーバー保存）。
+      <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:12px">
+        工房・広場から保存したプロンプトを管理します。最大200件（サーバー保存）。
       </p>
 
-      <!-- フィルターバー -->
-      <div class="mp10-vault-toolbar" id="vaultToolbar">
-        <button class="mp10-vault-filter-btn active" data-filter="all" onclick="vaultSetFilter(this)">すべて</button>
-        <button class="mp10-vault-filter-btn" data-filter="fav"  onclick="vaultSetFilter(this)">⭐ お気に入り</button>
-        <button class="mp10-vault-filter-btn" data-filter="forge" onclick="vaultSetFilter(this)">⚒ 鍛冶場</button>
-        <button class="mp10-vault-filter-btn" data-filter="square" onclick="vaultSetFilter(this)">⚔ 広場</button>
-        <span class="mp10-vault-count" id="vaultCount"></span>
+      <!-- フォルダチップ行 -->
+      <div id="vaultFolderRow" style="display:none;gap:6px;flex-wrap:wrap;margin-bottom:10px"></div>
+
+      <!-- 検索バー -->
+      <div style="margin-bottom:10px">
+        <input id="vaultSearchInput" type="search" placeholder="🔍 タイトル・内容・タグで検索…"
+               oninput="vaultSetSearch(this.value)"
+               style="width:100%;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:8px 12px;color:var(--text-primary);font-size:0.85rem;box-sizing:border-box">
       </div>
 
-      <!-- アイテムリスト -->
+      <!-- フィルター & ソートバー -->
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+        <div class="mp10-vault-toolbar" id="vaultToolbar" style="margin-bottom:0;flex:1;min-width:0">
+          <button class="mp10-vault-filter-btn active" data-filter="all"      onclick="vaultSetFilter(this)">すべて</button>
+          <button class="mp10-vault-filter-btn" data-filter="fav"      onclick="vaultSetFilter(this)">⭐ お気に入り</button>
+          <button class="mp10-vault-filter-btn" data-filter="forge"    onclick="vaultSetFilter(this)">⚒ 鍛冶場</button>
+          <button class="mp10-vault-filter-btn" data-filter="square"   onclick="vaultSetFilter(this)">⚔ 広場</button>
+          <button class="mp10-vault-filter-btn" data-filter="template" onclick="vaultSetFilter(this)">📄 テンプレ</button>
+          <span class="mp10-vault-count" id="vaultCount"></span>
+        </div>
+        <select id="vaultSortSelect" onchange="vaultSetSort(this.value)"
+                style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:6px;padding:5px 8px;color:var(--text-muted);font-size:0.75rem;flex-shrink:0">
+          <option value="new">新着順</option>
+          <option value="updated">更新順</option>
+          <option value="fav">お気に入り優先</option>
+          <option value="title">タイトル順</option>
+        </select>
+      </div>
+
+      <!-- アイテムグリッド -->
       <div id="vaultGrid" class="mp10-vault-grid"></div>
 
-      <!-- 空の状態 -->
+      <!-- 空状態 -->
       <div id="vaultEmpty" class="mp10-vault-empty" style="display:none">
         <span class="mp10-vault-empty-icon">🗄</span>
         まだ保管庫にプロンプトがありません。<br>
@@ -668,7 +742,23 @@
       </div>
     </div>
 
-    <!-- 保管庫インポート -->
+    <!-- フォルダ管理カード -->
+    <div id="vaultFolderManagerCard" class="mypage-card" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="mypage-section-title" style="margin-bottom:0">📁 フォルダ管理</div>
+        <button onclick="toggleVaultFolderManager()"
+                style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.8rem">✕ 閉じる</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:12px">
+        <input id="newFolderName" type="text" maxlength="50" placeholder="新しいフォルダ名"
+               style="flex:1;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:7px 12px;color:var(--text-primary);font-size:0.85rem"
+               onkeydown="if(event.key==='Enter')createVaultFolder()">
+        <button onclick="createVaultFolder()" class="auth-nav-btn primary" style="font-size:0.8rem;white-space:nowrap">+ 作成</button>
+      </div>
+      <div id="vaultFolderList"></div>
+    </div>
+
+    <!-- インポート -->
     <div class="mypage-card" style="background:rgba(255,255,255,0.02)">
       <div class="mypage-section-title" style="margin-bottom:8px">📥 インポート</div>
       <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:10px">
@@ -1297,9 +1387,16 @@ async function loadActivity() {
   }
 }
 
-// ── Phase 19: 保管庫 (API永続化) ──────────────────────────────────
-let _vaultFilter = 'all';
-let _vaultItems  = null;  // null = 未ロード / [] = 空
+// ── Phase A: 保管庫 完全永続化 ─────────────────────────────────────
+let _vaultFilter       = 'all';
+let _vaultFolderFilter = null;   // null=すべて / int=フォルダID
+let _vaultSearch       = '';
+let _vaultSort         = 'new';
+let _vaultItems        = null;   // null=未ロード
+let _vaultFolders      = null;   // null=未ロード
+let _vaultEditId       = null;   // 編集中アイテムID
+
+// ── フィルター / ソート制御 ────────────────────────────────────────
 
 function vaultSetFilter(btn) {
   document.querySelectorAll('.mp10-vault-filter-btn').forEach(b => b.classList.remove('active'));
@@ -1308,31 +1405,100 @@ function vaultSetFilter(btn) {
   _renderVaultUI();
 }
 
-// API からアイテムを取得してキャッシュ
+function vaultSetSearch(val) {
+  _vaultSearch = val.trim().toLowerCase();
+  _renderVaultUI();
+}
+
+function vaultSetSort(val) {
+  _vaultSort = val;
+  _renderVaultUI();
+}
+
+function vaultSetFolderFilter(folderId) {
+  _vaultFolderFilter = folderId;
+  document.querySelectorAll('.vault-folder-chip').forEach(c => {
+    const cid = c.dataset.fid === '' ? null : Number(c.dataset.fid);
+    c.classList.toggle('active', cid === _vaultFolderFilter);
+  });
+  _renderVaultUI();
+}
+
+// ── API フェッチ ──────────────────────────────────────────────────
+
 async function _vaultFetch() {
   try {
     const r = await fetch('/api/vault', { credentials: 'include' });
     if (!r.ok) throw new Error();
     const data = await r.json();
-    // API データを UI 用フォーマットに正規化
     _vaultItems = data.map(i => ({
-      id:      i.id,
-      title:   i.title,
-      content: i.content,
-      source:  i.source || 'forge',
-      fav:     i.is_favorite,
-      tags:    i.tags ? i.tags.split(',').filter(Boolean) : [],
-      savedAt: i.created_at,
+      id:        i.id,
+      title:     i.title,
+      content:   i.content,
+      source:    i.source || 'forge',
+      fav:       i.is_favorite,
+      tags:      i.tags ? i.tags.split(',').filter(Boolean) : [],
+      folder_id: i.folder_id || null,
+      summary:   i.summary || '',
+      status:    i.status || 'draft',
+      savedAt:   i.created_at,
+      updatedAt: i.updated_at,
     }));
-  } catch {
-    _vaultItems = [];
-  }
+  } catch { _vaultItems = []; }
 }
 
-// 保管庫タブを開いたとき（または明示的にリロードしたとき）に呼ぶ
+async function _folderFetch() {
+  try {
+    const r = await fetch('/api/vault/folders', { credentials: 'include' });
+    if (!r.ok) throw new Error();
+    _vaultFolders = await r.json();
+  } catch { _vaultFolders = []; }
+}
+
+// ── メインレンダー ────────────────────────────────────────────────
+
 async function renderVault() {
-  if (_vaultItems === null) await _vaultFetch();
+  await Promise.all([
+    _vaultItems   === null ? _vaultFetch()  : Promise.resolve(),
+    _vaultFolders === null ? _folderFetch() : Promise.resolve(),
+  ]);
+  _renderFolderChips();
   _renderVaultUI();
+}
+
+function _renderFolderChips() {
+  const row = document.getElementById('vaultFolderRow');
+  if (!row) return;
+  const folders = _vaultFolders || [];
+  if (!folders.length) { row.style.display = 'none'; return; }
+  row.style.display = 'flex';
+  row.innerHTML = [
+    `<button class="vault-folder-chip${_vaultFolderFilter === null ? ' active' : ''}" data-fid="" onclick="vaultSetFolderFilter(null)">📁 すべて</button>`,
+    ...folders.map(f =>
+      `<button class="vault-folder-chip${_vaultFolderFilter === f.id ? ' active' : ''}" data-fid="${f.id}" onclick="vaultSetFolderFilter(${f.id})">${esc(f.name)}<span style="font-size:0.68rem;opacity:0.65;margin-left:3px">${f.item_count}</span></button>`
+    ),
+  ].join('');
+}
+
+function _applyFiltersAndSort(items) {
+  let r = [...items];
+  if (_vaultFilter === 'fav')      r = r.filter(i => i.fav);
+  else if (_vaultFilter === 'forge')    r = r.filter(i => !i.source || i.source === 'forge');
+  else if (_vaultFilter === 'square')   r = r.filter(i => i.source === 'square');
+  else if (_vaultFilter === 'template') r = r.filter(i => i.source === 'template');
+  if (_vaultFolderFilter !== null) r = r.filter(i => i.folder_id === _vaultFolderFilter);
+  if (_vaultSearch) {
+    const q = _vaultSearch;
+    r = r.filter(i =>
+      (i.title||'').toLowerCase().includes(q) ||
+      (i.content||'').toLowerCase().includes(q) ||
+      (i.tags||[]).some(t => t.toLowerCase().includes(q))
+    );
+  }
+  if (_vaultSort === 'updated') r.sort((a,b) => (b.updatedAt||b.savedAt) > (a.updatedAt||a.savedAt) ? 1 : -1);
+  else if (_vaultSort === 'fav')   r.sort((a,b) => (b.fav?1:0) - (a.fav?1:0));
+  else if (_vaultSort === 'title') r.sort((a,b) => (a.title||'').localeCompare(b.title||'','ja'));
+  return r;
 }
 
 function _renderVaultUI() {
@@ -1341,39 +1507,46 @@ function _renderVaultUI() {
   const count = document.getElementById('vaultCount');
   if (!grid) return;
 
-  let items = _vaultItems || [];
-  if (_vaultFilter === 'fav')    items = items.filter(i => i.fav);
-  if (_vaultFilter === 'forge')  items = items.filter(i => !i.source || i.source === 'forge');
-  if (_vaultFilter === 'square') items = items.filter(i => i.source === 'square');
+  const allItems = _vaultItems || [];
+  const items    = _applyFiltersAndSort(allItems);
 
-  if (count) count.textContent = `${(_vaultItems||[]).length} / 50 件`;
+  if (count) count.textContent = `${allItems.length} / 200 件`;
 
   if (!items.length) {
     grid.innerHTML = '';
-    empty.style.display = '';
+    if (empty) empty.style.display = '';
     return;
   }
-  empty.style.display = 'none';
+  if (empty) empty.style.display = 'none';
+
+  const STATUS_LABEL = { completed: '✅ 完成', archived: '📦 アーカイブ' };
+  const SOURCE_LABEL = { forge: '⚒ 鍛冶場', square: '⚔ 広場', template: '📄 テンプレ', remix: '🔁 Remix', fork: '🔀 Fork' };
+
   grid.innerHTML = items.map(item => {
-    const tags   = (item.tags || []).slice(0, 4).map(t => `<span class="mp10-vault-tag">${esc(t)}</span>`).join('');
-    const source = item.source === 'square' ? '⚔ 広場' : '⚒ 鍛冶場';
+    const tags       = (item.tags||[]).slice(0,4).map(t=>`<span class="mp10-vault-tag">${esc(t)}</span>`).join('');
+    const sourceLabel = SOURCE_LABEL[item.source] || `⚒ ${esc(item.source||'')}`;
+    const statusLabel = STATUS_LABEL[item.status] || '';
+    const folderName  = item.folder_id && _vaultFolders
+      ? ((_vaultFolders.find(f=>f.id===item.folder_id)||{}).name || '') : '';
     return `
-      <div class="mp10-vault-item${item.fav ? ' fav' : ''}" id="vaultItem_${item.id}">
+      <div class="mp10-vault-item${item.fav?' fav':''}" id="vaultItem_${item.id}">
         <div class="mp10-vault-item-header">
-          <div class="mp10-vault-title">${esc(item.title || item.content?.slice(0,60) || '無題')}</div>
-          <button class="mp10-vault-fav-btn${item.fav ? ' on' : ''}" onclick="vaultToggleFav(${item.id})"
-                  title="${item.fav ? 'お気に入り解除' : 'お気に入り登録'}">
-            ${item.fav ? '⭐' : '☆'}
-          </button>
+          <div class="mp10-vault-title">${esc(item.title||item.content?.slice(0,60)||'無題')}</div>
+          <button class="mp10-vault-fav-btn${item.fav?' on':''}" onclick="vaultToggleFav(${item.id})"
+                  title="${item.fav?'お気に入り解除':'お気に入り登録'}">${item.fav?'⭐':'☆'}</button>
         </div>
-        <div class="mp10-vault-preview">${esc(item.content || '')}</div>
+        ${item.summary?`<div style="font-size:0.74rem;color:var(--text-muted);margin-bottom:5px;font-style:italic">${esc(item.summary)}</div>`:''}
+        <div class="mp10-vault-preview">${esc(item.content||'')}</div>
         <div class="mp10-vault-footer">
-          <span class="mp10-vault-tag" style="background:rgba(168,85,247,0.1);color:var(--accent-purple)">${source}</span>
+          <span class="mp10-vault-tag" style="background:rgba(168,85,247,0.1);color:var(--accent-purple)">${sourceLabel}</span>
+          ${statusLabel?`<span class="mp10-vault-tag" style="background:rgba(6,182,212,0.1);color:var(--accent-cyan)">${statusLabel}</span>`:''}
+          ${folderName?`<span class="mp10-vault-tag" style="background:rgba(245,158,11,0.1);color:var(--accent-gold)">📁 ${esc(folderName)}</span>`:''}
           ${tags}
-          <span class="mp10-vault-date">${item.savedAt ? new Date(item.savedAt).toLocaleDateString('ja-JP') : ''}</span>
+          <span class="mp10-vault-date">${item.savedAt?new Date(item.savedAt).toLocaleDateString('ja-JP'):''}</span>
         </div>
         <div class="mp10-vault-actions">
           <button class="mp10-vault-copy-btn" onclick="vaultCopy(${item.id},this)">📋 コピー</button>
+          <button class="mp10-vault-edit-btn" onclick="vaultEditItem(${item.id})">✏️ 編集</button>
           <button class="mp10-vault-del-btn"  onclick="vaultDelete(${item.id})">🗑 削除</button>
         </div>
       </div>
@@ -1381,8 +1554,10 @@ function _renderVaultUI() {
   }).join('');
 }
 
+// ── お気に入り ────────────────────────────────────────────────────
+
 async function vaultToggleFav(id) {
-  const item = (_vaultItems || []).find(i => i.id === id);
+  const item = (_vaultItems||[]).find(i=>i.id===id);
   if (!item) return;
   const newFav = !item.fav;
   try {
@@ -1393,37 +1568,190 @@ async function vaultToggleFav(id) {
     });
     item.fav = newFav;
     _renderVaultUI();
-  } catch { /* サーバーエラーは無視して再描画 */ }
+  } catch { /* ignore */ }
 }
 
+// ── コピー ────────────────────────────────────────────────────────
+
 function vaultCopy(id, btn) {
-  const item = (_vaultItems || []).find(i => i.id === id);
+  const item = (_vaultItems||[]).find(i=>i.id===id);
   if (!item) return;
-  const text = item.content || '';
-  navigator.clipboard.writeText(text).then(() => {
+  navigator.clipboard.writeText(item.content||'').then(() => {
     const orig = btn.textContent;
     btn.textContent = '✅ コピーしました';
     setTimeout(() => { btn.textContent = orig; }, 1500);
   }).catch(() => {
     const ta = document.createElement('textarea');
-    ta.value = text;
+    ta.value = item.content||'';
     document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
   });
 }
 
+// ── 削除 ──────────────────────────────────────────────────────────
+
 async function vaultDelete(id) {
   if (!confirm('保管庫からこのプロンプトを削除しますか？')) return;
   try {
-    await fetch(`/api/vault/${id}`, { method: 'DELETE', credentials: 'include' });
-    _vaultItems = (_vaultItems || []).filter(i => i.id !== id);
+    const r = await fetch(`/api/vault/${id}`, { method: 'DELETE', credentials: 'include' });
+    if (!r.ok) throw new Error();
+    _vaultItems = (_vaultItems||[]).filter(i=>i.id!==id);
+    _vaultFolders = null;
+    await _folderFetch();
+    _renderFolderChips();
     _renderVaultUI();
-  } catch {
-    alert('削除に失敗しました。');
-  }
+  } catch { alert('削除に失敗しました。'); }
 }
 
+// ── 編集モーダル ──────────────────────────────────────────────────
+
+function vaultEditItem(id) {
+  const item = (_vaultItems||[]).find(i=>i.id===id);
+  if (!item) return;
+  _vaultEditId = id;
+  document.getElementById('vaultEditTitle').value   = item.title||'';
+  document.getElementById('vaultEditTags').value    = (item.tags||[]).join(', ');
+  document.getElementById('vaultEditSummary').value = item.summary||'';
+  document.getElementById('vaultEditStatus').value  = item.status||'draft';
+  const sel = document.getElementById('vaultEditFolder');
+  sel.innerHTML = '<option value="">📁 未分類</option>' +
+    (_vaultFolders||[]).map(f=>`<option value="${f.id}"${item.folder_id===f.id?' selected':''}>${esc(f.name)}</option>`).join('');
+  const modal = document.getElementById('vaultEditModal');
+  modal.style.display = 'flex';
+}
+
+function closeVaultEditModal() {
+  document.getElementById('vaultEditModal').style.display = 'none';
+  _vaultEditId = null;
+}
+
+async function vaultSaveEdit() {
+  if (!_vaultEditId) return;
+  const btn = document.getElementById('vaultEditSaveBtn');
+  btn.disabled = true; btn.textContent = '保存中…';
+  const tagsRaw  = document.getElementById('vaultEditTags').value;
+  const tags     = tagsRaw.split(/[,、]/).map(t=>t.trim()).filter(Boolean).join(',');
+  const folderVal = document.getElementById('vaultEditFolder').value;
+  try {
+    const r = await fetch(`/api/vault/${_vaultEditId}`, {
+      method: 'PATCH', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title:     document.getElementById('vaultEditTitle').value.trim(),
+        tags,
+        folder_id: folderVal ? Number(folderVal) : -1,
+        summary:   document.getElementById('vaultEditSummary').value.trim(),
+        status:    document.getElementById('vaultEditStatus').value,
+      }),
+    });
+    if (!r.ok) throw new Error();
+    const updated = await r.json();
+    const idx = (_vaultItems||[]).findIndex(i=>i.id===_vaultEditId);
+    if (idx !== -1) {
+      Object.assign(_vaultItems[idx], {
+        title:     updated.title,
+        tags:      updated.tags ? updated.tags.split(',').filter(Boolean) : [],
+        folder_id: updated.folder_id || null,
+        summary:   updated.summary || '',
+        status:    updated.status || 'draft',
+        updatedAt: updated.updated_at,
+      });
+    }
+    _vaultFolders = null;
+    await _folderFetch();
+    _renderFolderChips();
+    _renderVaultUI();
+    closeVaultEditModal();
+  } catch { alert('保存に失敗しました。');
+  } finally { btn.disabled = false; btn.textContent = '💾 保存'; }
+}
+
+// ── フォルダ管理 ──────────────────────────────────────────────────
+
+function toggleVaultFolderManager() {
+  const card = document.getElementById('vaultFolderManagerCard');
+  if (!card) return;
+  const visible = card.style.display !== 'none';
+  card.style.display = visible ? 'none' : '';
+  if (!visible) _renderFolderManager();
+}
+
+function _renderFolderManager() {
+  const list = document.getElementById('vaultFolderList');
+  if (!list) return;
+  const folders = _vaultFolders||[];
+  if (!folders.length) {
+    list.innerHTML = '<p style="font-size:0.78rem;color:var(--text-muted)">フォルダはまだありません。</p>';
+    return;
+  }
+  list.innerHTML = folders.map(f=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid rgba(255,255,255,0.08);border-radius:8px;margin-bottom:6px">
+      <span style="flex:1;font-size:0.88rem">📁 ${esc(f.name)} <span style="font-size:0.72rem;color:var(--text-muted)">(${f.item_count}件)</span></span>
+      <button onclick="renameVaultFolder(${f.id},'${esc(f.name).replace(/'/g,"\\'")}')"
+              style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.76rem;padding:2px 6px">✏️ 名前変更</button>
+      <button onclick="deleteVaultFolder(${f.id})"
+              style="background:none;border:none;color:#f87171;cursor:pointer;font-size:0.76rem;padding:2px 6px">🗑 削除</button>
+    </div>
+  `).join('');
+}
+
+async function createVaultFolder() {
+  const input = document.getElementById('newFolderName');
+  const name  = (input?.value||'').trim();
+  if (!name) return;
+  try {
+    const r = await fetch('/api/vault/folders', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    });
+    if (!r.ok) { const d = await r.json(); alert(d.detail||'作成に失敗しました'); return; }
+    if (input) input.value = '';
+    _vaultFolders = null;
+    await _folderFetch();
+    _renderFolderChips();
+    _renderFolderManager();
+  } catch { alert('作成に失敗しました。'); }
+}
+
+async function renameVaultFolder(id, currentName) {
+  const name = prompt('新しいフォルダ名:', currentName);
+  if (!name || name.trim() === currentName) return;
+  try {
+    const r = await fetch(`/api/vault/folders/${id}`, {
+      method: 'PATCH', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: name.trim() }),
+    });
+    if (!r.ok) { alert('名前変更に失敗しました'); return; }
+    _vaultFolders = null;
+    await _folderFetch();
+    _renderFolderChips();
+    _renderFolderManager();
+  } catch { alert('名前変更に失敗しました。'); }
+}
+
+async function deleteVaultFolder(id) {
+  if (!confirm('フォルダを削除しますか？\nフォルダ内のアイテムは「未分類」に移動します。')) return;
+  try {
+    await fetch(`/api/vault/folders/${id}`, { method: 'DELETE', credentials: 'include' });
+    if (_vaultFolderFilter === id) _vaultFolderFilter = null;
+    _vaultFolders = null;
+    _vaultItems   = null;
+    await Promise.all([_vaultFetch(), _folderFetch()]);
+    _renderFolderChips();
+    _renderFolderManager();
+    _renderVaultUI();
+  } catch { alert('削除に失敗しました。'); }
+}
+
+// ── エクスポート / インポート ─────────────────────────────────────
+
 function vaultExportAll() {
-  const items = _vaultItems || [];
+  const items = (_vaultItems||[]).map(i=>({
+    title: i.title, content: i.content, source: i.source,
+    tags: i.tags, is_favorite: i.fav, status: i.status,
+    summary: i.summary, savedAt: i.savedAt,
+  }));
   const blob = new Blob([JSON.stringify(items, null, 2)], { type: 'application/json' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
@@ -1441,7 +1769,7 @@ async function vaultImport(input) {
       const imported = JSON.parse(e.target.result);
       if (!Array.isArray(imported)) throw new Error('invalid format');
       let ok = 0;
-      for (const item of imported.slice(0, 50)) {
+      for (const item of imported.slice(0, 200)) {
         const content = item.content || item.prompt || '';
         if (!content) continue;
         try {
@@ -1449,19 +1777,21 @@ async function vaultImport(input) {
             method: 'POST', credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              title:   item.title || content.slice(0, 60) || 'インポート',
+              title:   item.title || content.slice(0,60) || 'インポート',
               content, source: item.source || 'forge',
-              tags:    (item.tags || []).join(','),
+              tags:    Array.isArray(item.tags) ? item.tags.join(',') : (item.tags||''),
+              status:  item.status || 'draft',
+              summary: item.summary || '',
             }),
           });
           ok++;
         } catch { /* skip */ }
       }
-      msg.textContent = `✅ ${ok} 件をインポートしました`;
-      _vaultItems = null;  // キャッシュクリアして再取得
+      if (msg) msg.textContent = `✅ ${ok} 件をインポートしました`;
+      _vaultItems = null;
       await renderVault();
     } catch {
-      msg.textContent = '❌ 読み込みに失敗しました';
+      if (msg) msg.textContent = '❌ 読み込みに失敗しました';
     }
   };
   reader.readAsText(file);

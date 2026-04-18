@@ -5503,6 +5503,23 @@ img, video, iframe, canvas {
   color: rgba(248,113,113,0.8);
 }
 .mp10-vault-del-btn:hover { background: rgba(248,113,113,0.2); }
+.mp10-vault-edit-btn {
+  background: rgba(6,182,212,0.1); border: 1px solid rgba(6,182,212,0.2);
+  color: rgba(6,182,212,0.85); border-radius: 6px;
+  padding: 4px 10px; font-size: 0.75rem; cursor: pointer; transition: background 0.2s;
+}
+.mp10-vault-edit-btn:hover { background: rgba(6,182,212,0.22); }
+
+/* フォルダチップ (保管庫タブ) */
+.vault-folder-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 12px; border-radius: 20px; font-size: 0.78rem;
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text-muted); cursor: pointer; transition: all 0.2s; white-space: nowrap;
+}
+.vault-folder-chip:hover { background: rgba(245,158,11,0.15); border-color: rgba(245,158,11,0.3); color: var(--accent-gold); }
+.vault-folder-chip.active { background: rgba(245,158,11,0.18); border-color: rgba(245,158,11,0.45); color: var(--accent-gold); font-weight: 600; }
+
 .mp10-vault-empty {
   text-align: center; padding: 40px 20px;
   color: var(--text-muted); font-size: 0.85rem;

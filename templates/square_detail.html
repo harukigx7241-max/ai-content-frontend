@@ -415,14 +415,22 @@ function showMarketToast(msg, color) {
   el.style.display = '';
   setTimeout(() => { el.style.display = 'none'; }, 2400);
 }
-document.getElementById('vaultSaveBtn')?.addEventListener('click', () => {
+document.getElementById('vaultSaveBtn')?.addEventListener('click', async () => {
   const title   = {{ post.title | tojson }};
-  const content = document.getElementById('promptDisplay').textContent;
-  if (saveToVault(title, content)) {
-    showMarketToast('💾 保管庫に保存しました');
-  } else {
-    showMarketToast('⚠️ 保存に失敗しました', '#f87171');
-  }
+  const content = document.getElementById('promptDisplay').textContent.trim();
+  if (!content) { showMarketToast('⚠️ 保存するコンテンツがありません', '#f87171'); return; }
+  saveToVault(title, content);   // localStorage (ゲスト含む全員)
+  showMarketToast('💾 保管庫に保存しました');
+  // ログイン済みはサーバーにも保存 (source=square)
+  {% if user %}
+  try {
+    await fetch('/api/vault', {
+      method: 'POST', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, content, source: 'square' }),
+    });
+  } catch { /* サーバー保存失敗は無視 */ }
+  {% endif %}
 });
 
 {% if user and not post.is_own %}

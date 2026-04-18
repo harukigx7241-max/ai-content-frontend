@@ -70,6 +70,15 @@ COLUMN_MIGRATIONS: list[_Migration] = [
                "ALTER TABLE users ADD COLUMN subscription_expires_at DATETIME"),
     _Migration("users.stripe_customer_id",
                "ALTER TABLE users ADD COLUMN stripe_customer_id VARCHAR(100)"),
+    # Phase A — 保管庫永続化完成 (saved_prompts 拡張)
+    _Migration("saved_prompts.folder_id",
+               "ALTER TABLE saved_prompts ADD COLUMN folder_id INTEGER"),
+    _Migration("saved_prompts.summary",
+               "ALTER TABLE saved_prompts ADD COLUMN summary TEXT"),
+    _Migration("saved_prompts.status",
+               "ALTER TABLE saved_prompts ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'draft'"),
+    _Migration("saved_prompts.updated_at",
+               "ALTER TABLE saved_prompts ADD COLUMN updated_at DATETIME"),
 ]
 
 
