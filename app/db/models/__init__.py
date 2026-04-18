@@ -7,6 +7,8 @@ from app.db.models.user_badge import UserBadge  # noqa: F401 — Phase 7: バッ
 from app.db.models.invite import InviteCode, InviteUse  # noqa: F401 — Phase 8: 招待
 from app.db.models.feedback import Feedback, AuditLog  # noqa: F401 — Phase 9: フィードバック + 監査ログ
 from app.db.models.quest import DailyTask, QuestProgress  # noqa: F401 — Phase 10: クエスト スキャフォールド
+from app.db.models.saved_prompt import SavedPrompt  # noqa: F401 — Phase 19: 保管庫永続化
 
 __all__ = ["User", "SystemSetting", "CommunityPost", "PostReaction", "XpEvent", "UserBadge",
-           "InviteCode", "InviteUse", "Feedback", "AuditLog", "DailyTask", "QuestProgress"]
+           "InviteCode", "InviteUse", "Feedback", "AuditLog", "DailyTask", "QuestProgress",
+           "SavedPrompt"]

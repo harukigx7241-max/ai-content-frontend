@@ -76,3 +76,7 @@ def include_feature_routers(app: FastAPI) -> None:
     # ── Phase 9: 分析 + フィードバック (常時有効) ─────────────────────
     from app.analytics.router import router as analytics_router
     _reg(app, analytics_router, "/api/analytics/* /api/feedback /api/admin/feedback")
+
+    # ── Phase 19: 保管庫永続化 (常時有効) ────────────────────────────
+    from app.routers.vault import router as vault_router
+    _reg(app, vault_router, "/api/vault/*")

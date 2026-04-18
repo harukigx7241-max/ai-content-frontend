@@ -73,6 +73,14 @@ const ForgeVault = (() => {
     if (items.length > MAX) items.length = MAX;
     save(items);
     updateBadge();
+    // ログイン済みの場合はサーバーにも保存 (fire & forget)
+    if (window._pguildLoggedIn) {
+      fetch('/api/vault', {
+        method: 'POST', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: item.title, content: item.content, source: 'forge' }),
+      }).catch(() => {});
+    }
     return item;
   }
 

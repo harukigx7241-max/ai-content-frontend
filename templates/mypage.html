@@ -644,7 +644,7 @@
         </div>
       </div>
       <p style="font-size:0.78rem;color:var(--text-muted);margin-bottom:14px">
-        工房の鍛冶場・広場から保存したプロンプトを管理できます。最大30件。
+        工房の鍛冶場・広場から保存したプロンプトを管理できます。最大50件（サーバー保存）。
       </p>
 
       <!-- フィルターバー -->
@@ -1297,107 +1297,133 @@ async function loadActivity() {
   }
 }
 
-// ── Phase 10: 保管庫 ─────────────────────────────────────────────
-const VAULT_KEY = 'pg_forge_vault_v1';
+// ── Phase 19: 保管庫 (API永続化) ──────────────────────────────────
 let _vaultFilter = 'all';
+let _vaultItems  = null;  // null = 未ロード / [] = 空
 
 function vaultSetFilter(btn) {
   document.querySelectorAll('.mp10-vault-filter-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   _vaultFilter = btn.dataset.filter;
-  renderVault();
+  _renderVaultUI();
 }
 
-function vaultLoad() {
-  try { return JSON.parse(localStorage.getItem(VAULT_KEY) || '[]'); }
-  catch { return []; }
+// API からアイテムを取得してキャッシュ
+async function _vaultFetch() {
+  try {
+    const r = await fetch('/api/vault', { credentials: 'include' });
+    if (!r.ok) throw new Error();
+    const data = await r.json();
+    // API データを UI 用フォーマットに正規化
+    _vaultItems = data.map(i => ({
+      id:      i.id,
+      title:   i.title,
+      content: i.content,
+      source:  i.source || 'forge',
+      fav:     i.is_favorite,
+      tags:    i.tags ? i.tags.split(',').filter(Boolean) : [],
+      savedAt: i.created_at,
+    }));
+  } catch {
+    _vaultItems = [];
+  }
 }
 
-function vaultSave(items) {
-  localStorage.setItem(VAULT_KEY, JSON.stringify(items));
+// 保管庫タブを開いたとき（または明示的にリロードしたとき）に呼ぶ
+async function renderVault() {
+  if (_vaultItems === null) await _vaultFetch();
+  _renderVaultUI();
 }
 
-function renderVault() {
+function _renderVaultUI() {
   const grid  = document.getElementById('vaultGrid');
   const empty = document.getElementById('vaultEmpty');
   const count = document.getElementById('vaultCount');
   if (!grid) return;
 
-  let items = vaultLoad();
+  let items = _vaultItems || [];
   if (_vaultFilter === 'fav')    items = items.filter(i => i.fav);
   if (_vaultFilter === 'forge')  items = items.filter(i => !i.source || i.source === 'forge');
   if (_vaultFilter === 'square') items = items.filter(i => i.source === 'square');
 
-  if (count) count.textContent = `${items.length} 件`;
+  if (count) count.textContent = `${(_vaultItems||[]).length} / 50 件`;
 
   if (!items.length) {
-    grid.innerHTML   = '';
+    grid.innerHTML = '';
     empty.style.display = '';
     return;
   }
   empty.style.display = 'none';
-  grid.innerHTML = items.map((item, idx) => {
-    const allItems = vaultLoad();
-    const realIdx  = allItems.findIndex(i => i.id === item.id);
-    const tags = (item.tags || []).slice(0, 4).map(t => `<span class="mp10-vault-tag">${esc(t)}</span>`).join('');
+  grid.innerHTML = items.map(item => {
+    const tags   = (item.tags || []).slice(0, 4).map(t => `<span class="mp10-vault-tag">${esc(t)}</span>`).join('');
     const source = item.source === 'square' ? '⚔ 広場' : '⚒ 鍛冶場';
     return `
-      <div class="mp10-vault-item${item.fav ? ' fav' : ''}" id="vaultItem_${esc(item.id)}">
+      <div class="mp10-vault-item${item.fav ? ' fav' : ''}" id="vaultItem_${item.id}">
         <div class="mp10-vault-item-header">
-          <div class="mp10-vault-title">${esc(item.title || item.prompt?.slice(0,60) || '無題')}</div>
-          <button class="mp10-vault-fav-btn${item.fav ? ' on' : ''}" onclick="vaultToggleFav('${esc(item.id)}')"
+          <div class="mp10-vault-title">${esc(item.title || item.content?.slice(0,60) || '無題')}</div>
+          <button class="mp10-vault-fav-btn${item.fav ? ' on' : ''}" onclick="vaultToggleFav(${item.id})"
                   title="${item.fav ? 'お気に入り解除' : 'お気に入り登録'}">
             ${item.fav ? '⭐' : '☆'}
           </button>
         </div>
-        <div class="mp10-vault-preview">${esc(item.prompt || '')}</div>
+        <div class="mp10-vault-preview">${esc(item.content || '')}</div>
         <div class="mp10-vault-footer">
           <span class="mp10-vault-tag" style="background:rgba(168,85,247,0.1);color:var(--accent-purple)">${source}</span>
           ${tags}
           <span class="mp10-vault-date">${item.savedAt ? new Date(item.savedAt).toLocaleDateString('ja-JP') : ''}</span>
         </div>
         <div class="mp10-vault-actions">
-          <button class="mp10-vault-copy-btn" onclick="vaultCopy('${esc(item.id)}',this)">📋 コピー</button>
-          <button class="mp10-vault-del-btn"  onclick="vaultDelete('${esc(item.id)}')">🗑 削除</button>
+          <button class="mp10-vault-copy-btn" onclick="vaultCopy(${item.id},this)">📋 コピー</button>
+          <button class="mp10-vault-del-btn"  onclick="vaultDelete(${item.id})">🗑 削除</button>
         </div>
       </div>
     `;
   }).join('');
 }
 
-function vaultToggleFav(id) {
-  const items = vaultLoad();
-  const idx = items.findIndex(i => i.id === id);
-  if (idx === -1) return;
-  items[idx].fav = !items[idx].fav;
-  vaultSave(items);
-  renderVault();
+async function vaultToggleFav(id) {
+  const item = (_vaultItems || []).find(i => i.id === id);
+  if (!item) return;
+  const newFav = !item.fav;
+  try {
+    await fetch(`/api/vault/${id}/fav`, {
+      method: 'PATCH', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ is_favorite: newFav }),
+    });
+    item.fav = newFav;
+    _renderVaultUI();
+  } catch { /* サーバーエラーは無視して再描画 */ }
 }
 
 function vaultCopy(id, btn) {
-  const items = vaultLoad();
-  const item = items.find(i => i.id === id);
+  const item = (_vaultItems || []).find(i => i.id === id);
   if (!item) return;
-  navigator.clipboard.writeText(item.prompt || '').then(() => {
+  const text = item.content || '';
+  navigator.clipboard.writeText(text).then(() => {
     const orig = btn.textContent;
     btn.textContent = '✅ コピーしました';
     setTimeout(() => { btn.textContent = orig; }, 1500);
   }).catch(() => {
     const ta = document.createElement('textarea');
-    ta.value = item.prompt || '';
+    ta.value = text;
     document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
   });
 }
 
-function vaultDelete(id) {
+async function vaultDelete(id) {
   if (!confirm('保管庫からこのプロンプトを削除しますか？')) return;
-  const items = vaultLoad().filter(i => i.id !== id);
-  vaultSave(items);
-  renderVault();
+  try {
+    await fetch(`/api/vault/${id}`, { method: 'DELETE', credentials: 'include' });
+    _vaultItems = (_vaultItems || []).filter(i => i.id !== id);
+    _renderVaultUI();
+  } catch {
+    alert('削除に失敗しました。');
+  }
 }
 
 function vaultExportAll() {
-  const items = vaultLoad();
+  const items = _vaultItems || [];
   const blob = new Blob([JSON.stringify(items, null, 2)], { type: 'application/json' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
@@ -1405,24 +1431,37 @@ function vaultExportAll() {
   a.click(); URL.revokeObjectURL(url);
 }
 
-function vaultImport(input) {
+async function vaultImport(input) {
   const file = input.files[0];
   if (!file) return;
+  const msg = document.getElementById('vaultImportMsg');
   const reader = new FileReader();
-  reader.onload = e => {
-    const msg = document.getElementById('vaultImportMsg');
+  reader.onload = async e => {
     try {
       const imported = JSON.parse(e.target.result);
       if (!Array.isArray(imported)) throw new Error('invalid format');
-      const existing = vaultLoad();
-      const existIds = new Set(existing.map(i => i.id));
-      const newItems = imported.filter(i => i.id && !existIds.has(i.id));
-      const merged   = [...newItems, ...existing].slice(0, 30);
-      vaultSave(merged);
-      msg.textContent = `✅ ${newItems.length} 件をインポートしました`;
-      renderVault();
+      let ok = 0;
+      for (const item of imported.slice(0, 50)) {
+        const content = item.content || item.prompt || '';
+        if (!content) continue;
+        try {
+          await fetch('/api/vault', {
+            method: 'POST', credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              title:   item.title || content.slice(0, 60) || 'インポート',
+              content, source: item.source || 'forge',
+              tags:    (item.tags || []).join(','),
+            }),
+          });
+          ok++;
+        } catch { /* skip */ }
+      }
+      msg.textContent = `✅ ${ok} 件をインポートしました`;
+      _vaultItems = null;  // キャッシュクリアして再取得
+      await renderVault();
     } catch {
-      document.getElementById('vaultImportMsg').textContent = '❌ 読み込みに失敗しました';
+      msg.textContent = '❌ 読み込みに失敗しました';
     }
   };
   reader.readAsText(file);
