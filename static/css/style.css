@@ -91,7 +91,7 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 20px;
+  padding: max(10px, env(safe-area-inset-top, 10px)) 20px 10px;
   background: linear-gradient(90deg, rgba(168,85,247,0.85), rgba(245,158,11,0.85));
   backdrop-filter: blur(12px);
   color: #fff;
@@ -1453,7 +1453,7 @@ kbd {
 }
 .auth-nav-btn {
   font-size: 0.78rem;
-  padding: 5px 14px;
+  padding: 7px 14px;
   border-radius: 8px;
   cursor: pointer;
   text-decoration: none;
@@ -2393,8 +2393,8 @@ kbd {
 /* ── レスポンシブ ─────────────────────────────────────────────── */
 @media (max-width: 600px) {
   .sq-search-row { flex-direction: column; }
-  .sq-filter-row { gap: 6px; }
-  .sq-filter-select { min-width: 100%; }
+  .sq-filter-row { flex-wrap: wrap; gap: 6px; }
+  .sq-filter-select { flex: 1 1 calc(50% - 6px); min-width: 130px; }
   .sq-meta-grid { grid-template-columns: 1fr; }
   .sq-ai-btn-row { flex-direction: column; }
   .sq-detail-views { margin-left: 0; }
@@ -3368,7 +3368,7 @@ kbd {
   transition: transform 0.18s;
 }
 .mbn-label {
-  font-size: 0.62rem;
+  font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.02em;
   white-space: nowrap;
@@ -3442,7 +3442,7 @@ body.has-bottom-nav main {
 @media (max-width: 375px) {
   .hero-title { font-size: 1.3rem; }
   .logo-text { font-size: 0.9rem; }
-  .mbn-label { font-size: 0.58rem; }
+  .mbn-label { font-size: 0.68rem; }
   .mbn-btn { min-width: 44px; }
 }
 
