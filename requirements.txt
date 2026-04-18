@@ -1,8 +1,19 @@
-fastapi
-uvicorn
-pydantic
-# Phase 2: 認証システム
-sqlalchemy
-bcrypt
-python-multipart
-jinja2
+# ── コア ────────────────────────────────────────────────
+fastapi>=0.135.0
+uvicorn[standard]>=0.44.0
+pydantic>=2.0.0
+
+# ── テンプレート ─────────────────────────────────────────
+jinja2>=3.1.0
+
+# ── 認証・セキュリティ ─────────────────────────────────
+bcrypt>=4.0.0
+python-multipart>=0.0.9
+
+# ── データベース ─────────────────────────────────────────
+sqlalchemy>=2.0.0
+# PostgreSQL を使う場合は以下を追加:
+# psycopg2-binary>=2.9.0
+
+# ── オプション: Stripe 課金 (ENABLE_BILLING=true の場合のみ必要) ──
+# stripe>=7.0.0
